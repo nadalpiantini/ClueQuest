@@ -56,17 +56,21 @@ interface LeonardoGenerationResult {
 }
 
 export class LeonardoAIClient {
-  private apiKey: string
+  private apiKey: string | undefined
   private baseUrl = 'https://cloud.leonardo.ai/api/rest/v1'
 
   constructor() {
-    this.apiKey = process.env.LEONARDO_AI_API_KEY!
+    this.apiKey = process.env.LEONARDO_AI_API_KEY
+  }
+
+  private checkApiKey() {
     if (!this.apiKey) {
       throw new Error('LEONARDO_AI_API_KEY environment variable is required')
     }
   }
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
+    this.checkApiKey()
     const url = `${this.baseUrl}${endpoint}`
     
     const response = await fetch(url, {
@@ -226,4 +230,5 @@ export class LeonardoAIClient {
   }
 }
 
+// Export a client instance - API key validation happens at runtime
 export const leonardoClient = new LeonardoAIClient()
