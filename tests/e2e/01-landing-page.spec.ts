@@ -15,8 +15,8 @@ test.describe('Landing Page (Entry Point)', () => {
     await expect(mainTitle).toBeVisible();
     await expect(mainTitle).toContainText('CLUEQUEST');
 
-    // Verify hero subtitle
-    const subtitle = page.locator('h2');
+    // Verify hero subtitle (first h2)
+    const subtitle = page.locator('h2').first();
     await expect(subtitle).toContainText('Interactive Escape Room Adventures');
 
     // Take screenshot for visual verification
@@ -55,7 +55,8 @@ test.describe('Landing Page (Entry Point)', () => {
       await expect(card).toContainText(expectedFeatures[i]);
       
       // Test hover effects (desktop only)
-      if (!page.context().options.isMobile) {
+      const isMobile = page.viewportSize()?.width! < 768;
+      if (!isMobile) {
         await card.hover();
         await page.waitForTimeout(300); // Wait for animation
       }
@@ -105,8 +106,8 @@ test.describe('Landing Page (Entry Point)', () => {
     await mainCTA.click();
     await helpers.waitForPageLoad();
     
-    // Should be on welcome page (P1 → P2 transition)
-    await expect(page).toHaveURL('/welcome');
+    // Should be on adventure selection page (P1 → P2 transition)
+    await expect(page).toHaveURL('/adventure-selection');
   });
 
   test('should be fully responsive across all breakpoints', async ({ page }) => {
@@ -167,7 +168,8 @@ test.describe('Landing Page (Entry Point)', () => {
     const mainCTA = page.locator('a[href="/adventure-selection"]');
     
     // Test hover state (desktop only)
-    if (!page.context().options.isMobile) {
+    const isMobile = page.viewportSize()?.width! < 768;
+    if (!isMobile) {
       await mainCTA.hover();
       await page.waitForTimeout(300);
       

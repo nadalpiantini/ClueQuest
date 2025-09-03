@@ -183,6 +183,7 @@ export default function LandingPage() {
               <a 
                 href="/adventure-selection" 
                 className="btn-primary group relative text-2xl font-black px-12 py-6 shadow-2xl hover:shadow-amber-500/40 overflow-hidden touch-target"
+                aria-label="Begin Mystery Quest - Start your adventure"
               >
                 <Search className="h-8 w-8 animate-pulse" />
                 <span>Begin Mystery Quest</span>
@@ -192,6 +193,7 @@ export default function LandingPage() {
               <a 
                 href="/demo" 
                 className="group inline-flex items-center gap-4 rounded-2xl bg-slate-800/90 px-12 py-6 text-2xl font-bold text-amber-200 ring-2 ring-amber-500/40 backdrop-blur-xl border border-amber-500/30 touch-target hover:scale-105 hover:shadow-amber-500/20 transition-all duration-300"
+                aria-label="Watch Preview - See ClueQuest in action"
               >
                 <PlayCircle className="h-8 w-8" />
                 Watch Preview
@@ -339,11 +341,11 @@ export default function LandingPage() {
                 Adventures
               </h4>
               <ul className="space-y-3 text-slate-400">
-                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium">Corporate Events</li>
-                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium">Educational Hunts</li>
-                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium">Social Events</li>
-                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium">Weddings</li>
-                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium">Festivals</li>
+                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium min-h-[44px] flex items-center">Corporate Events</li>
+                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium min-h-[44px] flex items-center">Educational Hunts</li>
+                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium min-h-[44px] flex items-center">Social Events</li>
+                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium min-h-[44px] flex items-center">Weddings</li>
+                <li className="hover:text-amber-300 transition-colors cursor-pointer text-sm font-medium min-h-[44px] flex items-center">Festivals</li>
               </ul>
             </div>
             
@@ -353,11 +355,11 @@ export default function LandingPage() {
                 Company
               </h4>
               <ul className="space-y-3 text-slate-400">
-                <li><a href="/about" className="hover:text-purple-300 transition-colors text-sm font-medium">About Quest</a></li>
-                <li><a href="/privacy" className="hover:text-purple-300 transition-colors text-sm font-medium">Privacy</a></li>
-                <li><a href="/terms" className="hover:text-purple-300 transition-colors text-sm font-medium">Terms</a></li>
-                <li><a href="/contact" className="hover:text-purple-300 transition-colors text-sm font-medium">Contact</a></li>
-                <li><a href="/careers" className="hover:text-purple-300 transition-colors text-sm font-medium">Careers</a></li>
+                <li><a href="/about" className="hover:text-purple-300 transition-colors text-sm font-medium min-h-[44px] flex items-center" aria-label="About ClueQuest">About Quest</a></li>
+                <li><a href="/privacy" className="hover:text-purple-300 transition-colors text-sm font-medium min-h-[44px] flex items-center" aria-label="Privacy Policy">Privacy</a></li>
+                <li><a href="/terms" className="hover:text-purple-300 transition-colors text-sm font-medium min-h-[44px] flex items-center" aria-label="Terms of Service">Terms</a></li>
+                <li><a href="/contact" className="hover:text-purple-300 transition-colors text-sm font-medium min-h-[44px] flex items-center" aria-label="Contact Support">Contact</a></li>
+                <li><a href="/careers" className="hover:text-purple-300 transition-colors text-sm font-medium min-h-[44px] flex items-center" aria-label="Career Opportunities">Careers</a></li>
               </ul>
             </div>
           </div>

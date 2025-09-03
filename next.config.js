@@ -111,10 +111,7 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // Optimize package imports only
-  experimental: {
-    optimizePackageImports: ['@supabase/supabase-js', '@radix-ui/react-dialog'],
-  },
+  // Server external packages temporarily removed due to conflict
   
   // TypeScript configuration
   typescript: {

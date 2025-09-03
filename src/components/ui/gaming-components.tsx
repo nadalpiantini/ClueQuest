@@ -26,16 +26,16 @@ export const GamingButton = forwardRef<HTMLButtonElement, GamingButtonProps>(
     const baseStyles = "relative inline-flex items-center justify-center font-bold uppercase tracking-wide rounded-2xl transition-all duration-300 touch-target overflow-hidden gpu-accelerate"
     
     const variants = {
-      mystery: "mystery-button text-white",
-      ghost: "bg-transparent border-2 border-gaming-gold/40 text-gaming-gold hover:border-gaming-gold hover:bg-gaming-gold/10 backdrop-blur-md",
-      outline: "bg-transparent border-2 border-mystery-purple/40 text-mystery-purple-bright hover:border-mystery-purple hover:bg-mystery-purple/10 backdrop-blur-md"
+      mystery: "bg-gradient-to-r from-amber-600 to-orange-500 text-white hover:from-amber-500 hover:to-orange-400 shadow-lg hover:shadow-amber-500/25 ring-2 ring-amber-500/20",
+      ghost: "bg-transparent border-2 border-amber-400/40 text-amber-300 hover:border-amber-300 hover:bg-amber-400/10 backdrop-blur-md shadow-lg",
+      outline: "bg-transparent border-2 border-purple-400/40 text-purple-300 hover:border-purple-300 hover:bg-purple-400/10 backdrop-blur-md shadow-lg"
     }
     
     const sizes = {
-      sm: "px-6 py-3 text-sm gap-2",
-      md: "px-8 py-4 text-base gap-3", 
-      lg: "px-12 py-6 text-xl gap-4",
-      xl: "px-16 py-8 text-2xl gap-5"
+      sm: "px-6 py-3 text-sm gap-2 min-h-[44px]",
+      md: "px-8 py-4 text-base gap-3 min-h-[44px]", 
+      lg: "px-12 py-6 text-xl gap-4 min-h-[44px]",
+      xl: "px-16 py-8 text-2xl gap-5 min-h-[44px]"
     }
 
     return (

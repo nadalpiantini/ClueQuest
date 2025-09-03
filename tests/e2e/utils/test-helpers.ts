@@ -39,7 +39,9 @@ export class TestHelpers {
     }
     
     // Test hover state (desktop only)
-    if (!this.page.context().options.isMobile) {
+    const browserInfo = this.page.context().browser();
+    const isMobile = this.page.viewportSize()?.width! < 768;
+    if (!isMobile) {
       await button.hover();
       await this.page.waitForTimeout(200); // Wait for hover animation
     }

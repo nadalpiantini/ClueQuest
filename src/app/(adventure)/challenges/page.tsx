@@ -415,6 +415,13 @@ function ChallengesPageContent() {
       
       {/* Header */}
       <div className="pt-safe px-4 py-4 bg-white/80 backdrop-blur-sm border-b sticky top-0 z-50">
+        <motion.h1 
+          className="text-2xl font-black text-purple-900 mb-4"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          Adventure Challenge
+        </motion.h1>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/10 rounded-lg center-flex">
