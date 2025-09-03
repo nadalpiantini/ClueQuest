@@ -16,44 +16,44 @@ type GenerationStep = 'upload' | 'style' | 'preview' | 'generating' | 'complete'
 
 const AVATAR_STYLES: AvatarStyle[] = [
   {
-    id: 'fantasy-hero',
-    name: 'Fantasy Hero',
-    description: 'Epic fantasy style with magical elements',
-    preview_url: '/images/avatars/fantasy-hero-preview.jpg',
+    id: 'leader-detective',
+    name: 'Noble Detective',
+    description: 'Elegant detective with commanding presence',
+    preview_url: '/images/avatars/leader-detective-preview.jpg',
     price: 0,
     category: 'fantasy'
   },
   {
-    id: 'fantasy-mystical',
-    name: 'Mystical Mage',
-    description: 'Arcane robes and magical aura',
-    preview_url: '/images/avatars/fantasy-mystical-preview.jpg',
+    id: 'warrior-werewolf',
+    name: 'Werewolf Warrior',
+    description: 'Fierce werewolf with battle-ready stance',
+    preview_url: '/images/avatars/warrior-werewolf-preview.jpg',
     price: 0,
     category: 'fantasy'
   },
   {
-    id: 'modern-casual',
-    name: 'Modern Casual',
-    description: 'Contemporary street style',
-    preview_url: '/images/avatars/modern-casual-preview.jpg',
+    id: 'mage-vampire',
+    name: 'Mystic Vampire',
+    description: 'Ethereal vampire sorcerer with arcane powers',
+    preview_url: '/images/avatars/mage-vampire-preview.jpg',
     price: 0,
-    category: 'modern'
+    category: 'fantasy'
   },
   {
-    id: 'futuristic-cyber',
-    name: 'Cyberpunk',
-    description: 'Neon-lit futuristic aesthetic',
-    preview_url: '/images/avatars/futuristic-cyber-preview.jpg',
+    id: 'healer-fairy',
+    name: 'Luminous Fairy',
+    description: 'Radiant fairy healer with gentle aura',
+    preview_url: '/images/avatars/healer-fairy-preview.jpg',
     price: 0,
-    category: 'futuristic'
+    category: 'fantasy'
   },
   {
-    id: 'cartoon-fun',
-    name: 'Cartoon Fun',
-    description: 'Playful animated style',
-    preview_url: '/images/avatars/cartoon-fun-preview.jpg',
+    id: 'scout-ninja',
+    name: 'Shadow Scout',
+    description: 'Stealthy ninja explorer with keen senses',
+    preview_url: '/images/avatars/scout-ninja-preview.jpg',
     price: 0,
-    category: 'cartoon'
+    category: 'fantasy'
   }
 ]
 
@@ -62,14 +62,32 @@ function AvatarGenerationPageContent() {
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
   const isGuest = searchParams.get('guest') === 'true'
+  const selectedRoleName = searchParams.get('role') // Get pre-selected role
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [step, setStep] = useState<GenerationStep>('upload')
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
   const [selfiePreview, setSelfiePreview] = useState<string>('')
-  const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>(AVATAR_STYLES[0])
+  // Auto-select style based on role
+  const getStyleForRole = (roleName: string | null): AvatarStyle => {
+    if (!roleName) return AVATAR_STYLES[0]
+    
+    const roleStyleMap: Record<string, string> = {
+      'Leader': 'leader-detective',
+      'Warrior': 'warrior-werewolf', 
+      'Mage': 'mage-vampire',
+      'Healer': 'healer-fairy',
+      'Scout': 'scout-ninja'
+    }
+    
+    const styleId = roleStyleMap[roleName]
+    return AVATAR_STYLES.find(style => style.id === styleId) || AVATAR_STYLES[0]
+  }
+
+  const initialStyle = getStyleForRole(selectedRoleName)
+  const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>(initialStyle)
   const [generationRequest, setGenerationRequest] = useState<AvatarGenerationRequest>({
-    style_id: AVATAR_STYLES[0].id,
+    style_id: initialStyle.id,
     customizations: {}
   })
   const [generationResult, setGenerationResult] = useState<AvatarGenerationResult | null>(null)
@@ -177,7 +195,7 @@ function AvatarGenerationPageContent() {
         const formData = new FormData()
         formData.append('selfie', selfieFile)
         
-        const uploadResponse = await fetch('/api/avatar/upload-selfie', {
+        const uploadResponse = await fetch('/api/ai/avatar/upload-selfie', {
           method: 'POST',
           body: formData
         })
@@ -189,7 +207,7 @@ function AvatarGenerationPageContent() {
       }
 
       // Generate avatar
-      const generationResponse = await fetch('/api/avatar/generate', {
+      const generationResponse = await fetch('/api/ai/avatar/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -272,6 +290,18 @@ function AvatarGenerationPageContent() {
             <p className="text-muted-foreground">
               Generate a personalized avatar to represent you in the adventure
             </p>
+            
+            {/* Show selected role */}
+            {selectedRoleName && (
+              <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full">
+                <span className="text-sm font-medium text-primary">
+                  Role: {selectedRoleName}
+                </span>
+                <span className="text-sm text-primary/70">
+                  → {selectedStyle.name}
+                </span>
+              </div>
+            )}
             
             {/* Skip Option */}
             <AnimatePresence>
@@ -434,9 +464,21 @@ function AvatarGenerationPageContent() {
                       </div>
                     )}
 
-                    {/* Style Grid */}
+                    {/* Role-specific style explanation */}
+                    {selectedRoleName && (
+                      <div className="text-center p-3 bg-blue-50 rounded-lg mb-4">
+                        <p className="text-sm text-blue-700">
+                          🎭 <strong>Role-Based Transformation:</strong> As a {selectedRoleName}, you'll transform into a {selectedStyle.name}
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          Your transformation style has been automatically selected based on your adventure role
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Style Grid - Show only role-specific style if coming from role selection */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                      {AVATAR_STYLES.map(style => (
+                      {(selectedRoleName ? [selectedStyle] : AVATAR_STYLES).map(style => (
                         <Card
                           key={style.id}
                           className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
@@ -460,18 +502,20 @@ function AvatarGenerationPageContent() {
                       ))}
                     </div>
 
-                    {/* Random Style Button */}
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const randomStyle = AVATAR_STYLES[Math.floor(Math.random() * AVATAR_STYLES.length)]
-                        handleStyleSelect(randomStyle)
-                      }}
-                      className="w-full touch-target"
-                    >
-                      <Shuffle className="w-4 h-4 mr-2" />
-                      Surprise Me!
-                    </Button>
+                    {/* Random Style Button - Only show if no role pre-selected */}
+                    {!selectedRoleName && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const randomStyle = AVATAR_STYLES[Math.floor(Math.random() * AVATAR_STYLES.length)]
+                          handleStyleSelect(randomStyle)
+                        }}
+                        className="w-full touch-target"
+                      >
+                        <Shuffle className="w-4 h-4 mr-2" />
+                        Surprise Me!
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -493,12 +537,34 @@ function AvatarGenerationPageContent() {
                     
                     {/* Preview Section */}
                     <div className="text-center">
-                      <div className="w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 rounded-full center-flex mx-auto mb-4">
+                      <div className="w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 rounded-full center-flex mx-auto mb-4 relative">
                         <Sparkles className="w-16 h-16 text-purple-600" />
+                        {/* Selfie preview overlay */}
+                        {selfiePreview && (
+                          <div className="absolute inset-0 rounded-full overflow-hidden opacity-30">
+                            <Image
+                              src={selfiePreview}
+                              alt="Your photo preview"
+                              width={128}
+                              height={128}
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        )}
                       </div>
-                      <Badge className="mb-4">{selectedStyle.name}</Badge>
+                      <div className="space-y-2 mb-4">
+                        <Badge className="bg-primary text-primary-foreground">{selectedStyle.name}</Badge>
+                        {selectedRoleName && (
+                          <p className="text-sm font-medium text-primary">
+                            Adventure Role: {selectedRoleName}
+                          </p>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
-                        Preview will be available after generation
+                        {selectedRoleName 
+                          ? `You'll be transformed into a ${selectedStyle.name} based on your ${selectedRoleName} role`
+                          : 'Preview will be available after generation'
+                        }
                       </p>
                     </div>
 

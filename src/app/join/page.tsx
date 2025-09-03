@@ -4,7 +4,6 @@ import {
   ArrowLeft, 
   Search, 
   Users,
-  Key,
   ArrowRight,
   Eye,
   Smartphone
@@ -133,51 +132,13 @@ export default function JoinPage() {
             </div>
           </motion.div>
 
-          {/* Demo Codes */}
-          <motion.div 
-            className="card p-6 mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <h3 className="text-lg font-bold text-purple-200 mb-4 flex items-center gap-3">
-              <Key className="h-5 w-5" />
-              Try Demo Codes
-            </h3>
-            
-            <p className="text-slate-400 text-sm mb-4">
-              Use these codes to experience different types of adventures:
-            </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { code: 'DEMO01', type: 'Corporate', color: 'amber' },
-                { code: 'PARTY1', type: 'Social Event', color: 'purple' },
-                { code: 'LEARN1', type: 'Educational', color: 'emerald' }
-              ].map((demo) => (
-                <button
-                  key={demo.code}
-                  onClick={() => {
-                    setSessionCode(demo.code)
-                    setPlayerName('Demo Player')
-                  }}
-                  className={`p-4 rounded-lg bg-gradient-to-br from-slate-800/60 to-slate-700/40 border border-${demo.color}-500/20 hover:border-${demo.color}-400/40 transition-all duration-200 hover:scale-105 text-left`}
-                >
-                  <div className={`font-mono font-bold text-${demo.color}-300 mb-1`}>
-                    {demo.code}
-                  </div>
-                  <div className="text-xs text-slate-400">{demo.type}</div>
-                </button>
-              ))}
-            </div>
-          </motion.div>
 
           {/* Quick Access */}
           <motion.div 
             className="text-center"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
           >
             <p className="text-slate-400 mb-6">
               Don't have a code? Create your own adventure

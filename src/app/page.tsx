@@ -191,12 +191,12 @@ export default function LandingPage() {
               </a>
               
               <a 
-                href="/demo" 
+                href="/join" 
                 className="group inline-flex items-center gap-4 rounded-2xl bg-slate-800/90 px-12 py-6 text-2xl font-bold text-amber-200 ring-2 ring-amber-500/40 backdrop-blur-xl border border-amber-500/30 touch-target hover:scale-105 hover:shadow-amber-500/20 transition-all duration-300"
-                aria-label="Watch Preview - See ClueQuest in action"
+                aria-label="Join Existing Adventure - Join an ongoing mystery quest"
               >
-                <PlayCircle className="h-8 w-8" />
-                Watch Preview
+                <Users className="h-8 w-8" />
+                Join Existing Adventure
               </a>
             </motion.div>
           </div>

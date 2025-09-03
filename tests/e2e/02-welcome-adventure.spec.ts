@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { TestHelpers } from './utils/test-helpers';
 
-test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
+test.describe('P1: Welcome Screen - "Enter the Adventure"', () => {
   let helpers: TestHelpers;
 
   test.beforeEach(async ({ page }) => {
@@ -17,13 +17,13 @@ test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
     const welcomeContent = page.locator('main, [data-testid="welcome"], .welcome');
     await expect(welcomeContent.first()).toBeVisible();
     
-    // Look for "Entrar a la aventura" button or similar CTA
-    const adventureButton = page.locator('text="Entrar a la aventura"').or(
-      page.locator('text="Enter the Adventure"')
+    // Look for adventure entry button or similar CTA
+    const adventureButton = page.locator('text="Enter the Adventure"').or(
+      page.locator('text="Begin Mystery Quest"')
     ).or(
       page.locator('text="Start Adventure"')
     ).or(
-      page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i })
+      page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i })
     );
     
     await expect(adventureButton.first()).toBeVisible();
@@ -34,12 +34,12 @@ test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
 
   test('should navigate to login on adventure button click (P1 → P2)', async ({ page }) => {
     // Find and click the adventure entry button
-    const adventureButton = page.locator('text="Entrar a la aventura"').or(
-      page.locator('text="Enter the Adventure"')
+    const adventureButton = page.locator('text="Enter the Adventure"').or(
+      page.locator('text="Begin Mystery Quest"')
     ).or(
       page.locator('text="Start Adventure"')
     ).or(
-      page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i })
+      page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i })
     );
 
     await adventureButton.first().click();
@@ -52,7 +52,7 @@ test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
   test('should have responsive design with proper mobile adaptation', async ({ page }) => {
     await helpers.testResponsive(async () => {
       // Verify adventure button is always accessible
-      const adventureButton = page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i });
+      const adventureButton = page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i });
       await expect(adventureButton.first()).toBeVisible();
       await helpers.verifyTouchTarget(adventureButton.first());
     });
@@ -85,7 +85,7 @@ test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
     await helpers.takeScreenshot('p1-welcome-loaded');
     
     // Test button interaction feedback
-    const adventureButton = page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i });
+    const adventureButton = page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i });
     
     if (!page.context().options.isMobile) {
       await adventureButton.first().hover();
@@ -95,7 +95,7 @@ test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
   });
 
   test('should maintain accessibility standards', async ({ page }) => {
-    const adventureButton = page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i });
+    const adventureButton = page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i });
     await helpers.verifyAccessibility(adventureButton.first());
     
     // Check for proper heading structure
@@ -118,7 +118,7 @@ test.describe('P1: Welcome Screen - "Entrar a la aventura"', () => {
       await page.waitForTimeout(500);
       
       // Verify button is still accessible
-      const adventureButton = page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i });
+      const adventureButton = page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i });
       await expect(adventureButton.first()).toBeVisible();
       await helpers.verifyTouchTarget(adventureButton.first());
       
@@ -151,7 +151,7 @@ test.describe('P2: Login Express with SSO Options', () => {
       // Navigate from welcome page instead
       await page.goto('/welcome');
       await helpers.waitForPageLoad();
-      const adventureButton = page.locator('a, button').filter({ hasText: /adventure|aventura|start|begin/i });
+      const adventureButton = page.locator('a, button').filter({ hasText: /adventure|mystery|quest|start|begin/i });
       await adventureButton.first().click();
       await helpers.waitForPageLoad();
     }
@@ -218,7 +218,7 @@ test.describe('P2: Login Express with SSO Options', () => {
   test('should validate form inputs with proper error handling', async ({ page }) => {
     const emailField = page.locator('input[type="email"], input[name="email"]');
     const passwordField = page.locator('input[type="password"], input[name="password"]');
-    const submitButton = page.locator('button[type="submit"], button').filter({ hasText: /login|sign.*in|entrar/i });
+    const submitButton = page.locator('button[type="submit"], button').filter({ hasText: /login|sign.*in|enter/i });
     
     if (await emailField.count() > 0 && await submitButton.count() > 0) {
       // Test invalid email

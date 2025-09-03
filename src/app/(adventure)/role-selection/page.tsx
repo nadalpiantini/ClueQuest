@@ -392,8 +392,10 @@ function RoleSelectionPageContent() {
         // Save participant data
         localStorage.setItem('cluequest_participant', JSON.stringify(result.participant))
         
-        // Navigate to avatar generation
-        router.push(`/avatar-generation?session=${sessionCode}${isGuest ? '&guest=true' : ''}`)
+        // Navigate to avatar generation with selected role
+        const selectedRole = roles.find(r => r.id === selectedRoleId)
+        const roleParam = selectedRole ? `&role=${encodeURIComponent(selectedRole.name)}` : ''
+        router.push(`/avatar-generation?session=${sessionCode}${isGuest ? '&guest=true' : ''}${roleParam}`)
       } else {
         const error = await response.json()
         console.error('Failed to join session:', error)
