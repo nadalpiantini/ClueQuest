@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { useState, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, User, Wifi, WifiOff, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react'
@@ -22,7 +24,7 @@ type LoginForm = z.infer<typeof loginSchema>
 type ConnectionStatus = 'online' | 'offline' | 'checking' | 'unstable'
 type LoginMethod = 'email' | 'guest' | 'sso'
 
-export default function LoginPage() {
+function AdventureLoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -461,5 +463,20 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AdventureLoginForm />
+    </Suspense>
   )
 }

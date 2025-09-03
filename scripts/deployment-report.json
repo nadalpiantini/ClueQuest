@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-09-02T20:24:00.592Z",
+  "timestamp": "2025-09-03T02:43:21.920Z",
   "project": "ClueQuest Landing Page",
   "domain": "cluequest.empleaido.com",
   "deployment": {
     "success": true,
-    "url": "https://cluequest-empleaido-it2p1x36u-nadalpiantini-fcbc2d66.vercel.app"
+    "url": "https://cluequest-empleaido-2icunywuz-nadalpiantini-fcbc2d66.vercel.app"
   },
   "domain_config": {
     "success": true
