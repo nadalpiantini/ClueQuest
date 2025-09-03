@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronRight, SkipForward, Volume2, VolumeX, Play, Pause } from 'lucide-react'
@@ -23,7 +23,7 @@ interface StorySegment {
   skipAfter?: number // allow skip after this time
 }
 
-export default function IntroStoryPage() {
+function IntroPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -373,5 +373,20 @@ export default function IntroStoryPage() {
         onClick={advanceToNextSegment}
       />
     </div>
+  )
+}
+
+export default function IntroStoryPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen center-flex bg-gradient-to-br from-purple-600 to-pink-600">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading story...</p>
+        </div>
+      </div>
+    }>
+      <IntroPageContent />
+    </React.Suspense>
   )
 }

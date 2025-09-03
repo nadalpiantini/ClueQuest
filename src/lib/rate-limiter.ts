@@ -20,7 +20,7 @@ function getRedisClient(): Redis {
       password: process.env.REDIS_PASSWORD,
       db: parseInt(process.env.REDIS_DB || '0'),
       
-      // Connection pooling for high concurrency
+      // Connection settings
       maxRetriesPerRequest: 3,
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
@@ -30,9 +30,6 @@ function getRedisClient(): Redis {
       family: 4,
       keepAlive: true,
       lazyConnect: true,
-      
-      // Cluster support (for production scaling)
-      enableOfflineQueue: false,
       
       // Error handling
       retryStrategy: (times: number) => {

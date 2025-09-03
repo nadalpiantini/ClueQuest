@@ -1,8 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
@@ -39,7 +37,7 @@ interface QRLocationData extends QRCode {
   estimatedTime: number
 }
 
-export default function AdventureHubPage() {
+function AdventureHubContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -574,5 +572,20 @@ export default function AdventureHubPage() {
         </Button>
       </div>
     </div>
+  )
+}
+
+export default function AdventureHubPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen center-flex bg-gradient-to-br from-purple-600 to-pink-600">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading adventure hub...</p>
+        </div>
+      </div>
+    }>
+      <AdventureHubContent />
+    </React.Suspense>
   )
 }

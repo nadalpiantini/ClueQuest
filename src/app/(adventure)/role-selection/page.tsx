@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Users, Crown, Shield, Wand2, Sword, Heart, Star, AlertTriangle } from 'lucide-react'
@@ -165,7 +165,7 @@ const RoleCard = ({ role, isSelected, onSelect, participantCount, isRecommended,
   )
 }
 
-export default function RoleSelectionPage() {
+function RoleSelectionPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -573,5 +573,13 @@ export default function RoleSelectionPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RoleSelectionPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <RoleSelectionPageContent />
+    </React.Suspense>
   )
 }

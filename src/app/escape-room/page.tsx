@@ -1,3 +1,22 @@
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Virtual Escape Rooms - ClueQuest',
+  description: 'Transform any venue into an immersive escape room experience using advanced QR scanning, AI storytelling, and real-time collaboration technology.',
+  keywords: ['virtual escape room', 'QR scanning', 'AI storytelling', 'real-time collaboration', 'immersive experience', 'ClueQuest technology'],
+  openGraph: {
+    title: 'Virtual Escape Rooms - ClueQuest',
+    description: 'Transform any venue into an immersive escape room experience using advanced QR scanning, AI storytelling, and real-time collaboration technology.',
+    type: 'website',
+    images: ['/og-escape-room.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Virtual Escape Rooms - ClueQuest',
+    description: 'Transform any venue into an immersive escape room experience using advanced QR scanning, AI storytelling, and real-time collaboration technology.',
+  },
+}
+
 import { 
   ArrowLeft, 
   Search, 

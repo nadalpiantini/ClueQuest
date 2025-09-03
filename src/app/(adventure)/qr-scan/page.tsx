@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
@@ -25,7 +25,7 @@ interface ScanSession {
   lastScanTime?: number
 }
 
-export default function QRScanPage() {
+function QRScanPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -557,5 +557,13 @@ export default function QRScanPage() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+export default function QRScanPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <QRScanPageContent />
+    </React.Suspense>
   )
 }

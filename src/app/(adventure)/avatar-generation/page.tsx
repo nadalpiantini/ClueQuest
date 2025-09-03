@@ -1,8 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Camera, Upload, Shuffle, Check, X, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react'
@@ -59,7 +57,7 @@ const AVATAR_STYLES: AvatarStyle[] = [
   }
 ]
 
-export default function AvatarGenerationPage() {
+function AvatarGenerationPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -662,5 +660,20 @@ export default function AvatarGenerationPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AvatarGenerationPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen center-flex bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading avatar generator...</p>
+        </div>
+      </div>
+    }>
+      <AvatarGenerationPageContent />
+    </React.Suspense>
   )
 }

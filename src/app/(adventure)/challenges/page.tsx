@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
@@ -24,7 +24,7 @@ import Image from 'next/image'
 type ChallengeState = 'loading' | 'active' | 'submitting' | 'completed' | 'failed' | 'skipped'
 type MediaRecordingState = 'idle' | 'recording' | 'uploading'
 
-export default function ChallengesPage() {
+function ChallengesPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -770,5 +770,20 @@ export default function ChallengesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ChallengesPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen center-flex bg-gradient-to-br from-purple-600 to-pink-600">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading challenges...</p>
+        </div>
+      </div>
+    }>
+      <ChallengesPageContent />
+    </React.Suspense>
   )
 }

@@ -2,6 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
+import React from 'react'
 import { 
   ArrowLeft, 
   Search, 
@@ -20,7 +21,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function CreatePage() {
+function CreatePageContent() {
   const searchParams = useSearchParams()
   const adventureType = searchParams.get('type') || 'corporate'
   
@@ -366,5 +367,20 @@ export default function CreatePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function CreatePage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen center-flex bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
+        <div className="text-white text-center">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
+          <p>Loading adventure builder...</p>
+        </div>
+      </div>
+    }>
+      <CreatePageContent />
+    </React.Suspense>
   )
 }

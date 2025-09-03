@@ -1,8 +1,6 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
@@ -40,7 +38,7 @@ interface CertificateData {
   special_recognitions: string[]
 }
 
-export default function RankingPage() {
+function RankingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionCode = searchParams.get('session')
@@ -667,5 +665,13 @@ export default function RankingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RankingPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <RankingPageContent />
+    </React.Suspense>
   )
 }
