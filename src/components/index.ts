@@ -1,6 +1,10 @@
 // Authentication Components
-export { LoginForm, RegisterForm, LoginPage, RegisterPage } from './auth/login-form'
+export { LoginForm, LoginPage } from './auth/login-form'
 export { RegisterForm as Register } from './auth/register-form'
+export { DemoAuthProvider, useDemoAuth } from './auth/demo-auth-provider'
+
+// Layout Components
+export { BodyWrapper } from './layout/body-wrapper'
 
 // Dashboard Components  
 export { MainLayout, PageHeader } from './dashboard/main-layout'

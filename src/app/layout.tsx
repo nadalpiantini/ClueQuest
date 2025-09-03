@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { BodyWrapper } from '@/components/layout/body-wrapper'
+import { DemoAuthProvider } from '@/components/auth/demo-auth-provider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -8,7 +10,16 @@ const inter = Inter({
   display: 'swap',
 })
 
+// Determine the base URL for metadata
+// Always use the production URL for metadata to ensure consistency
+// This prevents the localhost:5173 warning in development
+// Social media platforms will resolve relative URLs correctly with this base
+const getMetadataBase = () => {
+  return new URL('https://cluequest.empleaido.com');
+};
+
 export const metadata: Metadata = {
+  metadataBase: getMetadataBase(),
   title: 'ClueQuest - The Ultimate Problem-Solving Platform',
   description: 'Empowering global teams to solve complex challenges collaboratively. The world\'s most intuitive problem-solving platform.',
   keywords: ['problem solving', 'collaboration', 'teams', 'productivity', 'saas', 'cluequest'],
@@ -21,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ClueQuest - The Ultimate Problem-Solving Platform',
     description: 'Empowering global teams to solve complex challenges collaboratively.',
-    url: 'https://cluequest.empleaido.com',
+    url: '/',
     siteName: 'ClueQuest',
     type: 'website',
     locale: 'en_US',
@@ -68,7 +79,7 @@ export const metadata: Metadata = {
 
   // Canonical URL
   alternates: {
-    canonical: 'https://cluequest.empleaido.com',
+    canonical: '/',
   },
 }
 
@@ -101,7 +112,7 @@ export default function RootLayout({
               "@type": "SoftwareApplication",
               "name": "ClueQuest",
               "description": "The world's most intuitive problem-solving platform for global teams",
-              "url": "https://cluequest.empleaido.com",
+              "url": "/",
               "applicationCategory": "BusinessApplication",
               "operatingSystem": "Web",
               "offers": {
@@ -117,9 +128,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      {/* BodyWrapper handles hydration mismatches caused by browser extensions */}
+      <BodyWrapper className="min-h-screen bg-background font-sans antialiased">
         <div id="root">
-          {children}
+          <DemoAuthProvider>
+            {children}
+          </DemoAuthProvider>
         </div>
         
         {/* Analytics - Add your tracking code here */}
@@ -149,7 +163,7 @@ export default function RootLayout({
             )}
           </>
         )}
-      </body>
+      </BodyWrapper>
     </html>
   )
 }

@@ -99,7 +99,7 @@ export function GamingHero() {
           transition={{ duration: 0.6, delay: 0.9 }}
         >
           <motion.a 
-            href="/welcome" 
+                            href="/adventure-selection" 
             className="group relative inline-flex items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 px-12 py-6 text-2xl font-black text-white shadow-2xl overflow-hidden touch-target"
             whileHover={{ 
               scale: 1.05,

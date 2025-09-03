@@ -474,4 +474,4 @@ export function CompactFileUpload({
   )
 }
 
-export type { UploadedFile }
+// UploadedFile type is already exported above

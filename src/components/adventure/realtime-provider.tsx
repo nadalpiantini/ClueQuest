@@ -26,8 +26,8 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
   const [connectionQuality, setConnectionQuality] = useState<'excellent' | 'good' | 'poor' | 'disconnected'>('disconnected')
   const channelRef = useRef<RealtimeChannel | null>(null)
   const supabaseRef = useRef<any>(null)
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
-  const heartbeatIntervalRef = useRef<NodeJS.Timeout>()
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const connectionMetricsRef = useRef({
     lastPong: 0,
     latency: 0,
@@ -217,7 +217,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
         connectionMetricsRef.current.lastPong = pongTime
         updateConnectionQuality(latency)
       })
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         console.log('Realtime channel status:', status)
         
         if (status === 'SUBSCRIBED') {

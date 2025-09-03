@@ -99,7 +99,7 @@ export default function IntroStoryPage() {
     }
   }
 
-  const generateStorySegments = async (adventure: any, isImpatientUser: boolean): Promise<StorySegment[]> => {
+  const generateStorySegments = async (adventure: { theme: 'educational' | 'fantasy' | 'corporate' | 'mystery' | 'scifi'; title: string }, isImpatientUser: boolean): Promise<StorySegment[]> => {
     // AI adaptation: shorter segments for impatient users
     const baseDuration = isImpatientUser ? 3000 : 5000
     const theme = ADVENTURE_THEMES[adventure.theme]
@@ -196,7 +196,7 @@ export default function IntroStoryPage() {
   }
 
   const currentSegment = storySegments[currentSegmentIndex]
-  const theme = ADVENTURE_THEMES[adventure.theme]
+  const theme = ADVENTURE_THEMES[adventure.theme as keyof typeof ADVENTURE_THEMES]
 
   return (
     <div 

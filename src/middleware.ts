@@ -37,7 +37,8 @@ export async function middleware(request: NextRequest) {
 
   const url = request.nextUrl.clone()
   const isAuthPage = url.pathname.startsWith('/auth')
-  const isPublicPage = ['/', '/pricing', '/about', '/contact'].includes(url.pathname)
+  // Include /welcome as public page for demo purposes, and /adventure-selection for adventure selection
+  const isPublicPage = ['/', '/pricing', '/about', '/contact', '/welcome', '/adventure-selection'].includes(url.pathname)
   const isApiRoute = url.pathname.startsWith('/api')
   const isPublicApiRoute = ['/api/health', '/api/webhook'].some(route => 
     url.pathname.startsWith(route)

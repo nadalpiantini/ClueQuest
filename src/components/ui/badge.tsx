@@ -93,7 +93,7 @@ const StatusBadge = React.forwardRef<
 
   return (
     <Badge
-      ref={ref}
+      // ref={ref}
       variant={config.variant}
       dot
       {...props}

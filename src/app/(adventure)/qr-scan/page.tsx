@@ -276,7 +276,7 @@ export default function QRScanPage() {
       const track = cameraStream.getVideoTracks()[0]
       const capabilities = track.getCapabilities()
 
-      if (capabilities.torch) {
+      if ('torch' in capabilities) {
         await track.applyConstraints({
           advanced: [{ torch: !flashlightOn } as any]
         })

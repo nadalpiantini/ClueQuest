@@ -414,7 +414,7 @@ export default function RoleSelectionPage() {
     )
   }
 
-  const theme = ADVENTURE_THEMES[adventure.theme]
+  const theme = ADVENTURE_THEMES[adventure.theme as keyof typeof ADVENTURE_THEMES]
   const totalParticipants = participants.length
   const selectedRole = roles.find(role => role.id === selectedRoleId)
 

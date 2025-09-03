@@ -20,7 +20,16 @@ type ViewMode = 'map' | 'list'
 type LocationAccess = 'granted' | 'denied' | 'checking' | 'unavailable'
 
 interface QRLocationData extends QRCode {
-  scene: Scene
+  scene: {
+    id: string
+    title: string
+    description: string
+    location_lat: number
+    location_lng: number
+    location_name: string
+    estimated_duration_minutes: number
+    order_index: number
+  }
   distance?: number
   isUnlocked: boolean
   isCompleted: boolean

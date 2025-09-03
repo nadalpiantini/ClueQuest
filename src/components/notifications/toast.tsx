@@ -175,7 +175,7 @@ function EnhancedToast({
       </div>
       
       {action && (
-        <ToastAction onClick={action.onClick}>
+        <ToastAction onClick={action.onClick} altText={action.label}>
           {action.label}
         </ToastAction>
       )}

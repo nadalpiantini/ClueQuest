@@ -53,7 +53,7 @@ export function MultiStepForm<T = any>({
   // Create combined schema for all steps up to current
   const combinedSchema = React.useMemo(() => {
     const schemas = steps.slice(0, currentStep + 1).reduce((acc, step) => {
-      return acc.merge(step.schema)
+      return acc.merge(step.schema as any)
     }, z.object({}))
     return schemas
   }, [steps, currentStep])

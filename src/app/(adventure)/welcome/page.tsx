@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowRight, Globe2, Sparkles } from 'lucide-react'
+import { ArrowRight, Globe2, Sparkles, LogOut } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/types/adventure'
+import { useDemoAuth } from '@/components/auth/demo-auth-provider'
 
 interface WelcomePageProps {
   searchParams: { session?: string; adventure?: string }
@@ -14,6 +15,7 @@ interface WelcomePageProps {
 
 export default function WelcomePage({ searchParams }: WelcomePageProps) {
   const router = useRouter()
+  const { isDemoAuthenticated, logout: demoLogout } = useDemoAuth()
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(SUPPORTED_LANGUAGES[0])
   const [isLoading, setIsLoading] = useState(false)
   const [adventure, setAdventure] = useState<any>(null)
@@ -124,6 +126,11 @@ export default function WelcomePage({ searchParams }: WelcomePageProps) {
     }
   }
 
+  const handleLogout = () => {
+    demoLogout()
+    router.push('/auth/login')
+  }
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Dynamic Gradient Background */}
@@ -175,29 +182,50 @@ export default function WelcomePage({ searchParams }: WelcomePageProps) {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 text-white">
         
-        {/* Language Selector */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="absolute top-8 right-4 z-20"
-        >
-          <Select value={selectedLanguage.code} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white backdrop-blur-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  <span className="flex items-center gap-2">
-                    <span>{lang.flag_emoji}</span>
-                    <span>{lang.native_name}</span>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </motion.div>
+        {/* Language Selector and Logout */}
+        <div className="absolute top-8 right-4 z-20 flex items-center gap-4">
+          {/* Language Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Select value={selectedLanguage.code} onValueChange={handleLanguageChange}>
+              <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white backdrop-blur-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    <span className="flex items-center gap-2">
+                      <span>{lang.flag_emoji}</span>
+                      <span>{lang.native_name}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </motion.div>
+
+          {/* Logout Button */}
+          {isDemoAuthenticated && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-sm"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </motion.div>
+          )}
+        </div>
 
         {/* Main Content */}
         <div className="text-center max-w-4xl mx-auto">

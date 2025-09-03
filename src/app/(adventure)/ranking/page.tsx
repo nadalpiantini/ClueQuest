@@ -356,7 +356,7 @@ export default function RankingPage() {
                       <div className={`w-16 h-12 bg-gradient-to-t ${getPositionGradient(2)} rounded-t-lg mb-2`} />
                       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/50 mb-2 mx-auto">
                         <Image
-                          src={leaderboard[1].avatar_url}
+                          src={leaderboard[1].avatar_url || '/images/avatars/default.jpg'}
                           alt={leaderboard[1].name}
                           width={48}
                           height={48}
@@ -375,7 +375,7 @@ export default function RankingPage() {
                       <div className={`w-20 h-16 bg-gradient-to-t ${getPositionGradient(1)} rounded-t-lg mb-2`} />
                       <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-yellow-400 mb-2 mx-auto">
                         <Image
-                          src={leaderboard[0].avatar_url}
+                          src={leaderboard[0].avatar_url || '/images/avatars/default.jpg'}
                           alt={leaderboard[0].name}
                           width={64}
                           height={64}
@@ -397,7 +397,7 @@ export default function RankingPage() {
                       <div className={`w-16 h-10 bg-gradient-to-t ${getPositionGradient(3)} rounded-t-lg mb-2`} />
                       <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/50 mb-2 mx-auto">
                         <Image
-                          src={leaderboard[2].avatar_url}
+                          src={leaderboard[2].avatar_url || '/images/avatars/default.jpg'}
                           alt={leaderboard[2].name}
                           width={48}
                           height={48}
@@ -446,7 +446,7 @@ export default function RankingPage() {
                     
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30">
                       <Image
-                        src={entry.avatar_url}
+                        src={entry.avatar_url || '/images/avatars/default.jpg'}
                         alt={entry.name}
                         width={40}
                         height={40}

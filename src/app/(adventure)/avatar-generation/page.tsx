@@ -157,12 +157,14 @@ export default function AvatarGenerationPage() {
     setError('')
     setGenerationProgress(0)
 
+    let progressInterval: NodeJS.Timeout | null = null
+
     try {
       // Simulate generation progress
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setGenerationProgress(prev => {
           if (prev >= 95) {
-            clearInterval(progressInterval)
+            if (progressInterval) clearInterval(progressInterval)
             return 95
           }
           return prev + Math.random() * 15
@@ -203,7 +205,7 @@ export default function AvatarGenerationPage() {
         throw new Error(result.error || 'Generation failed')
       }
 
-      clearInterval(progressInterval)
+      if (progressInterval) clearInterval(progressInterval)
       setGenerationProgress(100)
 
       // Check moderation
@@ -226,7 +228,7 @@ export default function AvatarGenerationPage() {
       setError(error.message || 'Generation failed. Please try again.')
       setIsGenerating(false)
       setStep('preview')
-      clearInterval(progressInterval!)
+      if (progressInterval) clearInterval(progressInterval)
     }
   }
 

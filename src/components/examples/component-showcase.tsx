@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LoginForm, RegisterForm } from "@/components/auth"
+import { LoginForm } from "@/components/auth/login-form"
 import { MainLayout, PageHeader } from "@/components/dashboard/main-layout"
 import { ProjectCard, ProjectGrid } from "@/components/dashboard/project-card"
 import { ActivityTimeline, CompactActivityTimeline } from "@/components/dashboard/activity-timeline"
@@ -16,6 +16,7 @@ import {
   CardHeader, 
   CardTitle,
   Avatar,
+  AvatarFallback,
   Badge,
   ConfirmDialog,
   FormDialog
@@ -315,16 +316,16 @@ export function ComponentShowcase() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-2">
                     <Avatar size="xs" status="online">
-                      <Avatar.AvatarFallback name="John Doe" />
+                      <AvatarFallback name="John Doe" />
                     </Avatar>
                     <Avatar size="sm" status="busy">
-                      <Avatar.AvatarFallback name="Jane Smith" />
+                      <AvatarFallback name="Jane Smith" />
                     </Avatar>
                     <Avatar size="md" status="away">
-                      <Avatar.AvatarFallback name="Mike Johnson" />
+                      <AvatarFallback name="Mike Johnson" />
                     </Avatar>
                     <Avatar size="lg" status="offline">
-                      <Avatar.AvatarFallback name="Sarah Wilson" />
+                      <AvatarFallback name="Sarah Wilson" />
                     </Avatar>
                   </div>
                 </CardContent>

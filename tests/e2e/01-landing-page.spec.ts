@@ -25,7 +25,7 @@ test.describe('Landing Page (Entry Point)', () => {
 
   test('should have proper CTA buttons with 44px touch targets', async ({ page }) => {
     // Test "Begin Mystery Quest" button (P1 → P2 transition)
-    const mainCTA = page.locator('a[href="/welcome"]');
+    const mainCTA = page.locator('a[href="/adventure-selection"]');
     await expect(mainCTA).toBeVisible();
     await expect(mainCTA).toContainText('Begin Mystery Quest');
     await helpers.verifyTouchTarget(mainCTA);
@@ -99,7 +99,7 @@ test.describe('Landing Page (Entry Point)', () => {
   });
 
   test('should navigate to welcome page on main CTA click', async ({ page }) => {
-    const mainCTA = page.locator('a[href="/welcome"]');
+    const mainCTA = page.locator('a[href="/adventure-selection"]');
     
     // Click and verify navigation
     await mainCTA.click();
@@ -113,14 +113,14 @@ test.describe('Landing Page (Entry Point)', () => {
     await helpers.testResponsive(async () => {
       // Verify key elements are visible at all breakpoints
       await expect(page.locator('h1')).toBeVisible();
-      await expect(page.locator('a[href="/welcome"]')).toBeVisible();
+      await expect(page.locator('a[href="/adventure-selection"]')).toBeVisible();
       await expect(page.locator('.card')).toHaveCount(4);
       
       // Verify mobile-specific adaptations
       const viewport = page.viewportSize()!;
       if (viewport.width <= 768) {
         // On mobile, check that elements stack properly
-        const mainCTA = page.locator('a[href="/welcome"]');
+        const mainCTA = page.locator('a[href="/adventure-selection"]');
         await helpers.verifyTouchTarget(mainCTA, 44);
       }
     });
@@ -148,7 +148,7 @@ test.describe('Landing Page (Entry Point)', () => {
 
   test('should have proper accessibility features', async ({ page }) => {
     // Check main navigation button
-    const mainCTA = page.locator('a[href="/welcome"]');
+    const mainCTA = page.locator('a[href="/adventure-selection"]');
     await helpers.verifyAccessibility(mainCTA);
     
     // Verify heading hierarchy
@@ -164,7 +164,7 @@ test.describe('Landing Page (Entry Point)', () => {
   });
 
   test('should show visual feedback on interactions', async ({ page }) => {
-    const mainCTA = page.locator('a[href="/welcome"]');
+    const mainCTA = page.locator('a[href="/adventure-selection"]');
     
     // Test hover state (desktop only)
     if (!page.context().options.isMobile) {

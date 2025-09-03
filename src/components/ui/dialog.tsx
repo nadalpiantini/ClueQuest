@@ -9,12 +9,9 @@ const Dialog = DialogPrimitive.Root
 const DialogTrigger = DialogPrimitive.Trigger
 
 // Perfect modal centering (AXIS6 proven pattern)
-const DialogPortal = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Portal>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Portal>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Portal className={cn(className)} {...props} ref={ref} />
-))
+const DialogPortal = (props: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Portal>) => (
+  <DialogPrimitive.Portal {...props} />
+)
 DialogPortal.displayName = DialogPrimitive.Portal.displayName
 
 const DialogOverlay = React.forwardRef<

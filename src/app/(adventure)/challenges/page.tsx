@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   CheckCircle2, X, Clock, Zap, Volume2, VolumeX, 
-  Camera, Mic, MicOff, HelpCircle, Skip, Play,
+  Camera, Mic, MicOff, HelpCircle, FastForward, Play,
   Upload, Sparkles, Users, Trophy, ArrowRight, RotateCcw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -263,7 +263,7 @@ export default function ChallengesPage() {
         }, 3000)
 
       } else {
-        throw new Error(result.error || 'Submission failed')
+        throw new Error('Submission failed')
       }
     } catch (error) {
       console.error('Challenge submission failed:', error)
@@ -310,7 +310,7 @@ export default function ChallengesPage() {
     }
   }
 
-  const handleSkip = () => {
+  const handleFastForward = () => {
     setChallengeState('skipped')
     
     // Send skip event
@@ -641,7 +641,7 @@ export default function ChallengesPage() {
                       {challengeState === 'completed' && submissionResult.correct ? (
                         <CheckCircle2 className="w-10 h-10 text-white" />
                       ) : challengeState === 'skipped' ? (
-                        <Skip className="w-10 h-10 text-white" />
+                        <FastForward className="w-10 h-10 text-white" />
                       ) : (
                         <X className="w-10 h-10 text-white" />
                       )}
@@ -651,7 +651,7 @@ export default function ChallengesPage() {
                       <h3 className="text-xl font-bold">
                         {challengeState === 'completed' && submissionResult.correct && 'Correct!'}
                         {challengeState === 'failed' && 'Incorrect'}
-                        {challengeState === 'skipped' && 'Skipped'}
+                        {challengeState === 'skipped' && 'FastForwardped'}
                       </h3>
                       
                       {submissionResult.correct && (
@@ -716,11 +716,11 @@ export default function ChallengesPage() {
                   </Button>
                   
                   <Button
-                    onClick={handleSkip}
+                    onClick={handleFastForward}
                     variant="ghost"
                     className="touch-target-lg"
                   >
-                    <Skip className="w-4 h-4" />
+                    <FastForward className="w-4 h-4" />
                   </Button>
                 </div>
               )}
@@ -738,8 +738,8 @@ export default function ChallengesPage() {
                     <RotateCcw className="w-4 h-4 mr-2" />
                     Try Again
                   </Button>
-                  <Button onClick={handleSkip} variant="outline" className="touch-target">
-                    Skip
+                  <Button onClick={handleFastForward} variant="outline" className="touch-target">
+                    FastForward
                   </Button>
                 </div>
               )}

@@ -181,7 +181,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6 }}
             >
               <a 
-                href="/welcome" 
+                href="/adventure-selection" 
                 className="btn-primary group relative text-2xl font-black px-12 py-6 shadow-2xl hover:shadow-amber-500/40 overflow-hidden touch-target"
               >
                 <Search className="h-8 w-8 animate-pulse" />
