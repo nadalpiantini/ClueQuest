@@ -99,12 +99,13 @@ const nextConfig = {
     ];
   },
 
-  // Environment variables validation
-  env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  },
+  // Environment variables validation - temporarily disabled for production
+  // TODO: Re-enable once environment variables are configured in Vercel
+  // env: {
+  //   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  //   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  //   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  // },
 
   // Production optimizations
   compress: true,
