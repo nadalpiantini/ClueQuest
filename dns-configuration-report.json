@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-09-02T20:25:50.529Z",
+  "domain": "cluequest.empleaido.com",
+  "provider": "cloudflare",
+  "current_records": [
+    {
+      "record": "A Record",
+      "status": "❌ Not found",
+      "value": "None"
+    },
+    {
+      "record": "CNAME Record",
+      "status": "❌ Not found",
+      "value": "None"
+    }
+  ],
+  "recommended_config": {
+    "cname": {
+      "type": "CNAME",
+      "name": "cluequest",
+      "value": "cname.vercel-dns.com",
+      "ttl": 300
+    },
+    "a_record": {
+      "type": "A",
+      "name": "cluequest",
+      "value": "76.76.21.21",
+      "ttl": 300
+    }
+  },
+  "propagation_status": false,
+  "next_steps": [
+    "📋 Configure DNS records as instructed above",
+    "⏳ Wait for DNS propagation (5-15 minutes)",
+    "🔍 Check site accessibility manually",
+    "🚀 Proceed with deployment once DNS is ready"
+  ]
+}

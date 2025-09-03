@@ -1,0 +1,774 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== shadcn tokens – básicos para que bg-background funcione ===== */
+@layer base {
+  :root {
+    --background: 222 47% 5%;
+    --foreground: 210 20% 98%;
+    --card: 222 47% 7%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 43 96% 56%;        /* amber */
+    --primary-foreground: 222 47% 5%;
+    --secondary: 262 83% 58%;     /* purple */
+    --secondary-foreground: 210 20% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 160 84% 39%;        /* emerald */
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 19% 24%;
+    --input: 215 19% 24%;
+    --ring: 43 96% 56%;
+    --radius: 1rem;
+
+    /* Success and Status Colors */
+    --success: 142 76% 36%;        /* Growth Green #22c55e */
+    --success-foreground: 210 20% 98%;
+    --warning: 42 87% 55%;         /* Sunshine Yellow #facc15 */
+    --warning-foreground: 42 80% 15%;
+    --info: 199 89% 48%;           /* Ocean Blue #0ea5e9 */
+    --info-foreground: 210 20% 98%;
+    
+    /* Mobile-specific CSS variables for safe areas */
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    
+    /* Mobile viewport units that account for dynamic viewport */
+    --vh: 1vh;
+    --vw: 1vw;
+    
+    /* Typography scale optimized for global languages */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+                 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 
+                 'Droid Sans', 'Helvetica Neue', sans-serif;
+    --font-mono: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 
+                 'Source Code Pro', monospace;
+  }
+
+  .dark { /* opcional si usas modo oscuro por clase */ }
+
+  * { @apply border-border; border-color: hsl(var(--border)); }
+  body { @apply min-h-screen bg-background text-foreground antialiased; }
+}
+
+/* Base styles for mobile-first global design */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    
+    /* Support for safe areas on mobile devices */
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+    
+    /* Prevent horizontal scroll on mobile */
+    overflow-x: hidden;
+    
+    /* Optimize text rendering for global languages */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+    /* Improve touch experience on mobile */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  html {
+    /* Smooth scrolling for better UX */
+    scroll-behavior: smooth;
+    
+    /* Fix viewport units on mobile browsers */
+    --vh: 1vh;
+  }
+  
+  /* Mobile-first typography optimized for readability */
+  h1, h2, h3, h4, h5, h6 {
+    @apply scroll-m-20 tracking-tight;
+    text-wrap: balance;
+  }
+  
+  h1 {
+    @apply text-4xl font-extrabold lg:text-5xl;
+  }
+  
+  h2 {
+    @apply text-3xl font-semibold tracking-tight lg:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+  
+  h4 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+  
+  p {
+    @apply leading-7;
+  }
+  
+  /* Links with consistent hover states */
+  a {
+    @apply text-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]/80 transition-colors duration-200;
+  }
+  
+  /* Focus styles for accessibility */
+  :focus {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
+  }
+  
+  /* Custom scrollbar for better UX */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+/* utilidades opcionales para botones y cards (look "bonito" inmediato) */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-2xl px-6 py-3
+           font-bold text-[hsl(var(--primary-foreground))]
+           bg-[hsl(var(--primary))] shadow-2xl transition-transform
+           hover:scale-105;
+  }
+  .card {
+    @apply rounded-3xl bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]
+           border border-[hsl(var(--border))] backdrop-blur-xl
+           shadow-2xl;
+  }
+  
+  /* Button base styles */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+    @apply touch-target; /* Ensure minimum touch target size */
+  }
+  
+  /* Card component with perfect mobile centering (keep this one) */
+  
+  /* Modal container with flexbox centering (AXIS6 proven pattern) */
+  .modal-container {
+    @apply fixed inset-0 center-flex;
+    @apply px-safe py-safe; /* Safe area support */
+    @apply bg-black/80 backdrop-blur-sm;
+  }
+  
+  /* Form elements optimized for mobile */
+  .form-input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm;
+    @apply ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium;
+    @apply placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2;
+    @apply focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply touch-target; /* WCAG compliant touch targets */
+  }
+  
+  /* Loading states */
+  .loading {
+    @apply animate-pulse bg-muted rounded;
+  }
+  
+  /* Error states */
+  .error-state {
+    @apply text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-4;
+  }
+  
+  /* Success states */
+  .success-state {
+    @apply text-success bg-success/10 border border-success/20 rounded-md p-4;
+  }
+}
+
+/* Utility layer for custom utilities */
+@layer utilities {
+  /* Mobile-specific utilities */
+  .pt-safe {
+    padding-top: var(--safe-area-inset-top);
+  }
+  
+  .pb-safe {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+  
+  .px-safe {
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+  }
+  
+  .py-safe {
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+  
+  /* Flexbox centering utilities */
+  .center-flex {
+    @apply flex items-center justify-center;
+  }
+  
+  .center-flex-col {
+    @apply flex flex-col items-center justify-center;
+  }
+  
+  /* Touch target utilities (WCAG compliance) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-target-lg {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  /* GPU acceleration for smooth animations */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Responsive image container */
+  .responsive-img {
+    @apply relative overflow-hidden rounded-lg;
+  }
+  
+  .responsive-img img {
+    @apply h-full w-full object-cover transition-transform duration-300 hover:scale-105;
+  }
+}
+
+/* Print styles for professional documents */
+@media print {
+  * {
+    @apply text-black bg-white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+    @apply text-sm text-muted-foreground;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+  }
+  
+  .dark {
+    --border: 0 0% 80%;
+    --input: 0 0% 80%;
+  }
+}
+
+/* Mobile viewport fix for 100vh issues */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen-mobile {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Custom properties for dynamic viewport */
+@media screen and (max-width: 768px) {
+  :root {
+    --vh: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+
+/* ========================================
+   CLUEQUEST CINEMATIC GAMING EXPERIENCE
+   Gaming-Level Animation Library
+   ======================================== */
+
+/* Core Cinematic Animations */
+@keyframes cinematic-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) rotate(2deg) scale(1.02);
+  }
+  50% {
+    transform: translateY(-15px) rotate(0deg) scale(1.05);
+  }
+  75% {
+    transform: translateY(-8px) rotate(-2deg) scale(1.02);
+  }
+}
+
+@keyframes mystery-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(245, 158, 11, 0.4),
+      0 0 40px rgba(245, 158, 11, 0.2),
+      inset 0 0 20px rgba(245, 158, 11, 0.1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 
+      0 0 40px rgba(245, 158, 11, 0.8),
+      0 0 80px rgba(245, 158, 11, 0.4),
+      0 0 120px rgba(139, 92, 246, 0.3),
+      inset 0 0 30px rgba(245, 158, 11, 0.2);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes clue-reveal {
+  0% {
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 200% 0;
+    opacity: 0.8;
+  }
+}
+
+@keyframes gaming-glow {
+  0%, 100% {
+    text-shadow: 
+      0 0 5px rgba(245, 158, 11, 0.5),
+      0 0 10px rgba(245, 158, 11, 0.3),
+      0 0 20px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 10px rgba(245, 158, 11, 0.8),
+      0 0 20px rgba(245, 158, 11, 0.5),
+      0 0 40px rgba(245, 158, 11, 0.3),
+      0 0 60px rgba(139, 92, 246, 0.2);
+  }
+}
+
+@keyframes escape-room-entrance {
+  0% {
+    transform: perspective(1000px) rotateX(90deg) translateY(-50px);
+    opacity: 0;
+  }
+  50% {
+    transform: perspective(1000px) rotateX(45deg) translateY(-25px);
+    opacity: 0.7;
+  }
+  100% {
+    transform: perspective(1000px) rotateX(0deg) translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes mystery-typewriter {
+  from {
+    width: 0;
+    border-right: 2px solid rgba(245, 158, 11, 0.8);
+  }
+  to {
+    width: 100%;
+    border-right: none;
+  }
+}
+
+@keyframes gaming-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-20px) scale(1.1);
+  }
+  60% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+@keyframes hologram-flicker {
+  0%, 100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  5% {
+    opacity: 0.8;
+    filter: blur(0.5px);
+  }
+  10% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  85% {
+    opacity: 0.9;
+    filter: blur(0.2px);
+  }
+}
+
+@keyframes cinematic-zoom {
+  0% {
+    transform: scale(0.9) rotateY(-15deg) rotateX(5deg);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(1px);
+  }
+  100% {
+    transform: scale(1) rotateY(0deg) rotateX(0deg);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+/* Gaming-Level Animation Classes */
+.animate-cinematic-float {
+  animation: cinematic-float 8s ease-in-out infinite;
+}
+
+.animate-mystery-pulse {
+  animation: mystery-pulse 4s ease-in-out infinite;
+}
+
+.animate-clue-reveal {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 158, 11, 0.6),
+    rgba(139, 92, 246, 0.3),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: clue-reveal 3s linear infinite;
+}
+
+.animate-gaming-glow {
+  animation: gaming-glow 3s ease-in-out infinite;
+}
+
+.animate-escape-entrance {
+  animation: escape-room-entrance 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-mystery-typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: mystery-typewriter 4s steps(40, end) forwards;
+}
+
+.animate-gaming-bounce {
+  animation: gaming-bounce 2s infinite;
+}
+
+.animate-hologram-flicker {
+  animation: hologram-flicker 8s infinite;
+}
+
+.animate-cinematic-zoom {
+  animation: cinematic-zoom 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ========================================
+   PREMIUM GAMING DESIGN SYSTEM
+   Cinematic Color Palette & Effects
+   ======================================== */
+
+:root {
+  /* Cinematic Gaming Palette */
+  --gaming-gold: #f59e0b;
+  --gaming-gold-bright: #fbbf24;
+  --gaming-gold-dark: #d97706;
+  --mystery-purple: #8b5cf6;
+  --mystery-purple-bright: #a78bfa;
+  --mystery-purple-dark: #7c3aed;
+  --escape-dark: #0f172a;
+  --escape-slate: #1e293b;
+  --escape-slate-light: #334155;
+  
+  /* Atmospheric Effects */
+  --neon-glow: 0 0 20px;
+  --mystery-shadow: 0 8px 32px;
+  --gaming-blur: blur(8px);
+  --hologram-opacity: 0.85;
+}
+
+/* Enhanced Gaming Selection */
+::selection {
+  background: linear-gradient(45deg, rgba(245, 158, 11, 0.4), rgba(139, 92, 246, 0.3));
+  color: white;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+/* ========================================
+   GAMING-LEVEL COMPONENT SYSTEM
+   ======================================== */
+
+/* Premium Mystery Card with 3D Effects */
+.gaming-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  backdrop-filter: blur(12px);
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gaming-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 158, 11, 0.3),
+    rgba(139, 92, 246, 0.2),
+    transparent
+  );
+  z-index: 1;
+  transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gaming-card:hover {
+  transform: translateY(-8px) rotateX(5deg) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(245, 158, 11, 0.2),
+    0 0 60px rgba(245, 158, 11, 0.1),
+    inset 0 1px 0 rgba(245, 158, 11, 0.3);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.gaming-card:hover::before {
+  left: 100%;
+}
+
+/* Interactive Mystery Button */
+.mystery-button {
+  position: relative;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  padding: 16px 32px;
+  cursor: pointer;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 8px 32px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.mystery-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mystery-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 12px 48px rgba(245, 158, 11, 0.4),
+    0 0 60px rgba(245, 158, 11, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.mystery-button:hover::before {
+  opacity: 1;
+}
+
+.mystery-button:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* Gaming Text Effects */
+.gaming-text {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.mystery-title {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 25%, #d97706 50%, #a78bfa 75%, #8b5cf6 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gaming-glow 4s ease-in-out infinite;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-shadow: 0 0 40px rgba(245, 158, 11, 0.4);
+}
+
+/* 3D Hologram Effects */
+.hologram-effect {
+  position: relative;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(139, 92, 246, 0.1));
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.hologram-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(245, 158, 11, 0.1) 50%,
+    transparent 70%
+  );
+  animation: hologram-flicker 6s infinite;
+}
+
+/* Gaming Input Fields */
+.gaming-input {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gaming-input:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 
+    0 0 20px rgba(245, 158, 11, 0.3),
+    inset 0 0 20px rgba(245, 158, 11, 0.1);
+  transform: scale(1.02);
+}
+
+.gaming-input::placeholder {
+  color: rgba(251, 191, 36, 0.5);
+  font-style: italic;
+}
+
+/* Custom Gaming Scrollbar */
+.gaming-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b rgba(15, 23, 42, 0.5);
+}
+
+.gaming-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.gaming-scroll::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
+  border-radius: 8px;
+}
+
+.gaming-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fbbf24, #f59e0b, #d97706);
+  border-radius: 8px;
+  border: 2px solid rgba(15, 23, 42, 0.3);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.gaming-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f59e0b, #d97706, #b45309);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+}
+
+/* Cinematic Loading States */
+.gaming-loader {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, #f59e0b, transparent);
+  animation: spin 2s linear infinite;
+}
+
+.gaming-loader::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border-radius: 50%;
+  background: #0f172a;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
