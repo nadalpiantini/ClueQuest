@@ -14,6 +14,7 @@ import {
   Crown,
   Sword
 } from 'lucide-react'
+import AIThinking from '@/components/ui/ai-loading'
 
 interface ChatMessage {
   id: string
@@ -51,7 +52,7 @@ export default function CharacterChatDesigner({
     {
       id: 'welcome',
       type: 'ai',
-      content: `¡Hola! 👋 Soy tu asistente de diseño de personajes. Podemos crear un personaje único para tu aventura ${selectedTheme ? `con temática **${selectedTheme}**` : ''}.\n\n¿Qué tipo de personaje tienes en mente? Puedes describir:\n• Su personalidad y motivaciones\n• Sus habilidades especiales\n• Su apariencia y estilo\n• Su rol en el equipo\n\n¡Empecemos!`,
+      content: `Hello! 👋 I'm your character design assistant. We can create a unique character for your adventure ${selectedTheme ? `with **${selectedTheme}** theme` : ''}.\n\nWhat type of character do you have in mind? You can describe:\n• Their personality and motivations\n• Their special abilities\n• Their appearance and style\n• Their role in the team\n\nLet's get started!`,
       timestamp: new Date()
     }
   ])
@@ -120,7 +121,7 @@ export default function CharacterChatDesigner({
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        content: 'Lo siento, hubo un problema con la conexión. ¿Podrías intentar de nuevo? Mientras tanto, puedo sugerir que pienses en qué tipo de personalidad o habilidades te gustaría que tuviera tu personaje.',
+        content: 'Sorry, there was a connection problem. Could you try again? Meanwhile, I can suggest that you think about what type of personality or abilities you would like your character to have.',
         timestamp: new Date()
       }
 
@@ -141,7 +142,7 @@ export default function CharacterChatDesigner({
     setMessages([{
       id: 'welcome-reset',
       type: 'ai',
-      content: `¡Perfecto! Empecemos de nuevo. 🎭\n\n¿Qué tipo de personaje quieres crear ahora? Podemos explorar diferentes conceptos y personalidades.`,
+      content: `Perfect! Let's start over. 🎭\n\nWhat type of character do you want to create now? We can explore different concepts and personalities.`,
       timestamp: new Date()
     }])
     setGeneratedCharacter(null)
@@ -164,7 +165,7 @@ export default function CharacterChatDesigner({
         whileTap={{ scale: 0.98 }}
       >
         <MessageSquare className="h-5 w-5" />
-        Diseñar Personaje con IA
+        Design Character with AI
         <Sparkles className="h-4 w-4 animate-pulse" />
       </motion.button>
 
@@ -201,8 +202,8 @@ export default function CharacterChatDesigner({
                     <Wand2 className="h-6 w-6 text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white">Diseñador de Personajes IA</h3>
-                    <p className="text-sm text-slate-400">Crea personajes únicos colaborando con IA</p>
+                    <h3 className="text-xl font-bold text-white">AI Character Designer</h3>
+                    <p className="text-sm text-slate-400">Create unique characters by collaborating with AI</p>
                   </div>
                 </div>
                 
@@ -276,10 +277,11 @@ export default function CharacterChatDesigner({
                       <Bot className="h-4 w-4 text-purple-400" />
                     </div>
                     <div className="p-3 rounded-xl bg-slate-800">
-                      <div className="flex items-center gap-2 text-purple-300">
-                        <Sparkles className="h-4 w-4 animate-spin" />
-                        <span className="text-sm">Creando personaje...</span>
-                      </div>
+                      <AIThinking 
+                        message="Creating character..."
+                        size="sm"
+                        className="text-purple-300"
+                      />
                     </div>
                   </motion.div>
                 )}
@@ -305,7 +307,7 @@ export default function CharacterChatDesigner({
                   <p className="text-slate-300 text-sm mb-3">{generatedCharacter.description}</p>
                   
                   <div className="space-y-2 mb-4">
-                    <div className="text-xs text-emerald-400 font-semibold">Habilidades especiales:</div>
+                    <div className="text-xs text-emerald-400 font-semibold">Special abilities:</div>
                     {generatedCharacter.perks.map((perk, index) => (
                       <div key={index} className="text-xs text-emerald-300 flex items-center gap-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-400"></div>
@@ -316,13 +318,13 @@ export default function CharacterChatDesigner({
 
                   <div className="flex items-center justify-between">
                     <div className="text-xs text-slate-400">
-                      Máx. {generatedCharacter.maxPlayers} jugadores
+                      Max {generatedCharacter.maxPlayers} players
                     </div>
                     <button
                       onClick={applyCharacter}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-sm transition-colors"
                     >
-                      Usar Personaje
+                      Use Character
                     </button>
                   </div>
                 </motion.div>
@@ -336,7 +338,7 @@ export default function CharacterChatDesigner({
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Describe tu personaje ideal... ej: 'Un mago joven especializado en pociones de curación'"
+                      placeholder="Describe your ideal character... e.g: 'A young wizard specialized in healing potions'"
                       className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       rows={2}
                       disabled={isGenerating}
@@ -356,7 +358,7 @@ export default function CharacterChatDesigner({
                 </div>
                 
                 <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
-                  <div>Presiona Enter para enviar, Shift+Enter para nueva línea</div>
+                  <div>Press Enter to send, Shift+Enter for new line</div>
                   <div>{userInput.length}/500</div>
                 </div>
               </div>

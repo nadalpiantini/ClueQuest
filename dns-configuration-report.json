@@ -1,17 +1,17 @@
 {
-  "timestamp": "2025-09-03T10:42:27.282Z",
+  "timestamp": "2025-09-03T21:11:44.994Z",
   "domain": "cluequest.empleaido.com",
   "provider": "cloudflare",
   "current_records": [
     {
       "record": "A Record",
-      "status": "❌ Not found",
-      "value": "None"
+      "status": "✅ Exists",
+      "value": "66.33.60.129, 76.76.21.123"
     },
     {
       "record": "CNAME Record",
-      "status": "❌ Not found",
-      "value": "None"
+      "status": "✅ Exists",
+      "value": "cname.vercel-dns.com"
     }
   ],
   "recommended_config": {

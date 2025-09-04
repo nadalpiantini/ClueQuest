@@ -19,6 +19,7 @@ import {
   Copy,
   Check
 } from 'lucide-react'
+import AIGenerating from '@/components/ui/ai-loading'
 
 interface TitleSuggestion {
   title: string
@@ -345,12 +346,11 @@ export default function TitleAssistant({ isOpen, onClose, onTitleSelect, current
                 >
                   {isGenerating ? (
                     <div className="text-center py-12">
-                      <div className="inline-flex items-center gap-3 mb-6">
-                        <Sparkles className="h-6 w-6 text-amber-400 animate-spin" />
-                        <span className="text-lg font-semibold text-amber-200">
-                          Crafting perfect titles...
-                        </span>
-                      </div>
+                      <AIGenerating 
+                        message="Crafting perfect titles..."
+                        size="lg"
+                        className="mb-6"
+                      />
                       <div className="text-slate-400 text-sm">
                         Our AI is analyzing your preferences to create engaging titles
                       </div>
@@ -449,18 +449,56 @@ export default function TitleAssistant({ isOpen, onClose, onTitleSelect, current
                 ) : currentStep === 3 ? (
                   <button
                     onClick={generateTitles}
-                    className="inline-flex items-center gap-2 px-6 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all duration-200 hover:shadow-emerald-500/30 shadow-lg"
+                    disabled={isGenerating}
+                    className={`inline-flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all duration-200 shadow-lg ${
+                      isGenerating 
+                        ? 'bg-emerald-600 text-emerald-200 cursor-not-allowed' 
+                        : 'bg-emerald-500 hover:bg-emerald-600 text-white hover:shadow-emerald-500/30'
+                    }`}
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Generate Titles
+                    {isGenerating ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </motion.div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generate Titles
+                      </>
+                    )}
                   </button>
                 ) : (
                   <button
                     onClick={generateTitles}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600 text-white font-semibold transition-colors"
+                    disabled={isGenerating}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                      isGenerating 
+                        ? 'bg-purple-600 text-purple-200 cursor-not-allowed' 
+                        : 'bg-purple-500 hover:bg-purple-600 text-white'
+                    }`}
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Generate More
+                    {isGenerating ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </motion.div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Generate More
+                      </>
+                    )}
                   </button>
                 )}
               </div>

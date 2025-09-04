@@ -184,12 +184,128 @@ function LoginForm() {
             </div>
           </motion.div>
 
-          {/* Demo Access */}
+          {/* Development Access - Only in dev mode */}
+          {process.env.NODE_ENV === 'development' && (
+            <motion.div 
+              className="mb-8"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-300 border border-orange-500/30 text-sm font-semibold">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                  Development Mode
+                </div>
+                <p className="text-slate-400 mt-3 mb-6">
+                  Quick access for testing workflows
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Host/Creator Button */}
+                <button
+                  onClick={async () => {
+                    if (isLoading) return
+                    setIsLoading(true)
+                    try {
+                      demoLogin({ 
+                        email: 'host@dev.com', 
+                        name: 'Dev Host Creator' 
+                      })
+                      
+                      alert(`🎭 Host Mode Activated!\n\nLogged in as Adventure Creator\nRedirecting to Dashboard...`)
+                      router.push('/dashboard')
+                    } catch (error) {
+                      console.error('Host login error:', error)
+                      alert('Host login failed. Please try again.')
+                    } finally {
+                      setIsLoading(false)
+                    }
+                  }}
+                  disabled={isLoading}
+                  className={`group p-6 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-amber-200 border-2 border-amber-500/30 hover:border-amber-400/50 font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm text-left ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl hover:shadow-amber-500/25'
+                  }`}
+                >
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="p-3 rounded-full bg-amber-500/30">
+                      {isLoading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-200"></div>
+                      ) : (
+                        <Users className="h-6 w-6 text-amber-300" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-amber-100">🎭 Entrar como Creador</h3>
+                      <p className="text-sm text-amber-300/80">Host Workflow</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-amber-200/70 leading-relaxed">
+                    Acceso completo para crear y gestionar aventuras. Dashboard de control total.
+                  </p>
+                  <div className="flex items-center gap-2 mt-4 text-xs text-amber-300/60">
+                    <ArrowRight className="h-4 w-4" />
+                    Dashboard → Create Adventures
+                  </div>
+                </button>
+
+                {/* Guest/User Button */}
+                <button
+                  onClick={async () => {
+                    if (isLoading) return
+                    setIsLoading(true)
+                    try {
+                      demoLogin({ 
+                        email: 'guest@dev.com', 
+                        name: 'Dev Guest Player' 
+                      })
+                      
+                      alert(`🕵️ Guest Mode Activated!\n\nLogged in as Adventure Participant\nRedirecting to Join Page...`)
+                      router.push('/join')
+                    } catch (error) {
+                      console.error('Guest login error:', error)
+                      alert('Guest login failed. Please try again.')
+                    } finally {
+                      setIsLoading(false)
+                    }
+                  }}
+                  disabled={isLoading}
+                  className={`group p-6 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 text-purple-200 border-2 border-purple-500/30 hover:border-purple-400/50 font-bold transition-all duration-300 hover:scale-105 backdrop-blur-sm text-left ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl hover:shadow-purple-500/25'
+                  }`}
+                >
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="p-3 rounded-full bg-purple-500/30">
+                      {isLoading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-200"></div>
+                      ) : (
+                        <Eye className="h-6 w-6 text-purple-300" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-purple-100">🕵️ Entrar como Usuario</h3>
+                      <p className="text-sm text-purple-300/80">Guest Workflow</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-purple-200/70 leading-relaxed">
+                    Experiencia de participante. Únete a aventuras y resuelve misterios.
+                  </p>
+                  <div className="flex items-center gap-2 mt-4 text-xs text-purple-300/60">
+                    <ArrowRight className="h-4 w-4" />
+                    Join → Adventure Experience
+                  </div>
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Standard Demo Access */}
           <motion.div 
             className="text-center mb-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 0.9 }}
           >
             <p className="text-slate-400 mb-4">
               Want to try without creating an account?

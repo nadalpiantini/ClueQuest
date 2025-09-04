@@ -16,6 +16,7 @@ import {
   Type,
   Image as ImageIcon
 } from 'lucide-react'
+import AIGenerating from '@/components/ui/ai-loading'
 
 interface GeneratedTheme {
   name: string
@@ -74,23 +75,23 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
   const [currentKeyword, setCurrentKeyword] = useState('')
 
   const styleOptions = [
-    { id: 'dark', name: 'Dark & Mysterious', emoji: '🌙', description: 'Colores oscuros y atmosféricos' },
-    { id: 'minimalist', name: 'Minimal & Clean', emoji: '✨', description: 'Diseño limpio y espacios abiertos' },
-    { id: 'vibrant', name: 'Vibrant & Energetic', emoji: '⚡', description: 'Colores brillantes y dinámicos' },
-    { id: 'corporate', name: 'Corporate & Professional', emoji: '💼', description: 'Elegante y empresarial' },
-    { id: 'gaming', name: 'Gaming & Futuristic', emoji: '🎮', description: 'Tecnológico y futurista' },
-    { id: 'elegant', name: 'Elegant & Sophisticated', emoji: '👑', description: 'Refinado y lujoso' },
-    { id: 'retro', name: 'Retro & Vintage', emoji: '📻', description: 'Nostálgico y vintage' },
-    { id: 'nature', name: 'Natural & Organic', emoji: '🌿', description: 'Inspirado en la naturaleza' }
+    { id: 'dark', name: 'Dark & Mysterious', emoji: '🌙', description: 'Dark and atmospheric colors' },
+    { id: 'minimalist', name: 'Minimal & Clean', emoji: '✨', description: 'Clean design and open spaces' },
+    { id: 'vibrant', name: 'Vibrant & Energetic', emoji: '⚡', description: 'Bright and dynamic colors' },
+    { id: 'corporate', name: 'Corporate & Professional', emoji: '💼', description: 'Elegant and business-like' },
+    { id: 'gaming', name: 'Gaming & Futuristic', emoji: '🎮', description: 'Technological and futuristic' },
+    { id: 'elegant', name: 'Elegant & Sophisticated', emoji: '👑', description: 'Refined and luxurious' },
+    { id: 'retro', name: 'Retro & Vintage', emoji: '📻', description: 'Nostalgic and vintage' },
+    { id: 'nature', name: 'Natural & Organic', emoji: '🌿', description: 'Nature-inspired' }
   ]
 
   const audienceOptions = [
-    { id: 'adults', name: 'Adultos (25-45)', description: 'Profesionales y adultos' },
-    { id: 'young-adults', name: 'Jóvenes (18-25)', description: 'Universitarios y jóvenes profesionales' },
-    { id: 'teens', name: 'Adolescentes (13-18)', description: 'Estudiantes de secundaria' },
-    { id: 'families', name: 'Familias', description: 'Padres e hijos juntos' },
-    { id: 'corporate', name: 'Corporativo', description: 'Equipos de trabajo y empresas' },
-    { id: 'gamers', name: 'Gamers', description: 'Entusiastas de videojuegos' }
+    { id: 'adults', name: 'Adults (25-45)', description: 'Professionals and adults' },
+    { id: 'young-adults', name: 'Young Adults (18-25)', description: 'University students and young professionals' },
+    { id: 'teens', name: 'Teens (13-18)', description: 'High school students' },
+    { id: 'families', name: 'Families', description: 'Parents and children together' },
+    { id: 'corporate', name: 'Corporate', description: 'Work teams and companies' },
+    { id: 'gamers', name: 'Gamers', description: 'Video game enthusiasts' }
   ]
 
   const addKeyword = () => {
@@ -119,7 +120,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
 
   const generateTheme = async () => {
     if (!formData.description.trim() || formData.moodKeywords.length === 0) {
-      alert('Por favor completa la descripción y agrega al menos una palabra clave de ambiente')
+      alert('Please complete the description and add at least one mood keyword')
       return
     }
 
@@ -142,7 +143,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
       
     } catch (error) {
       console.error('Theme generation error:', error)
-      alert('Error al generar el tema. Por favor inténtalo de nuevo.')
+      alert('Error generating theme. Please try again.')
     }
 
     setIsGenerating(false)
@@ -189,7 +190,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
         whileTap={{ scale: 0.98 }}
       >
         <Palette className="h-4 w-4" />
-        Crear Tema Personalizado
+        Create Custom Theme
         <Sparkles className="h-4 w-4 animate-pulse" />
       </motion.button>
 
@@ -227,7 +228,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                   </div>
                   <div>
                     <h3 className="text-lg sm:text-xl font-bold text-white">Custom Theme Builder</h3>
-                    <p className="text-xs sm:text-sm text-slate-400">Diseña tu tema perfecto con IA</p>
+                    <p className="text-xs sm:text-sm text-slate-400">Design your perfect theme with AI</p>
                   </div>
                 </div>
                 
@@ -253,8 +254,8 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
               <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700">
                 <div className="flex items-center justify-center space-x-4 sm:space-x-8">
                   {[
-                    { num: 1, title: 'Descripción', icon: Brush },
-                    { num: 2, title: 'Estilo & Audiencia', icon: Settings },
+                    { num: 1, title: 'Description', icon: Brush },
+                    { num: 2, title: 'Style & Audience', icon: Settings },
                     { num: 3, title: 'Preview & Apply', icon: Eye }
                   ].map((stepItem) => {
                     const Icon = stepItem.icon
@@ -296,30 +297,30 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <div className="text-center mb-6">
-                        <h4 className="text-lg font-bold text-white mb-2">Describe tu tema ideal</h4>
-                        <p className="text-slate-400">Cuéntanos cómo quieres que se vea y se sienta tu aventura</p>
+                        <h4 className="text-lg font-bold text-white mb-2">Describe your ideal theme</h4>
+                        <p className="text-slate-400">Tell us how you want your adventure to look and feel</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-slate-300 mb-2">
-                          Descripción del tema *
+                          Theme Description *
                         </label>
                         <textarea
                           value={formData.description}
                           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                          placeholder="Ej: Un mundo mágico con colores místicos y elementos de fantasía oscura, inspirado en cuentos de hadas góticos con toques de elegancia medieval..."
+                          placeholder="E.g: A magical world with mystical colors and dark fantasy elements, inspired by gothic fairy tales with medieval elegance touches..."
                           className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           rows={4}
                           maxLength={300}
                         />
                         <div className="text-xs text-slate-500 mt-1">
-                          {formData.description.length}/300 caracteres
+                          {formData.description.length}/300 characters
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-slate-300 mb-3">
-                          Palabras clave de ambiente *
+                          Mood Keywords *
                         </label>
                         <div className="space-y-3">
                           <div className="flex gap-2">
@@ -328,7 +329,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                               value={currentKeyword}
                               onChange={(e) => setCurrentKeyword(e.target.value)}
                               onKeyPress={handleKeyPress}
-                              placeholder="Ej: misterioso, elegante, futurista..."
+                              placeholder="E.g: mysterious, elegant, futuristic..."
                               className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded text-slate-200 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                               maxLength={50}
                             />
@@ -337,7 +338,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                               disabled={!currentKeyword.trim() || formData.moodKeywords.length >= 8}
                               className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-600 disabled:text-slate-400 text-white rounded text-sm font-medium transition-colors"
                             >
-                              Agregar
+                              Add
                             </button>
                           </div>
                           
@@ -361,7 +362,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                           )}
                           
                           <div className="text-xs text-slate-500">
-                            {formData.moodKeywords.length}/8 palabras clave
+                            {formData.moodKeywords.length}/8 keywords
                           </div>
                         </div>
                       </div>
@@ -378,13 +379,13 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <div className="text-center mb-6">
-                        <h4 className="text-lg font-bold text-white mb-2">Estilo y audiencia</h4>
-                        <p className="text-slate-400">Personaliza el enfoque y la dirección visual</p>
+                        <h4 className="text-lg font-bold text-white mb-2">Style and Audience</h4>
+                        <p className="text-slate-400">Customize the approach and visual direction</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-slate-300 mb-3">
-                          Estilo visual
+                          Visual Style
                         </label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                           {styleOptions.map((style) => (
@@ -432,12 +433,12 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
 
                       <div>
                         <label className="block text-sm font-semibold text-slate-300 mb-2">
-                          Contexto adicional (opcional)
+                          Additional Context (optional)
                         </label>
                         <textarea
                           value={formData.industryContext}
                           onChange={(e) => setFormData({ ...formData, industryContext: e.target.value })}
-                          placeholder="Ej: Empresa de tecnología, evento corporativo, escape room temático..."
+                          placeholder="E.g: Technology company, corporate event, themed escape room..."
                           className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           rows={2}
                           maxLength={100}
@@ -465,7 +466,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                           {/* Color Preview */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div className="space-y-3">
-                              <h5 className="text-sm font-semibold text-slate-300">Colores Principales</h5>
+                              <h5 className="text-sm font-semibold text-slate-300">Primary Colors</h5>
                               {Object.entries(generatedTheme.colors).map(([key, color]) => (
                                 <div key={key} className="flex items-center gap-3">
                                   <div 
@@ -481,16 +482,16 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                             </div>
 
                             <div className="space-y-3">
-                              <h5 className="text-sm font-semibold text-slate-300">Tipografías</h5>
+                              <h5 className="text-sm font-semibold text-slate-300">Typography</h5>
                               <div className="space-y-2">
                                 <div>
-                                  <div className="text-xs text-slate-400">Títulos</div>
+                                  <div className="text-xs text-slate-400">Headings</div>
                                   <div className="text-sm font-bold text-slate-200" style={{ fontFamily: generatedTheme.fonts.heading }}>
                                     {generatedTheme.fonts.heading}
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="text-xs text-slate-400">Texto</div>
+                                  <div className="text-xs text-slate-400">Body Text</div>
                                   <div className="text-sm text-slate-200" style={{ fontFamily: generatedTheme.fonts.body }}>
                                     {generatedTheme.fonts.body}
                                   </div>
@@ -529,10 +530,10 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                                 fontFamily: generatedTheme.fonts.heading 
                               }}
                             >
-                              Vista Previa del Tema
+                              Theme Preview
                             </h6>
                             <p className="text-sm mb-4" style={{ fontFamily: generatedTheme.fonts.body }}>
-                              Este es un ejemplo de cómo se vería tu tema aplicado en la interfaz de la aventura.
+                              This is an example of how your theme would look applied to the adventure interface.
                             </p>
                             <div className="flex gap-3">
                               <button
@@ -542,7 +543,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                                   color: 'white'
                                 }}
                               >
-                                Botón Principal
+                                Primary Button
                               </button>
                               <button
                                 className="px-4 py-2 rounded-lg font-semibold text-sm border transition-all"
@@ -551,17 +552,18 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                                   color: generatedTheme.colors.secondary
                                 }}
                               >
-                                Botón Secundario
+                                Secondary Button
                               </button>
                             </div>
                           </div>
                         </>
                       ) : (
                         <div className="text-center py-12">
-                          <div className="inline-flex items-center gap-2 text-purple-300">
-                            <Sparkles className="h-5 w-5 animate-spin" />
-                            <span>Generando tu tema personalizado...</span>
-                          </div>
+                          <AIGenerating 
+                            message="Generando tu tema personalizado..."
+                            size="md"
+                            className="text-purple-300"
+                          />
                         </div>
                       )}
                     </motion.div>

@@ -26,6 +26,7 @@ import {
   BookOpen,
   Users
 } from 'lucide-react'
+import AIGenerating from '@/components/ui/ai-loading'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -436,16 +437,11 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
                       <Card className="bg-slate-800/50 border-slate-600/30">
                         <CardContent className="py-8">
                           <div className="text-center">
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                              className="inline-block mb-4"
-                            >
-                              <Wand2 className="h-8 w-8 text-amber-400" />
-                            </motion.div>
-                            <p className="text-slate-300 text-lg font-medium">
-                              Crafting your adventure story...
-                            </p>
+                            <AIGenerating 
+                              message="Crafting your adventure story..."
+                              size="lg"
+                              className="mb-4"
+                            />
                             <p className="text-slate-500 text-sm mt-2">
                               This usually takes 15-45 seconds
                             </p>

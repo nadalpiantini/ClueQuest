@@ -21,7 +21,7 @@ interface RealtimeProviderProps {
 }
 
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
-  const { state, dispatch, updateLeaderboard, updateScore } = useAdventure()
+  const { state, updateLeaderboard, updateScore } = useAdventure()
   const [isConnected, setIsConnected] = useState(false)
   const [connectionQuality, setConnectionQuality] = useState<'excellent' | 'good' | 'poor' | 'disconnected'>('disconnected')
   const channelRef = useRef<RealtimeChannel | null>(null)
@@ -55,10 +55,8 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     }
   }, [])
 
-  // Monitor connection status
-  useEffect(() => {
-    dispatch({ type: 'SET_CONNECTION_STATUS', payload: isConnected })
-  }, [isConnected, dispatch])
+  // Monitor connection status - removed dispatch to prevent infinite re-renders
+  // Connection status is managed locally in this component
 
   const cleanup = () => {
     if (channelRef.current) {

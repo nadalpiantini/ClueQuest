@@ -73,6 +73,21 @@ export {
   cn
 } from './ui'
 
+// AI Components
+export { 
+  default as AILoading,
+  AIThinking,
+  AIGenerating,
+  AIProcessing,
+  AIButtonLoading
+} from './ui/ai-loading'
+
+// Builder Components
+export { default as LocationBuilder } from './builder/LocationBuilder'
+export { default as QRGenerator } from './builder/QRGenerator'
+export { default as ChallengeLocationMapper } from './builder/ChallengeLocationMapper'
+export { default as QRExporter } from './builder/QRExporter'
+
 // Example & Showcase
 export { default as ComponentShowcase } from './examples/component-showcase'
 

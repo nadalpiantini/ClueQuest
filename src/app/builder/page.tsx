@@ -20,54 +20,195 @@ import {
   X,
   Play,
   ChevronRight,
-  Settings
+  Settings,
+  Target
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getAllFrameworks } from '@/lib/frameworks/story-frameworks'
 import CharacterChatDesigner from '@/components/ai/CharacterChatDesigner'
+import AIGenerating from '@/components/ui/ai-loading'
 import CustomThemeBuilder from '@/components/ai/CustomThemeBuilder'
+import LocationBuilder from '@/components/builder/LocationBuilder'
+import QRGenerator from '@/components/builder/QRGenerator'
+import ChallengeLocationMapper from '@/components/builder/ChallengeLocationMapper'
+import QRExporter from '@/components/builder/QRExporter'
+import { adventurePersistence } from '@/lib/services/adventure-persistence'
 
 export default function AdventureBuilderPage() {
-  const [currentStep, setCurrentStep] = useState(1)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // Get initial step from URL or default to 1
+  const getInitialStep = () => {
+    const stepFromUrl = searchParams.get('step')
+    const parsedStep = stepFromUrl ? parseInt(stepFromUrl) : 1
+    return parsedStep >= 1 && parsedStep <= 5 ? parsedStep : 1
+  }
+  
+  const [currentStep, setCurrentStep] = useState(getInitialStep())
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [showStoryPreview, setShowStoryPreview] = useState(false)
   const frameworks = getAllFrameworks()
-  const [adventureData, setAdventureData] = useState({
-    // Step 1: Theme
-    title: '',
-    theme: '',
-    customThemes: [] as any[],
-    customColors: {
-      primary: '#f59e0b',
-      secondary: '#8b5cf6',
-      accent: '#10b981'
-    },
+
+  // Update URL when step changes
+  const updateStepInUrl = (step: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('step', step.toString())
     
-    // Step 2: Narrative  
-    narrative: '',
-    storyType: '',
-    storyFramework: 'hero_journey',
-    aiGenerated: false,
-    branchingPoints: 2,
-    generatedStory: null as any,
-    isGeneratingStory: false,
+    // Add debug info
+    console.log(`🔄 Navigating to step ${step} - URL: /builder?${params.toString()}`)
     
-    // Step 3: Roles
-    roles: [] as string[],
-    customCharacters: [] as any[],
+    router.push(`/builder?${params.toString()}`, { scroll: false })
+  }
+
+  // Enhanced step navigation with URL updates
+  const navigateToStep = (step: number) => {
+    if (step >= 1 && step <= 5) {
+      setCurrentStep(step)
+      updateStepInUrl(step)
+    }
+  }
+
+  // Sync step with URL changes (browser back/forward buttons)
+  useEffect(() => {
+    const stepFromUrl = getInitialStep()
+    if (stepFromUrl !== currentStep) {
+      console.log(`🔗 URL changed: syncing step from ${currentStep} to ${stepFromUrl}`)
+      setCurrentStep(stepFromUrl)
+    }
+  }, [searchParams])
+
+  // Update URL on initial load if no step parameter exists
+  useEffect(() => {
+    if (!searchParams.get('step')) {
+      updateStepInUrl(1)
+    }
+  }, [])
+
+  // Load adventure data from localStorage
+  const loadAdventureData = () => {
+    if (typeof window === 'undefined') return null
     
-    // Step 4: Challenges
-    challengeTypes: [] as string[],
-    qrLocations: [] as string[],
+    try {
+      const saved = localStorage.getItem('cluequest-builder-data')
+      if (saved) {
+        const parsedData = JSON.parse(saved)
+        console.log('📂 Loaded adventure data from localStorage:', parsedData.title || 'Untitled')
+        return parsedData
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to load adventure data from localStorage:', error)
+    }
+    return null
+  }
+
+  // Initialize adventure data with default values or loaded data
+  const getInitialAdventureData = () => {
+    const savedData = loadAdventureData()
+    const defaultData = {
+      // Step 1: Theme
+      title: '',
+      theme: '',
+      customThemes: [] as any[],
+      customColors: {
+        primary: '#f59e0b',
+        secondary: '#8b5cf6',
+        accent: '#10b981'
+      },
+      
+      // Step 2: Narrative  
+      narrative: '',
+      storyType: '',
+      storyFramework: 'hero_journey',
+      aiGenerated: false,
+      branchingPoints: 2,
+      generatedStory: null as any,
+      isGeneratingStory: false,
+      
+      // Step 3: Roles
+      roles: [] as string[],
+      customCharacters: [] as any[],
+      
+      // Step 4: Challenges & Locations
+      challengeTypes: [] as string[],
+      qrLocations: [] as string[],
+      locations: [] as any[],
+      qrCodes: [] as any[],
+      challengeLocationMappings: [] as any[],
+      adventureType: 'linear' as 'linear' | 'parallel' | 'hub',
+      
+      // Step 5: Rewards & Security
+      ranking: 'public',
+      rewards: [] as string[],
+      accessMode: 'private',
+      deviceLimits: 1
+    }
+
+    return savedData ? { ...defaultData, ...savedData } : defaultData
+  }
+
+  const [adventureData, setAdventureData] = useState(getInitialAdventureData())
+
+  // Save adventure data to localStorage and Supabase
+  const saveAdventureData = async (data: typeof adventureData) => {
+    if (typeof window === 'undefined') return
     
-    // Step 5: Rewards & Security
-    ranking: 'public',
-    rewards: [] as string[],
-    accessMode: 'private',
-    deviceLimits: 1
-  })
+    try {
+      // Don't save temporary states like isGeneratingStory
+      const dataToSave = {
+        ...data,
+        isGeneratingStory: false
+      }
+      
+      // Save to localStorage for immediate persistence
+      localStorage.setItem('cluequest-builder-data', JSON.stringify(dataToSave))
+      console.log('💾 Adventure data saved to localStorage:', data.title || 'Untitled')
+      
+      // Auto-save to Supabase if adventure has title and locations (indicates serious progress)
+      if (data.title.trim() && data.locations.length > 0) {
+        try {
+          const result = await adventurePersistence.saveAdventure(data as any)
+          if (result.success) {
+            console.log('☁️ Adventure auto-saved to Supabase:', data.title)
+          } else {
+            console.warn('⚠️ Supabase auto-save failed:', result.error)
+          }
+        } catch (supabaseError) {
+          console.warn('⚠️ Supabase auto-save error:', supabaseError)
+          // Continue with localStorage only
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to save adventure data:', error)
+    }
+  }
+
+  // Enhanced setAdventureData that also saves to localStorage
+  const updateAdventureData = (newData: typeof adventureData) => {
+    setAdventureData(newData)
+    saveAdventureData(newData)
+  }
+
+  // Auto-save when adventure data changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      saveAdventureData(adventureData)
+    }, 1000) // Save 1 second after last change
+
+    return () => clearTimeout(timeoutId)
+  }, [adventureData])
+
+  // Clear saved data function for debugging/reset
+  const clearSavedData = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('cluequest-builder-data')
+      console.log('🗑️ Cleared saved adventure data')
+      window.location.reload()
+    }
+  }
 
   const [isCreatingAdventure, setIsCreatingAdventure] = useState(false)
 
@@ -750,13 +891,13 @@ export default function AdventureBuilderPage() {
 
   const nextStep = () => {
     if (currentStep < 5) {
-      setCurrentStep(currentStep + 1)
+      navigateToStep(currentStep + 1)
     }
   }
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      navigateToStep(currentStep - 1)
     }
   }
 
@@ -771,13 +912,46 @@ export default function AdventureBuilderPage() {
 
       {/* Navigation */}
       <nav className="relative z-20 p-6">
-        <Link 
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Back to Dashboard
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link 
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back to Dashboard
+          </Link>
+
+          {/* Navigable Breadcrumbs */}
+          <div className="hidden md:flex items-center gap-2 text-sm">
+            <span className="text-slate-500">Quick Jump:</span>
+            {wizardSteps.map((step, index) => {
+              const isActive = currentStep === step.id
+              const isCompleted = currentStep > step.id
+              
+              return (
+                <div key={step.id} className="flex items-center">
+                  <button
+                    onClick={() => navigateToStep(step.id)}
+                    className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                      isActive 
+                        ? 'bg-amber-500 text-white font-semibold'
+                        : isCompleted 
+                        ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                        : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/50'
+                    }`}
+                    title={`${step.title}: ${step.description}`}
+                  >
+                    {step.id}. {step.title}
+                  </button>
+                  
+                  {index < wizardSteps.length - 1 && (
+                    <ChevronRight className="h-4 w-4 text-slate-600 mx-1" />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </nav>
       
       <main className="relative z-20 px-4 py-8 sm:px-6 lg:px-8">
@@ -802,6 +976,51 @@ export default function AdventureBuilderPage() {
             <p className="text-lg text-slate-300 max-w-2xl mx-auto">
               Step-by-step wizard to create immersive experiences without programming
             </p>
+
+            {/* DEBUG: Current step indicator */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-4 space-y-2">
+                <div className="px-3 py-1 bg-slate-800/50 rounded text-xs text-slate-400">
+                  🔧 DEBUG: Step {currentStep}/5 | URL: {typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/builder?step=' + currentStep}
+                </div>
+                
+                <div className="flex items-center gap-2 justify-center flex-wrap">
+                  <span className="text-xs text-slate-500">Direct URLs:</span>
+                  {[1, 2, 3, 4, 5].map(step => (
+                    <button
+                      key={step}
+                      onClick={() => {
+                        const url = `/builder?step=${step}`
+                        navigator.clipboard.writeText(window.location.origin + url)
+                        alert(`URL copied: ${window.location.origin + url}`)
+                      }}
+                      className={`px-2 py-1 rounded text-xs transition-colors ${
+                        step === currentStep 
+                          ? 'bg-amber-600 text-white' 
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
+                      title={`Copy URL for step ${step}`}
+                    >
+                      📋 {step}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex items-center gap-2 justify-center">
+                  <span className="text-xs text-slate-500">Data:</span>
+                  <div className="flex items-center gap-1 text-xs text-emerald-400">
+                    💾 Auto-saved ({adventureData.title || 'Untitled'})
+                  </div>
+                  <button
+                    onClick={clearSavedData}
+                    className="px-2 py-1 rounded text-xs bg-red-600 text-white hover:bg-red-500 transition-colors"
+                    title="Clear saved data and restart"
+                  >
+                    🗑️ Reset
+                  </button>
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Progress Indicator */}
@@ -821,15 +1040,18 @@ export default function AdventureBuilderPage() {
                 return (
                   <div key={step.id} className="flex items-center">
                     <div className="flex flex-col items-center">
-                      <motion.div 
-                        className={`relative mb-3 p-4 rounded-full transition-all duration-300 ${
+                      <motion.button 
+                        onClick={() => navigateToStep(step.id)}
+                        className={`relative mb-3 p-4 rounded-full transition-all duration-300 cursor-pointer ${
                           isActive 
                             ? 'bg-amber-500 ring-4 ring-amber-500/30 scale-110 shadow-2xl' 
                             : isCompleted 
-                            ? 'bg-emerald-500 shadow-xl'
-                            : 'bg-slate-700'
+                            ? 'bg-emerald-500 shadow-xl hover:bg-emerald-400'
+                            : 'bg-slate-700 hover:bg-slate-600'
                         }`}
                         whileHover={{ scale: isActive ? 1.15 : 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        title={`Go to ${step.title}`}
                       >
                         <Icon className={`h-6 w-6 ${
                           isActive || isCompleted ? 'text-white' : 'text-slate-400'
@@ -842,7 +1064,7 @@ export default function AdventureBuilderPage() {
                             transition={{ duration: 2, repeat: Infinity }}
                           />
                         )}
-                      </motion.div>
+                      </motion.button>
                       
                       <div className="text-center max-w-24">
                         <div className={`text-sm font-bold mb-1 ${
@@ -921,7 +1143,7 @@ export default function AdventureBuilderPage() {
                       AI Theme Generator
                     </h4>
                     <p className="text-slate-400 text-sm mb-4">
-                      Diseña temas únicos y personalizados usando inteligencia artificial
+                      Design unique and personalized themes using artificial intelligence
                     </p>
                     
                     <CustomThemeBuilder 
@@ -933,7 +1155,7 @@ export default function AdventureBuilderPage() {
                   {/* Theme Templates */}
                   <div>
                     <h3 className="text-xl font-semibold text-slate-300 mb-6">
-                      Temas Disponibles
+                      Available Themes
                       <span className="text-sm text-slate-500 font-normal ml-2">
                         ({allThemes.length} total)
                       </span>
@@ -974,7 +1196,7 @@ export default function AdventureBuilderPage() {
                           
                           {theme.isCustom && theme.category && (
                             <div className="text-xs text-purple-400 font-medium mb-3">
-                              Categoría: {theme.category}
+                              Category: {theme.category}
                             </div>
                           )}
                           
@@ -994,7 +1216,7 @@ export default function AdventureBuilderPage() {
                             ></div>
                             {theme.isCustom && (
                               <span className="ml-2 text-xs text-purple-400">
-                                🤖 Generado con IA
+                                🤖 AI Generated
                               </span>
                             )}
                           </div>
@@ -1121,10 +1343,11 @@ export default function AdventureBuilderPage() {
                         }`}
                       >
                         {adventureData.isGeneratingStory ? (
-                          <>
-                            <Sparkles className="h-4 w-4 animate-spin" />
-                            Generating Story...
-                          </>
+                          <AIGenerating 
+                            message="Generating Story..."
+                            size="sm"
+                            className="text-white"
+                          />
                         ) : (
                           <>
                             <Wand2 className="h-4 w-4" />
@@ -1187,7 +1410,7 @@ export default function AdventureBuilderPage() {
                       Step 3: Roles & Characters
                     </h2>
                     <p className="text-slate-400">
-                      Elige roles predefinidos o diseña personajes únicos con IA
+                      Choose predefined roles or design unique characters with AI
                     </p>
                   </div>
 
@@ -1195,10 +1418,10 @@ export default function AdventureBuilderPage() {
                   <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-8">
                     <h4 className="text-lg font-bold text-purple-200 mb-3 flex items-center gap-2">
                       <Wand2 className="h-5 w-5" />
-                      Diseñador de Personajes con IA
+                      AI Character Designer
                     </h4>
                     <p className="text-slate-400 text-sm mb-4">
-                      Chatea con la IA para crear personajes únicos y personalizados para tu aventura
+                      Chat with AI to create unique and personalized characters for your adventure
                     </p>
                     
                     <CharacterChatDesigner 
@@ -1210,7 +1433,7 @@ export default function AdventureBuilderPage() {
 
                   {/* Category Filter */}
                   <div className="mb-6">
-                    <h4 className="text-lg font-semibold text-slate-300 mb-3">Filtrar por categoría</h4>
+                    <h4 className="text-lg font-semibold text-slate-300 mb-3">Filter by category</h4>
                     <div className="flex flex-wrap gap-2">
                       {categories.map((category) => (
                         <button
@@ -1236,7 +1459,7 @@ export default function AdventureBuilderPage() {
                   {/* Characters Grid */}
                   <div>
                     <h4 className="text-lg font-semibold text-slate-300 mb-4">
-                      Personajes disponibles 
+                      Available Characters 
                       <span className="text-sm text-slate-500 font-normal">
                         ({filteredCharacters.length} total)
                       </span>
@@ -1285,7 +1508,7 @@ export default function AdventureBuilderPage() {
                                   ))}
                                   {role.perks.length > 2 && (
                                     <div className="text-xs text-slate-500">
-                                      +{role.perks.length - 2} más
+                                      +{role.perks.length - 2} more
                                     </div>
                                   )}
                                 </div>
@@ -1309,10 +1532,10 @@ export default function AdventureBuilderPage() {
                       animate={{ opacity: 1, scale: 1 }}
                     >
                       <div className="text-emerald-200 font-semibold mb-2">
-                        ✅ {adventureData.roles.length} roles seleccionados
+                        ✅ {adventureData.roles.length} roles selected
                       </div>
                       <div className="text-emerald-300 text-sm mb-3">
-                        Los jugadores podrán elegir entre estos roles al unirse a la aventura
+                        Players will be able to choose from these roles when joining the adventure
                       </div>
                       
                       {/* Selected Roles List */}
@@ -1338,86 +1561,182 @@ export default function AdventureBuilderPage() {
                 </div>
               )}
 
-              {/* STEP 4: RETOS */}
+              {/* STEP 4: LOCATIONS & QR CODES */}
               {currentStep === 4 && (
                 <div className="space-y-8">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-red-200 mb-3 flex items-center justify-center gap-3">
                       <MapPin className="h-8 w-8" />
-                      Step 4: Challenges & QR Codes
+                      Step 4: Locations & QR Codes
                     </h2>
                     <p className="text-slate-400">
-                      Configure challenge types and generate secure QR codes
+                      Set up physical locations and generate secure QR codes for your adventure
                     </p>
                   </div>
 
-                  {/* Challenge Types Selection */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-300 mb-6">Challenge Types</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {challengeTypes.map((challenge) => {
-                        const Icon = challenge.icon
+                  {/* Adventure Flow Type Selection */}
+                  <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-8">
+                    <h4 className="text-lg font-bold text-purple-200 mb-4 flex items-center gap-2">
+                      <Settings className="h-5 w-5" />
+                      Adventure Flow Type
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        {
+                          id: 'linear',
+                          name: 'Linear Adventure',
+                          description: 'Challenges unlock in sequence, one after another',
+                          icon: ArrowRight,
+                          color: 'amber'
+                        },
+                        {
+                          id: 'parallel',
+                          name: 'Parallel Adventure',
+                          description: 'Multiple challenges available simultaneously',
+                          icon: Users,
+                          color: 'emerald'
+                        },
+                        {
+                          id: 'hub',
+                          name: 'Hub Adventure',
+                          description: 'Central location with branching paths',
+                          icon: Target,
+                          color: 'purple'
+                        }
+                      ].map((type) => {
+                        const Icon = type.icon
+                        const isSelected = adventureData.adventureType === type.id
                         
                         return (
-                          <motion.button
-                            key={challenge.id}
-                            onClick={() => {
-                              const challenges = adventureData.challengeTypes.includes(challenge.id)
-                                ? adventureData.challengeTypes.filter(c => c !== challenge.id)
-                                : [...adventureData.challengeTypes, challenge.id]
-                              setAdventureData({ ...adventureData, challengeTypes: challenges })
-                            }}
+                          <button
+                            key={type.id}
+                            onClick={() => updateAdventureData({
+                              ...adventureData,
+                              adventureType: type.id as 'linear' | 'parallel' | 'hub'
+                            })}
                             className={`p-4 rounded-lg border transition-all duration-200 text-left ${
-                              adventureData.challengeTypes.includes(challenge.id)
-                                ? `border-${challenge.color}-400 bg-${challenge.color}-500/10`
+                              isSelected
+                                ? `border-${type.color}-400 bg-${type.color}-500/20 ring-2 ring-${type.color}-500/20`
                                 : 'border-slate-600 bg-slate-800/40 hover:border-slate-500'
                             }`}
-                            whileHover={{ scale: 1.02 }}
                           >
                             <div className="flex items-center gap-3 mb-2">
-                              <Icon className={`h-5 w-5 text-${challenge.color}-400`} />
-                              <span className="font-semibold text-slate-200">{challenge.name}</span>
+                              <Icon className={`h-5 w-5 ${
+                                isSelected ? `text-${type.color}-300` : 'text-slate-400'
+                              }`} />
+                              <span className={`font-semibold ${
+                                isSelected ? `text-${type.color}-200` : 'text-slate-200'
+                              }`}>
+                                {type.name}
+                              </span>
                             </div>
-                            <p className="text-slate-400 text-sm">{challenge.description}</p>
-                          </motion.button>
+                            <p className="text-slate-400 text-sm">{type.description}</p>
+                          </button>
                         )
                       })}
                     </div>
                   </div>
 
-                  {/* QR Code Generation */}
-                  <div className="p-6 rounded-xl border border-amber-500/30 bg-amber-500/5">
-                    <h4 className="text-lg font-bold text-amber-200 mb-3 flex items-center gap-2">
-                      <Smartphone className="h-5 w-5" />
-                      QR Code Generation
-                    </h4>
-                    <p className="text-slate-400 text-sm mb-4">
-                      QR codes will be automatically generated with HMAC signatures to prevent fraud
-                    </p>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm text-slate-400 mb-2">Number of QRs</label>
-                        <input 
-                          type="number" 
-                          min="3" 
-                          max="20" 
-                          defaultValue="8"
-                          className="w-full px-3 py-2 bg-slate-800/80 border border-slate-600 rounded text-slate-200 text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-slate-400 mb-2">Duration (hours)</label>
-                        <input 
-                          type="number" 
-                          min="1" 
-                          max="24" 
-                          defaultValue="4"
-                          className="w-full px-3 py-2 bg-slate-800/80 border border-slate-600 rounded text-slate-200 text-sm"
-                        />
+                  {/* Location Builder */}
+                  <LocationBuilder
+                    locations={adventureData.locations}
+                    onLocationsChange={(locations) => updateAdventureData({
+                      ...adventureData,
+                      locations
+                    })}
+                    maxLocations={20}
+                    enableGeofencing={true}
+                  />
+
+                  {/* QR Generator */}
+                  {adventureData.locations.length > 0 && (
+                    <QRGenerator
+                      locations={adventureData.locations}
+                      adventureId={adventureData.id || crypto.randomUUID()}
+                      onQRCodesGenerated={(qrCodes) => updateAdventureData({
+                        ...adventureData,
+                        qrCodes,
+                        id: adventureData.id || crypto.randomUUID()
+                      })}
+                      existingQRCodes={adventureData.qrCodes}
+                    />
+                  )}
+
+                  {/* Challenge Types Selection */}
+                  {adventureData.locations.length > 0 && (
+                    <div className="p-6 rounded-xl border border-blue-500/30 bg-blue-500/5">
+                      <h4 className="text-lg font-bold text-blue-200 mb-4 flex items-center gap-2">
+                        <Target className="h-5 w-5" />
+                        Challenge Types
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {challengeTypes.map((challenge) => {
+                          const Icon = challenge.icon
+                          
+                          return (
+                            <motion.button
+                              key={challenge.id}
+                              onClick={() => {
+                                const challenges = adventureData.challengeTypes.includes(challenge.id)
+                                  ? adventureData.challengeTypes.filter(c => c !== challenge.id)
+                                  : [...adventureData.challengeTypes, challenge.id]
+                                updateAdventureData({ ...adventureData, challengeTypes: challenges })
+                              }}
+                              className={`p-4 rounded-lg border transition-all duration-200 text-left ${
+                                adventureData.challengeTypes.includes(challenge.id)
+                                  ? `border-${challenge.color}-400 bg-${challenge.color}-500/10`
+                                  : 'border-slate-600 bg-slate-800/40 hover:border-slate-500'
+                              }`}
+                              whileHover={{ scale: 1.02 }}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <Icon className={`h-5 w-5 text-${challenge.color}-400`} />
+                                <span className="font-semibold text-slate-200">{challenge.name}</span>
+                              </div>
+                              <p className="text-slate-400 text-sm">{challenge.description}</p>
+                            </motion.button>
+                          )
+                        })}
                       </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Challenge-Location Mapper */}
+                  {adventureData.challengeTypes.length > 0 && adventureData.locations.length > 0 && (
+                    <ChallengeLocationMapper
+                      challenges={adventureData.challengeTypes.map(typeId => {
+                        const challengeType = challengeTypes.find(ct => ct.id === typeId)
+                        return {
+                          id: crypto.randomUUID(),
+                          type: typeId as any,
+                          title: challengeType?.name || typeId,
+                          description: challengeType?.description || '',
+                          difficulty: 'medium' as const,
+                          points: 10,
+                          isOptional: false
+                        }
+                      })}
+                      locations={adventureData.locations}
+                      mappings={adventureData.challengeLocationMappings}
+                      onMappingsChange={(mappings) => updateAdventureData({
+                        ...adventureData,
+                        challengeLocationMappings: mappings
+                      })}
+                      adventureType={adventureData.adventureType}
+                    />
+                  )}
+
+                  {/* QR Export Package */}
+                  {adventureData.qrCodes.length > 0 && (
+                    <QRExporter
+                      locations={adventureData.locations}
+                      qrCodes={adventureData.qrCodes}
+                      adventureTitle={adventureData.title}
+                      adventureId={adventureData.id}
+                    />
+                  )}
                 </div>
               )}
 
@@ -1549,7 +1868,7 @@ export default function AdventureBuilderPage() {
 
           {/* Navigation Buttons */}
           <motion.div 
-            className="flex items-center justify-between"
+            className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
@@ -1557,7 +1876,7 @@ export default function AdventureBuilderPage() {
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors ${
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-colors min-h-[44px] ${
                 currentStep === 1 
                   ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                   : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
@@ -1571,7 +1890,7 @@ export default function AdventureBuilderPage() {
               <button 
                 onClick={handleCreateAdventure}
                 disabled={!adventureData.title.trim() || !adventureData.theme || isCreatingAdventure}
-                className={`px-8 py-3 text-lg font-bold shadow-xl transition-all ${
+                className={`w-full sm:w-auto px-8 py-3 text-lg font-bold shadow-xl transition-all min-h-[44px] ${
                   !adventureData.title.trim() || !adventureData.theme || isCreatingAdventure
                     ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                     : 'btn-primary hover:shadow-emerald-500/40'
@@ -1593,7 +1912,7 @@ export default function AdventureBuilderPage() {
               <button
                 onClick={nextStep}
                 disabled={currentStep === 1 && !adventureData.title.trim()}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                className={`w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all min-h-[44px] ${
                   currentStep === 1 && !adventureData.title.trim()
                     ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                     : 'btn-primary'

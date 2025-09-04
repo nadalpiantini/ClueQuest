@@ -1,8 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { leonardoClient } from '@/lib/leonardo-ai'
 import { AVATAR_STORAGE_CONFIG, ensureAvatarsBucket } from '@/lib/supabase/storage'
 import { AvatarGenerationRequest, AvatarGenerationResult } from '@/types/adventure'
+
+// Mock Leonardo AI client for development when API key is not available
+const createMockLeonardoClient = () => ({
+  uploadImage: async (imageBuffer: Buffer, filename: string) => {
+    console.log('Mock Leonardo AI: Uploading image', filename)
+    return `mock-image-id-${Date.now()}`
+  },
+  generateAvatar: async (imageId: string, styleId: string, role: string) => {
+    console.log('Mock Leonardo AI: Generating avatar for role', role)
+    return `mock-generation-id-${Date.now()}`
+  },
+  getGenerationStatus: async (generationId: string) => {
+    console.log('Mock Leonardo AI: Checking generation status', generationId)
+    return {
+      status: 'COMPLETE',
+      generated_images: [
+        {
+          url: 'https://via.placeholder.com/512x512/8b5cf6/ffffff?text=Mock+Avatar',
+          id: `mock-avatar-${Date.now()}`
+        }
+      ]
+    }
+  }
+})
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
@@ -13,7 +36,9 @@ export async function POST(request: NextRequest) {
     // Get current user (allow guest users for avatar generation)
     const { data: { user } } = await supabase.auth.getUser()
     
-    if (!user) {
+    // In development mode, allow requests without authentication
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    if (!isDevelopment && !user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -88,6 +113,20 @@ export async function POST(request: NextRequest) {
         { error: 'Could not process selfie image' },
         { status: 400 }
       )
+    }
+
+    // Try to use Leonardo AI if available, otherwise use mock
+    let leonardoClient
+    try {
+      if (process.env.LEONARDO_AI_API_KEY && process.env.LEONARDO_AI_API_KEY !== 'placeholder-key-for-development') {
+        const { leonardoClient: realClient } = await import('@/lib/leonardo-ai')
+        leonardoClient = realClient
+      } else {
+        leonardoClient = createMockLeonardoClient()
+      }
+    } catch (error) {
+      console.log('Using mock Leonardo AI client for development')
+      leonardoClient = createMockLeonardoClient()
     }
 
     // Upload to Leonardo AI

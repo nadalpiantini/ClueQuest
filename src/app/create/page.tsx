@@ -17,7 +17,9 @@ import {
   Settings,
   Sparkles,
   Wand2,
-  BookOpen
+  BookOpen,
+  CheckCircle,
+  Play
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -25,6 +27,9 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import TitleAssistant from '@/components/ai/TitleAssistant'
 import StoryGenerationModal from '@/components/ai/StoryGenerationModal'
+import LocationBuilder from '@/components/builder/LocationBuilder'
+import QRGenerator from '@/components/builder/QRGenerator'
+import QRExporter from '@/components/builder/QRExporter'
 
 function CreatePageContent() {
   const searchParams = useSearchParams()
@@ -36,7 +41,10 @@ function CreatePageContent() {
     theme: 'mystery',
     duration: 45,
     maxPlayers: 20,
-    storyContent: ''
+    storyContent: '',
+    locations: [] as any[],
+    qrCodes: [] as any[],
+    id: crypto.randomUUID()
   })
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false)
   const [isStoryGenerationOpen, setIsStoryGenerationOpen] = useState(false)
@@ -61,7 +69,7 @@ function CreatePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-x-hidden overflow-y-auto">
       
       {/* Background */}
       <div className="absolute inset-0">
@@ -70,9 +78,9 @@ function CreatePageContent() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-20 p-6">
+      <nav className="relative z-20 p-4 sm:p-6">
         <Link 
-                          href="/adventure-selection"
+          href="/adventure-selection"
           className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -80,7 +88,7 @@ function CreatePageContent() {
         </Link>
       </nav>
       
-      <main className="relative z-20 px-4 py-8 sm:px-6 lg:px-8">
+      <main className="relative z-20 px-4 py-4 sm:px-6 sm:py-8 pb-20">
         <div className="mx-auto max-w-4xl">
           
           {/* Header */}
@@ -417,35 +425,81 @@ function CreatePageContent() {
               </div>
             )}
 
-            {/* Demo Steps Placeholder */}
-            {currentStep > 2 && (
+            {/* Step 3: Locations & QR Setup */}
+            {currentStep === 3 && (
+              <div className="space-y-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-bold text-purple-200 mb-3 flex items-center justify-center gap-3">
+                    <MapPin className="h-6 w-6" />
+                    Step 3: Locations & QR Codes
+                  </h2>
+                  <p className="text-slate-400">
+                    Set up physical locations where participants will find QR codes during the adventure.
+                  </p>
+                </div>
+
+                <LocationBuilder
+                  locations={adventureData.locations}
+                  onLocationsChange={(locations) => setAdventureData({
+                    ...adventureData,
+                    locations
+                  })}
+                  maxLocations={10}
+                  enableGeofencing={true}
+                />
+
+                {adventureData.locations.length > 0 && (
+                  <QRGenerator
+                    locations={adventureData.locations}
+                    adventureId={adventureData.id}
+                    onQRCodesGenerated={(qrCodes) => setAdventureData({
+                      ...adventureData,
+                      qrCodes
+                    })}
+                    existingQRCodes={adventureData.qrCodes}
+                  />
+                )}
+
+                {adventureData.qrCodes.length > 0 && (
+                  <QRExporter
+                    locations={adventureData.locations}
+                    qrCodes={adventureData.qrCodes}
+                    adventureTitle={adventureData.title || 'Untitled Adventure'}
+                    adventureId={adventureData.id}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Step 4: Launch Adventure */}
+            {currentStep === 4 && (
               <div className="text-center py-16">
                 <div className="mb-6">
-                  <Eye className="h-16 w-16 text-amber-400 mx-auto animate-pulse" />
+                  <CheckCircle className="h-16 w-16 text-emerald-400 mx-auto animate-pulse" />
                 </div>
-                <h3 className="text-2xl font-bold text-amber-200 mb-4">
-                  Coming Soon: Advanced Builder
+                <h3 className="text-2xl font-bold text-emerald-200 mb-4">
+                  Adventure Ready to Launch!
                 </h3>
                 <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                  Step {currentStep} of the adventure builder is under development. 
-                  The full no-code creator will be available soon!
+                  Your {adventureData.theme} adventure with {adventureData.locations.length} locations and {adventureData.qrCodes.length} QR codes is ready to deploy.
                 </p>
                 
-                <div className="flex items-center gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
                   <button
                     onClick={() => setCurrentStep(currentStep - 1)}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors min-h-[44px]"
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    Previous
+                    Back to Locations
                   </button>
                   
-                  <Link 
-                    href="/demo"
-                    className="btn-primary px-8 py-3"
+                  <Link
+                    href="/dashboard"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white font-bold tracking-wide shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 min-h-[44px]"
                   >
-                    <Eye className="h-5 w-5" />
-                    Try Demo Instead
+                    <Play className="h-5 w-5" />
+                    Launch Adventure
+                    <ArrowRight className="h-5 w-5" />
                   </Link>
                 </div>
               </div>
@@ -455,14 +509,14 @@ function CreatePageContent() {
           {/* Action Buttons */}
           {currentStep === 1 && (
             <motion.div 
-              className="flex items-center justify-between"
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <Link 
                 href="/adventure-selection"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors min-h-[44px]"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back
@@ -471,7 +525,7 @@ function CreatePageContent() {
               <button
                 onClick={() => setCurrentStep(2)}
                 disabled={!adventureData.title}
-                className={`btn-primary px-8 py-3 ${
+                className={`w-full sm:w-auto btn-primary px-8 py-3 min-h-[44px] ${
                   !adventureData.title ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-amber-500/40'
                 }`}
               >
@@ -484,14 +538,14 @@ function CreatePageContent() {
           {/* Step 2 Action Buttons */}
           {currentStep === 2 && (
             <motion.div 
-              className="flex items-center justify-between"
+              className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <button
                 onClick={() => setCurrentStep(1)}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors min-h-[44px]"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back
@@ -500,7 +554,7 @@ function CreatePageContent() {
               <button
                 onClick={() => setCurrentStep(3)}
                 disabled={!adventureData.storyContent}
-                className={`btn-primary px-8 py-3 ${
+                className={`w-full sm:w-auto btn-primary px-8 py-3 min-h-[44px] ${
                   !adventureData.storyContent ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-amber-500/40'
                 }`}
               >
@@ -568,7 +622,7 @@ function CreatePageContent() {
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
                 <Link 
                   href="/demo"
-                  className="btn-primary px-8 py-4 text-lg shadow-xl hover:shadow-emerald-500/40"
+                  className="w-full sm:w-auto btn-primary px-8 py-4 text-lg shadow-xl hover:shadow-emerald-500/40 min-h-[44px]"
                 >
                   <Eye className="h-5 w-5" />
                   Watch Live Demo
@@ -576,7 +630,7 @@ function CreatePageContent() {
                 
                 <Link 
                   href="/join"
-                  className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-slate-800/80 text-purple-200 border border-purple-500/30 hover:border-purple-400/50 font-semibold transition-all duration-200 hover:scale-105"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-slate-800/80 text-purple-200 border border-purple-500/30 hover:border-purple-400/50 font-semibold transition-all duration-200 hover:scale-105 min-h-[44px]"
                 >
                   <Users className="h-5 w-5" />
                   Join Existing

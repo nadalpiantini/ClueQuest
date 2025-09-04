@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Camera, Upload, Shuffle, Check, X, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react'
+import AIGenerating from '@/components/ui/ai-loading'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -607,8 +608,22 @@ function AvatarGenerationPageContent() {
                       disabled={isGenerating}
                       className="w-full touch-target-lg bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                     >
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Generate My Avatar
+                      {isGenerating ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          >
+                            <Sparkles className="w-5 h-5 mr-2" />
+                          </motion.div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5 mr-2" />
+                          Generate My Avatar
+                        </>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -625,16 +640,12 @@ function AvatarGenerationPageContent() {
               >
                 <Card>
                   <CardContent className="p-8">
-                    <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full center-flex mx-auto mb-6">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Sparkles className="w-12 h-12 text-white" />
-                      </motion.div>
-                    </div>
+                    <AIGenerating 
+                      message="Creating Your Avatar"
+                      size="lg"
+                      className="mb-6"
+                    />
                     
-                    <h2 className="text-xl font-bold mb-2">Creating Your Avatar</h2>
                     <p className="text-muted-foreground mb-6">
                       AI is crafting your personalized avatar...
                     </p>
