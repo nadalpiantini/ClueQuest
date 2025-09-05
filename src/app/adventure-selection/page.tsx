@@ -73,7 +73,7 @@ export default function WelcomePage() {
       <nav className="relative z-20 p-6">
         <Link 
           href="/"
-          className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold"
+          className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold min-h-[44px] min-w-[44px] px-4 py-3 touch-target"
         >
           <ArrowLeft className="h-5 w-5" />
           Back to Home
@@ -199,7 +199,7 @@ export default function WelcomePage() {
                   or{' '}
                   <Link 
                     href={`/demo?type=${selectedAdventure}`}
-                    className="text-amber-300 hover:text-amber-200 underline font-semibold"
+                    className="text-amber-300 hover:text-amber-200 underline font-semibold touch-target px-5 py-4 min-h-[44px] min-w-[44px] inline-flex items-center"
                   >
                     try a demo first
                   </Link>

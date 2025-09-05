@@ -1,0 +1,130 @@
+{
+  "timestamp": "2025-09-04T18:03:53.101Z",
+  "environment": "development",
+  "summary": {
+    "total_checks": 25,
+    "critical_errors": 4,
+    "total_errors": 5,
+    "warnings": 0,
+    "passed": 20,
+    "security_score": 100
+  },
+  "critical_errors": [
+    {
+      "message": "Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL",
+      "severity": "critical",
+      "timestamp": "2025-09-04T18:03:53.092Z"
+    },
+    {
+      "message": "Missing required environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "severity": "critical",
+      "timestamp": "2025-09-04T18:03:53.092Z"
+    },
+    {
+      "message": "Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY",
+      "severity": "critical",
+      "timestamp": "2025-09-04T18:03:53.092Z"
+    },
+    {
+      "message": "QR Security using fallback HMAC secret",
+      "severity": "critical",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    }
+  ],
+  "errors": [
+    {
+      "message": "Middleware file not found",
+      "severity": "high",
+      "timestamp": "2025-09-04T18:03:53.093Z"
+    }
+  ],
+  "warnings": [],
+  "passed": [
+    {
+      "message": "No dangerous environment variable exposure in next.config.js",
+      "timestamp": "2025-09-04T18:03:53.093Z"
+    },
+    {
+      "message": "Row Level Security (RLS) enabled in database schema",
+      "timestamp": "2025-09-04T18:03:53.095Z"
+    },
+    {
+      "message": "Security policies found in database schema",
+      "timestamp": "2025-09-04T18:03:53.095Z"
+    },
+    {
+      "message": "HMAC signature validation properly implemented",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    },
+    {
+      "message": "QR fraud detection feature present: fraud_indicators",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    },
+    {
+      "message": "QR fraud detection feature present: risk_score",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    },
+    {
+      "message": "QR fraud detection feature present: location_validation",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    },
+    {
+      "message": "QR fraud detection feature present: rate_limiting",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    },
+    {
+      "message": "Zod validation library present",
+      "timestamp": "2025-09-04T18:03:53.096Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/ai/character-generator/route.ts",
+      "timestamp": "2025-09-04T18:03:53.098Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/ai/story-generation/route.ts",
+      "timestamp": "2025-09-04T18:03:53.098Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/ai/story-generator/route.ts",
+      "timestamp": "2025-09-04T18:03:53.099Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/ai/theme-generator/route.ts",
+      "timestamp": "2025-09-04T18:03:53.099Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/ai/title-generator/route.ts",
+      "timestamp": "2025-09-04T18:03:53.099Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/challenges/submit/route.ts",
+      "timestamp": "2025-09-04T18:03:53.099Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/qr/generate/route.ts",
+      "timestamp": "2025-09-04T18:03:53.100Z"
+    },
+    {
+      "message": "Input validation found in API route: /src/app/api/qr/scan/route.ts",
+      "timestamp": "2025-09-04T18:03:53.100Z"
+    },
+    {
+      "message": "PKCE flow enabled for enhanced security",
+      "timestamp": "2025-09-04T18:03:53.100Z"
+    },
+    {
+      "message": "Session persistence configured",
+      "timestamp": "2025-09-04T18:03:53.100Z"
+    },
+    {
+      "message": "Automatic token refresh enabled",
+      "timestamp": "2025-09-04T18:03:53.100Z"
+    }
+  ],
+  "recommendations": [
+    "🚨 IMMEDIATE ACTION REQUIRED: Fix all critical security errors before production deployment",
+    "🔧 Address all high-severity security errors",
+    "🔄 Run security validation regularly as part of CI/CD pipeline",
+    "📚 Consider implementing additional security measures from OWASP guidelines"
+  ]
+}

@@ -35,6 +35,7 @@ function CreatePageContent() {
   const searchParams = useSearchParams()
   const adventureType = searchParams.get('type') || 'corporate'
   
+  const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
   const [adventureData, setAdventureData] = useState({
     title: '',
@@ -48,6 +49,15 @@ function CreatePageContent() {
   })
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false)
   const [isStoryGenerationOpen, setIsStoryGenerationOpen] = useState(false)
+
+  // Simulate loading time for better UX
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1500) // 1.5 seconds loading time
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const themes = [
     { id: 'mystery', name: 'Mystery Detective', icon: Search, color: 'amber' },
@@ -66,6 +76,69 @@ function CreatePageContent() {
   const handleStoryApprove = (story: string) => {
     setAdventureData({ ...adventureData, storyContent: story })
     setIsStoryGenerationOpen(false)
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(168,85,247,0.2),transparent_60%),radial-gradient(circle_at_70%_60%,rgba(245,158,11,0.15),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-20" />
+        </div>
+
+        {/* Loading Content */}
+        <div className="relative z-20 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            {/* Animated Logo/Icon */}
+            <div className="mb-8">
+              <div className="w-20 h-20 mx-auto mb-4 relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-purple-500 rounded-full animate-pulse"></div>
+                <div className="absolute inset-2 bg-gradient-to-r from-amber-400 to-purple-400 rounded-full animate-spin"></div>
+                <div className="absolute inset-4 bg-slate-900 rounded-full flex items-center justify-center">
+                  <Search className="h-6 w-6 text-amber-300 animate-bounce" />
+                </div>
+              </div>
+            </div>
+
+            {/* Loading Text */}
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
+                Creating Your Mystery
+              </h1>
+              <p className="text-slate-300 text-lg">
+                Loading adventure builder...
+              </p>
+            </div>
+
+            {/* Loading Animation */}
+            <div className="mt-8 flex justify-center">
+              <div className="flex space-x-2">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-3 h-3 bg-amber-400 rounded-full animate-bounce"
+                    style={{
+                      animationDelay: `${i * 0.1}s`,
+                      animationDuration: '0.6s'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Progress Indicator */}
+            <div className="mt-8 w-64 mx-auto">
+              <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-amber-500 to-purple-500 rounded-full animate-pulse"></div>
+              </div>
+              <p className="text-slate-400 text-sm mt-2">Initializing components...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -674,10 +747,61 @@ function CreatePageContent() {
 export default function CreatePage() {
   return (
     <React.Suspense fallback={
-      <div className="min-h-screen center-flex bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-        <div className="text-white text-center">
-          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
-          <p>Loading adventure builder...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(168,85,247,0.2),transparent_60%),radial-gradient(circle_at_70%_60%,rgba(245,158,11,0.15),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-20" />
+        </div>
+
+        {/* Loading Content */}
+        <div className="relative z-20 min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            {/* Animated Logo/Icon */}
+            <div className="mb-8">
+              <div className="w-20 h-20 mx-auto mb-4 relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-purple-500 rounded-full animate-pulse"></div>
+                <div className="absolute inset-2 bg-gradient-to-r from-amber-400 to-purple-400 rounded-full animate-spin"></div>
+                <div className="absolute inset-4 bg-slate-900 rounded-full flex items-center justify-center">
+                  <Search className="h-6 w-6 text-amber-300 animate-bounce" />
+                </div>
+              </div>
+            </div>
+
+            {/* Loading Text */}
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
+                Creating Your Mystery
+              </h1>
+              <p className="text-slate-300 text-lg">
+                Loading adventure builder...
+              </p>
+            </div>
+
+            {/* Loading Animation */}
+            <div className="mt-8 flex justify-center">
+              <div className="flex space-x-2">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-3 h-3 bg-amber-400 rounded-full animate-bounce"
+                    style={{
+                      animationDelay: `${i * 0.1}s`,
+                      animationDuration: '0.6s'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Progress Indicator */}
+            <div className="mt-8 w-64 mx-auto">
+              <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-amber-500 to-purple-500 rounded-full animate-pulse"></div>
+              </div>
+              <p className="text-slate-400 text-sm mt-2">Initializing components...</p>
+            </div>
+          </div>
         </div>
       </div>
     }>

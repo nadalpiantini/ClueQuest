@@ -12,10 +12,12 @@ import {
   Globe,
   Compass,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Map
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { GamingButton, GamingCard, GamingInput, GamingBadge } from '@/components/ui/gaming-components'
+import { useGeocoding } from '@/hooks/useGeocoding'
 
 interface Location {
   id: string
@@ -48,7 +50,10 @@ export default function LocationBuilder({
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPosition, setCurrentPosition] = useState<{lat: number, lng: number} | null>(null)
   const [addressLookup, setAddressLookup] = useState('')
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [showSearchResults, setShowSearchResults] = useState(false)
+  
+  const { isLoading: isGeocodingLoading, error: geocodingError, geocodeAddress, searchPlaces, clearError } = useGeocoding()
 
   // Get user's current position for location assistance
   useEffect(() => {
@@ -62,6 +67,12 @@ export default function LocationBuilder({
         },
         (error) => {
           console.warn('Could not get user location:', error)
+          // Don't show error to user as this is optional functionality
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
         }
       )
     }
@@ -117,30 +128,60 @@ export default function LocationBuilder({
     setIsAddingLocation(true)
   }
 
-  // Address to coordinates lookup simulation
+  // Real address to coordinates lookup using Google Maps API
   const lookupAddress = async () => {
-    if (!addressLookup.trim()) return
+    if (!addressLookup.trim() || !selectedLocation) return
 
-    setIsLoadingLocation(true)
+    clearError()
+    const result = await geocodeAddress(addressLookup)
     
-    // Simulate geocoding API call
-    setTimeout(() => {
-      if (selectedLocation) {
-        // Mock coordinates based on address
-        const mockCoords = {
-          latitude: 40.7128 + (Math.random() - 0.5) * 0.1,
-          longitude: -74.0060 + (Math.random() - 0.5) * 0.1
-        }
-        
-        setSelectedLocation({
-          ...selectedLocation,
-          latitude: mockCoords.latitude,
-          longitude: mockCoords.longitude,
-          address: addressLookup
-        })
-      }
-      setIsLoadingLocation(false)
-    }, 1000)
+    if (result) {
+      setSelectedLocation({
+        ...selectedLocation,
+        latitude: result.latitude,
+        longitude: result.longitude,
+        address: result.formattedAddress
+      })
+      setAddressLookup('')
+      setShowSearchResults(false)
+    }
+  }
+
+  // Search for places as user types
+  const handleAddressSearch = async (query: string) => {
+    setAddressLookup(query)
+    
+    if (query.length < 3) {
+      setSearchResults([])
+      setShowSearchResults(false)
+      return
+    }
+
+    clearError()
+    const results = await searchPlaces(query)
+    
+    if (results && results.length > 0) {
+      setSearchResults(results)
+      setShowSearchResults(true)
+    } else {
+      setSearchResults([])
+      setShowSearchResults(false)
+    }
+  }
+
+  // Select a search result
+  const selectSearchResult = (result: any) => {
+    if (selectedLocation) {
+      setSelectedLocation({
+        ...selectedLocation,
+        latitude: result.latitude,
+        longitude: result.longitude,
+        address: result.formattedAddress
+      })
+      setAddressLookup('')
+      setSearchResults([])
+      setShowSearchResults(false)
+    }
   }
 
   const filteredLocations = locations.filter(location =>
@@ -365,29 +406,79 @@ export default function LocationBuilder({
                 {/* Address Lookup */}
                 <div className="p-4 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-4">
                   <h4 className="text-lg font-bold text-purple-200 flex items-center gap-2">
-                    <Search className="h-5 w-5" />
+                    <Map className="h-5 w-5" />
                     Address Lookup
                   </h4>
                   
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      placeholder="Enter street address, landmark, or business name..."
-                      value={addressLookup}
-                      onChange={(e) => setAddressLookup(e.target.value)}
-                      className="flex-1 px-4 py-3 bg-slate-800/60 border border-slate-600 rounded-lg text-slate-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
-                      onKeyPress={(e) => e.key === 'Enter' && lookupAddress()}
-                    />
-                    <GamingButton
-                      variant="outline"
-                      size="md"
-                      onClick={lookupAddress}
-                      isLoading={isLoadingLocation}
-                      disabled={!addressLookup.trim()}
-                    >
-                      <Target className="h-4 w-4" />
-                      Find
-                    </GamingButton>
+                  <div className="relative">
+                    <div className="flex gap-3">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          placeholder="Enter street address, landmark, or business name..."
+                          value={addressLookup}
+                          onChange={(e) => handleAddressSearch(e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-800/60 border border-slate-600 rounded-lg text-slate-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                          onKeyPress={(e) => e.key === 'Enter' && lookupAddress()}
+                          onFocus={() => {
+                            if (searchResults.length > 0) {
+                              setShowSearchResults(true)
+                            }
+                          }}
+                          onBlur={() => {
+                            // Delay hiding results to allow clicking on them
+                            setTimeout(() => setShowSearchResults(false), 200)
+                          }}
+                        />
+                        
+                        {/* Search Results Dropdown */}
+                        {showSearchResults && searchResults.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                            {searchResults.map((result, index) => (
+                              <button
+                                key={index}
+                                onClick={() => selectSearchResult(result)}
+                                className="w-full px-4 py-3 text-left hover:bg-slate-700 border-b border-slate-700 last:border-b-0 transition-colors"
+                              >
+                                <div className="text-slate-200 font-medium text-sm">
+                                  {result.formattedAddress}
+                                </div>
+                                {result.addressComponents && (
+                                  <div className="text-slate-400 text-xs mt-1">
+                                    {[
+                                      result.addressComponents.locality,
+                                      result.addressComponents.administrativeAreaLevel1,
+                                      result.addressComponents.country
+                                    ].filter(Boolean).join(', ')}
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <GamingButton
+                        variant="outline"
+                        size="md"
+                        onClick={lookupAddress}
+                        isLoading={isGeocodingLoading}
+                        disabled={!addressLookup.trim()}
+                      >
+                        <Target className="h-4 w-4" />
+                        Find
+                      </GamingButton>
+                    </div>
+                    
+                    {/* Error Display */}
+                    {geocodingError && (
+                      <div className="mt-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                        <div className="flex items-center gap-2 text-red-300 text-sm">
+                          <AlertCircle className="h-4 w-4" />
+                          {geocodingError}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {currentPosition && (

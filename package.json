@@ -29,6 +29,10 @@
     "test:e2e:auth": "playwright test tests/e2e/auth.spec.ts",
     "test:e2e:mobile": "playwright test --project=mobile",
     "test:e2e:debug": "playwright test --headed --debug",
+    "test:e2e:debug:create": "playwright test tests/e2e/debug-create-page.spec.ts --headed --debug",
+    "test:e2e:debug:create:port3000": "cross-env PLAYWRIGHT_BASE_URL=http://localhost:3000 PLAYWRIGHT_SKIP_WEBSERVER=true playwright test tests/e2e/debug-create-page.spec.ts --headed --debug",
+    "test:e2e:debug:slow": "playwright test tests/e2e/debug-create-page.spec.ts --headed --debug --slow-mo=1000",
+    "test:geocoding": "node scripts/test-geocoding.js",
     "security:audit": "npm audit",
     "security:validate": "node scripts/security-validation.js",
     "production:health": "node scripts/production-health-check.js",
@@ -56,6 +60,7 @@
     "security:report": "npm run security:full && node scripts/generate-security-report.js"
   },
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.4.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -107,6 +112,7 @@
     "eslint-config-next": "^15.1.6",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "node-fetch": "^3.3.2",
     "postcss": "^8.5.3",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2"

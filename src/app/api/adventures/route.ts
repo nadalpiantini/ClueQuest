@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Initialize Supabase client with fallback for development
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
 
 export async function POST(request: NextRequest) {
   let body, theme, customColors, narrative, storyType, storyFramework, aiGenerated, 
@@ -51,8 +54,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if we're in development mode
-    const isDevelopment = process.env.NODE_ENV === 'development'
+    // Check if we're in development mode or if Supabase is not configured
+    const isDevelopment = process.env.NODE_ENV === 'development' || !supabase
     
     if (isDevelopment) {
       // Return mock adventure data for development
@@ -304,8 +307,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   console.log('📖 Fetching adventures list...')
   
-  // Check if we're in development mode
-  const isDevelopment = process.env.NODE_ENV === 'development'
+  // Check if we're in development mode or if Supabase is not configured
+  const isDevelopment = process.env.NODE_ENV === 'development' || !supabase
   
   if (isDevelopment) {
     // Return mock adventures for development
@@ -338,6 +341,7 @@ export async function GET(request: NextRequest) {
   }
   
   try {
+
     const { data: adventures, error } = await supabase
       .from('cluequest_adventures')
       .select(`

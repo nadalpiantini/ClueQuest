@@ -91,6 +91,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
       <head>
+        {/* Permissions Policy for Geolocation */}
+        <meta httpEquiv="Permissions-Policy" content="geolocation=*" />
+        
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -136,9 +139,9 @@ export default function RootLayout({
         </div>
         
         {/* Analytics - Add your tracking code here */}
-        {process.env.NODE_ENV === 'production' && (
+        {process.env.NODE_ENV === 'production' && process.env.VERCEL && (
           <>
-            {/* Vercel Analytics */}
+            {/* Vercel Analytics - Only load if on Vercel */}
             <script async src="https://cdn.vercel-insights.com/v1/script.js" />
             
             {/* Google Analytics - Replace with your GA4 ID */}

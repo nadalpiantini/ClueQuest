@@ -68,7 +68,25 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/chunks/(.*).js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
           },
         ],
       },
@@ -115,14 +133,14 @@ const nextConfig = {
   
   // TypeScript configuration
   typescript: {
-    // Temporarily ignore for deployment - fix post-deploy
-    ignoreBuildErrors: true,
+    // Enable TypeScript checking for better development experience
+    ignoreBuildErrors: false,
   },
 
   // ESLint configuration
   eslint: {
-    // Temporarily ignore for deployment - fix post-deploy
-    ignoreDuringBuilds: true,
+    // Enable ESLint checking for better code quality
+    ignoreDuringBuilds: false,
   },
 };
 

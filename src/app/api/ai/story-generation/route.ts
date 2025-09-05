@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 
 // Mock OpenAI client for development when API key is not available
 const createMockOpenAIClient = () => ({
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Get user and organization (allow development mode)
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -195,7 +195,7 @@ async function generateStoryInBackground(
     // Update generation status (skip DB in development if no auth)
     if (params.userId && params.organizationId) {
       try {
-        const supabase = createClient()
+        const supabase = await createClient()
         await (supabase as any)
           .from('cluequest_ai_story_generations')
           .update({
@@ -223,7 +223,7 @@ async function generateStoryInBackground(
     // Update generation status to failed (skip DB in development if no auth)
     if (params.userId && params.organizationId) {
       try {
-        const supabase = createClient()
+        const supabase = await createClient()
         await (supabase as any)
           .from('cluequest_ai_story_generations')
           .update({
