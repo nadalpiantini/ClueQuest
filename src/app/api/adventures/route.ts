@@ -347,11 +347,21 @@ export async function GET(request: NextRequest) {
       .select(`
         id,
         title,
-        theme,
         description,
+        category,
+        difficulty,
+        estimated_duration,
+        theme_name,
         status,
+        max_participants,
+        total_sessions,
+        total_participants,
+        completion_rate,
+        rating,
         created_at,
-        organization:cluequest_organizations(name)
+        updated_at,
+        is_public,
+        organization_id
       `)
       .order('created_at', { ascending: false })
 

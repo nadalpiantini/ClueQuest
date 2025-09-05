@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Get participant role for this session
     let participantRole = 'Leader' // Default fallback
     
-    if (session_code) {
+    if (session_code && user) {
       // Get participant data from session to determine role
       const { data: participant } = await supabase
         .from('cluequest_player_states')
@@ -130,9 +130,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload to Leonardo AI
+    const userId = user?.id || `guest-${Date.now()}`
     const leonardoImageId = await leonardoClient.uploadImage(
       imageBuffer,
-      `selfie-${user.id}-${Date.now()}.jpg`
+      `selfie-${userId}-${Date.now()}.jpg`
     )
 
     // Generate avatar with role-based transformation
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
     const avatarResponse = await fetch(generationResult.url)
     const avatarBuffer = await avatarResponse.arrayBuffer()
     
-    const avatarFileName = `avatar-${user.id}-${Date.now()}.jpg`
+    const avatarFileName = `avatar-${userId}-${Date.now()}.jpg`
     const avatarPath = `${AVATAR_STORAGE_CONFIG.folders.generated}/${avatarFileName}`
 
     const { data: avatarUpload, error: avatarUploadError } = await supabase.storage
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest) {
 
     // Save to database
     const avatarData = {
-      user_id: user.id,
+      user_id: userId,
       session_id: session_code || null,
       source_image_url: selfie_url,
       style: participantRole.toLowerCase(),

@@ -1,17 +1,10 @@
-import { Metadata } from 'next'
+import { Metadata, Viewport } from 'next'
 import { AdventureProvider } from '@/components/adventure/adventure-provider'
 import { RealtimeProvider } from '@/components/adventure/realtime-provider'
 
 export const metadata: Metadata = {
   title: 'Adventure - ClueQuest',
   description: 'Interactive adventure experience with AR, QR codes, and real-time multiplayer',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
-  themeColor: '#0ea5e9',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -22,6 +15,14 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-capable': 'yes',
   }
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0ea5e9'
 }
 
 interface AdventureLayoutProps {

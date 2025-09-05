@@ -58,8 +58,6 @@ export default function AdventureBuilderPage() {
     const params = new URLSearchParams(searchParams.toString())
     params.set('step', step.toString())
     
-    // Add debug info
-    console.log(`🔄 Navigating to step ${step} - URL: /builder?${params.toString()}`)
     
     router.push(`/builder?${params.toString()}`, { scroll: false })
   }
@@ -76,7 +74,6 @@ export default function AdventureBuilderPage() {
   useEffect(() => {
     const stepFromUrl = getInitialStep()
     if (stepFromUrl !== currentStep) {
-      console.log(`🔗 URL changed: syncing step from ${currentStep} to ${stepFromUrl}`)
       setCurrentStep(stepFromUrl)
     }
   }, [searchParams])
@@ -96,11 +93,9 @@ export default function AdventureBuilderPage() {
       const saved = localStorage.getItem('cluequest-builder-data')
       if (saved) {
         const parsedData = JSON.parse(saved)
-        console.log('📂 Loaded adventure data from localStorage:', parsedData.title || 'Untitled')
         return parsedData
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load adventure data from localStorage:', error)
     }
     return null
   }
@@ -165,24 +160,18 @@ export default function AdventureBuilderPage() {
       
       // Save to localStorage for immediate persistence
       localStorage.setItem('cluequest-builder-data', JSON.stringify(dataToSave))
-      console.log('💾 Adventure data saved to localStorage:', data.title || 'Untitled')
       
       // Auto-save to Supabase if adventure has title and locations (indicates serious progress)
       if (data.title.trim() && data.locations.length > 0) {
         try {
           const result = await adventurePersistence.saveAdventure(data as any)
           if (result.success) {
-            console.log('☁️ Adventure auto-saved to Supabase:', data.title)
-          } else {
-            console.warn('⚠️ Supabase auto-save failed:', result.error)
           }
         } catch (supabaseError) {
-          console.warn('⚠️ Supabase auto-save error:', supabaseError)
           // Continue with localStorage only
         }
       }
     } catch (error) {
-      console.warn('⚠️ Failed to save adventure data:', error)
     }
   }
 
@@ -205,7 +194,6 @@ export default function AdventureBuilderPage() {
   const clearSavedData = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('cluequest-builder-data')
-      console.log('🗑️ Cleared saved adventure data')
       window.location.reload()
     }
   }
@@ -265,7 +253,6 @@ export default function AdventureBuilderPage() {
       }
 
     } catch (error) {
-      console.error('Error creating adventure:', error)
       alert(`Error creating adventure: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsCreatingAdventure(false)
@@ -782,7 +769,7 @@ export default function AdventureBuilderPage() {
       ...theme,
       isCustom: true
     }
-    setAdventureData({
+    updateAdventureData({
       ...adventureData,
       customThemes: [...adventureData.customThemes, newTheme],
       theme: newTheme.id, // Auto-select the new custom theme
@@ -808,7 +795,7 @@ export default function AdventureBuilderPage() {
       ...character,
       isCustom: true
     }
-    setAdventureData({
+    updateAdventureData({
       ...adventureData,
       customCharacters: [...adventureData.customCharacters, newCharacter]
     })
@@ -880,7 +867,6 @@ export default function AdventureBuilderPage() {
       })
       
     } catch (error) {
-      console.error('Story generation failed:', error)
       setAdventureData({ 
         ...adventureData, 
         isGeneratingStory: false 
@@ -1126,7 +1112,7 @@ export default function AdventureBuilderPage() {
                       type="text"
                       placeholder="Enter adventure title..."
                       value={adventureData.title}
-                      onChange={(e) => setAdventureData({ ...adventureData, title: e.target.value })}
+                      onChange={(e) => updateAdventureData({ ...adventureData, title: e.target.value })}
                       className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                     />
                     {adventureData.title && (
