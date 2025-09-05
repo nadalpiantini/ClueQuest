@@ -203,7 +203,6 @@ export class AIContentService {
         })
         .eq('id', avatarRecord?.id);
       
-      console.error('Avatar generation failed:', error);
       throw error;
     }
   }
@@ -317,7 +316,6 @@ export class AIContentService {
       };
       
     } catch (error) {
-      console.error('Narrative generation failed:', error);
       throw error;
     }
   }
@@ -412,7 +410,6 @@ export class AIContentService {
       };
       
     } catch (error) {
-      console.error('Challenge generation failed:', error);
       throw error;
     }
   }
@@ -453,7 +450,6 @@ export class AIContentService {
       };
       
     } catch (error) {
-      console.error('Content moderation failed:', error);
       return {
         approved: false,
         confidence: 0,

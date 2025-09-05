@@ -66,7 +66,6 @@ export default function DashboardPage() {
         setAdventures(data.adventures || [])
         setError(null)
       } catch (err) {
-        console.error('Error fetching adventures:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
         setAdventures([])
       } finally {

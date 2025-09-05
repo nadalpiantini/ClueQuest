@@ -40,11 +40,9 @@ function getRedisClient(): Redis {
 
     // Handle Redis connection errors
     redisClient.on('error', (error) => {
-      console.error('Redis connection error:', error)
     })
 
     redisClient.on('connect', () => {
-      console.log('Connected to Redis')
     })
   }
 
@@ -145,7 +143,6 @@ export async function rateLimit(
     }
 
   } catch (error) {
-    console.error('Rate limiter error:', error)
     
     // Fail open - allow request if rate limiter is unavailable
     return {
@@ -262,7 +259,6 @@ export async function burstRateLimit(
     }
 
   } catch (error) {
-    console.error('Burst rate limiter error:', error)
     
     return {
       success: true,
@@ -339,7 +335,6 @@ export async function distributedRateLimit(
     }
 
   } catch (error) {
-    console.error('Distributed rate limiter error:', error)
     
     return {
       success: true,
@@ -376,7 +371,6 @@ export async function checkRateLimit(
     }
 
   } catch (error) {
-    console.error('Rate limit check error:', error)
     
     return {
       success: true,
@@ -400,7 +394,6 @@ export async function clearRateLimit(identifier: string): Promise<void> {
       await redis.del(...keys)
     }
   } catch (error) {
-    console.error('Clear rate limit error:', error)
   }
 }
 
@@ -438,7 +431,6 @@ export async function getRateLimitStats(
     }
 
   } catch (error) {
-    console.error('Rate limit stats error:', error)
     
     return {
       requests: 0,

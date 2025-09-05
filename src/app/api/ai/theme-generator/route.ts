@@ -208,7 +208,6 @@ export async function POST(request: NextRequest) {
 
     if (!deepSeekResponse.ok) {
       const errorText = await deepSeekResponse.text()
-      console.error('DeepSeek API error:', deepSeekResponse.status, errorText)
       
       // Return fallback theme
       return NextResponse.json({
@@ -233,8 +232,6 @@ export async function POST(request: NextRequest) {
     try {
       themeData = JSON.parse(aiResponse.trim())
     } catch (parseError) {
-      console.error('Failed to parse DeepSeek response:', parseError)
-      console.error('Raw response:', aiResponse)
       
       // Return fallback theme if parsing fails
       return NextResponse.json({
@@ -271,7 +268,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Theme generation error:', error)
     
     return NextResponse.json(
       { 

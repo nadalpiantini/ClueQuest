@@ -94,7 +94,6 @@ No additional text, just the JSON array.`
     })
 
     if (!deepSeekResponse.ok) {
-      console.error('DeepSeek API error:', deepSeekResponse.status)
       return NextResponse.json(
         { error: 'AI service temporarily unavailable' },
         { status: 503 }
@@ -116,7 +115,6 @@ No additional text, just the JSON array.`
     try {
       titleSuggestions = JSON.parse(aiResponse.trim())
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
       return NextResponse.json(
         { error: 'Invalid AI response format' },
         { status: 503 }
@@ -145,7 +143,6 @@ No additional text, just the JSON array.`
     })
 
   } catch (error) {
-    console.error('Title generation error:', error)
     return NextResponse.json(
       { error: 'Failed to generate titles' },
       { status: 500 }

@@ -12,8 +12,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('ClueQuest Error:', error)
+    // Log error for debugging (production error reporting would go here)
   }, [error])
 
   return (

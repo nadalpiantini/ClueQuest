@@ -108,7 +108,6 @@ export default function QRGenerator({
       setQRCodes(newQRCodes)
       onQRCodesGenerated(newQRCodes)
     } catch (error) {
-      console.error('Failed to generate QR codes:', error)
     } finally {
       setIsGenerating(false)
     }
@@ -198,7 +197,6 @@ export default function QRGenerator({
       setCopySuccess(qrData.id)
       setTimeout(() => setCopySuccess(null), 2000)
     } catch (error) {
-      console.error('Failed to copy QR data:', error)
     }
   }
 
@@ -238,7 +236,6 @@ export default function QRGenerator({
       setQRCodes(updatedQRCodes)
       onQRCodesGenerated(updatedQRCodes)
     } catch (error) {
-      console.error('Failed to regenerate QR code:', error)
     } finally {
       setIsGenerating(false)
     }

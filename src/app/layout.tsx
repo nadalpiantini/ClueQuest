@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { BodyWrapper } from '@/components/layout/body-wrapper'
 import { DemoAuthProvider } from '@/components/auth/demo-auth-provider'
+import DevNavigationPanel from '@/components/dev/dev-navigation-panel'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -137,6 +138,9 @@ export default function RootLayout({
             {children}
           </DemoAuthProvider>
         </div>
+        
+        {/* Dev Navigation Panel - Only in development */}
+        <DevNavigationPanel />
         
         {/* Analytics - Add your tracking code here */}
         {process.env.NODE_ENV === 'production' && process.env.VERCEL && (

@@ -41,8 +41,6 @@ export default function LandingPage() {
         <Puzzle className="h-8 w-8 -rotate-45" />
       </div>
       
-      {/* Quick test (red box) - Should be RED if Tailwind works */}
-      <div className="w-10 h-10 bg-red-500 fixed top-4 right-4 z-50" />
       
       <main className="relative z-20">
         

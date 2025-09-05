@@ -55,7 +55,6 @@ export function LoginForm({ onSubmit, loading = false, error, className }: Login
 
   const handleSocialLogin = (provider: 'google' | 'github') => {
     // Integration with Supabase social auth
-    console.log(`Login with ${provider}`)
   }
 
   return (
@@ -213,7 +212,6 @@ export function LoginPage() {
 
       // Temporary mock
       await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Login:', data)
       router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")

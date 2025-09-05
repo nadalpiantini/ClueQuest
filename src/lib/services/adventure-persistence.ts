@@ -135,7 +135,6 @@ class AdventurePersistenceService {
         .single()
 
       if (adventureError) {
-        console.error('Failed to save adventure:', adventureError)
         return { success: false, error: adventureError.message }
       }
 
@@ -163,7 +162,6 @@ class AdventurePersistenceService {
           })
 
         if (locationsError) {
-          console.error('Failed to save locations:', locationsError)
           return { success: false, error: `Failed to save locations: ${locationsError.message}` }
         }
       }
@@ -190,7 +188,6 @@ class AdventurePersistenceService {
           })
 
         if (qrError) {
-          console.error('Failed to save QR codes:', qrError)
           return { success: false, error: `Failed to save QR codes: ${qrError.message}` }
         }
       }
@@ -217,14 +214,12 @@ class AdventurePersistenceService {
           })
 
         if (mappingsError) {
-          console.error('Failed to save mappings:', mappingsError)
           return { success: false, error: `Failed to save mappings: ${mappingsError.message}` }
         }
       }
 
       return { success: true, id: adventureData.id }
     } catch (error) {
-      console.error('Failed to save adventure:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
@@ -260,7 +255,6 @@ class AdventurePersistenceService {
         .order('order_index', { ascending: true })
 
       if (locationsError) {
-        console.error('Failed to load locations:', locationsError)
       }
 
       // Load QR codes
@@ -270,7 +264,6 @@ class AdventurePersistenceService {
         .eq('adventure_id', adventureId)
 
       if (qrError) {
-        console.error('Failed to load QR codes:', qrError)
       }
 
       // Load challenge-location mappings
@@ -280,7 +273,6 @@ class AdventurePersistenceService {
         .eq('adventure_id', adventureId)
 
       if (mappingsError) {
-        console.error('Failed to load mappings:', mappingsError)
       }
 
       // Transform data back to component format
@@ -357,7 +349,6 @@ class AdventurePersistenceService {
 
       return { success: true, data: adventureData }
     } catch (error) {
-      console.error('Failed to load adventure:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
@@ -396,7 +387,6 @@ class AdventurePersistenceService {
 
       return { success: true, data: adventures }
     } catch (error) {
-      console.error('Failed to get adventures:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
@@ -431,7 +421,6 @@ class AdventurePersistenceService {
 
       return { success: true }
     } catch (error) {
-      console.error('Failed to delete adventure:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
@@ -462,7 +451,6 @@ class AdventurePersistenceService {
 
       return { success: true }
     } catch (error) {
-      console.error('Failed to publish adventure:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
@@ -485,14 +473,7 @@ class AdventurePersistenceService {
       }
 
       localStorage.setItem('cluequest-builder-data', JSON.stringify(dataToSave))
-      console.log('💾 Adventure data saved to localStorage:', {
-        title: adventureData.title,
-        locations: adventureData.locations.length,
-        qrCodes: adventureData.qrCodes.length,
-        mappings: adventureData.challengeLocationMappings.length
-      })
     } catch (error) {
-      console.warn('⚠️ Failed to save adventure data to localStorage:', error)
     }
   }
 
@@ -512,17 +493,9 @@ class AdventurePersistenceService {
           }))
         }
         
-        console.log('📂 Loaded adventure data from localStorage:', {
-          title: parsedData.title,
-          locations: parsedData.locations?.length || 0,
-          qrCodes: parsedData.qrCodes?.length || 0,
-          lastSaved: parsedData.lastSaved
-        })
-        
         return parsedData
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load adventure data from localStorage:', error)
     }
     
     return null
@@ -533,9 +506,7 @@ class AdventurePersistenceService {
 
     try {
       localStorage.removeItem('cluequest-builder-data')
-      console.log('🗑️ Cleared saved adventure data from localStorage')
     } catch (error) {
-      console.warn('⚠️ Failed to clear localStorage:', error)
     }
   }
 }

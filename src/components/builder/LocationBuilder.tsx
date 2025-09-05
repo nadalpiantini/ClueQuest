@@ -66,7 +66,6 @@ export default function LocationBuilder({
           })
         },
         (error) => {
-          console.warn('Could not get user location:', error)
           // Don't show error to user as this is optional functionality
         },
         {

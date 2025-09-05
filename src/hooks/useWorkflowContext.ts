@@ -62,7 +62,6 @@ export function useWorkflowContext({
 
       setWorkflow(workflowManager)
     } catch (err) {
-      console.error('Failed to initialize workflow:', err)
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
@@ -80,7 +79,6 @@ export function useWorkflowContext({
 
     if (!canAccess) {
       const redirectUrl = WorkflowUtils.getRedirectForUnauthorized(workflow.role, currentPath)
-      console.warn(`Redirecting ${workflow.role} from ${currentPath} to ${redirectUrl}`)
       router.replace(redirectUrl)
     }
   }, [workflow, router, autoRedirect, loading])
@@ -185,7 +183,6 @@ export function useWorkflowGuard(
       )
 
       if (!hasAllPermissions) {
-        console.warn('Insufficient permissions for route:', currentPath, requiredPermissions)
         workflowContext.navigateToDashboard()
         return
       }
@@ -212,7 +209,6 @@ export function useHostWorkflow(userId: string) {
 
   useEffect(() => {
     if (!workflowContext.loading && !workflowContext.isHost) {
-      console.warn('Host-only component accessed by non-host user')
       workflowContext.navigateToDashboard()
     }
   }, [workflowContext.loading, workflowContext.isHost, workflowContext.navigateToDashboard])
@@ -235,7 +231,6 @@ export function useGuestWorkflow(userId: string, sessionId?: string) {
 
   useEffect(() => {
     if (!workflowContext.loading && !workflowContext.isGuest) {
-      console.warn('Guest-only component accessed by non-guest user')
       workflowContext.navigateToDashboard()
     }
   }, [workflowContext.loading, workflowContext.isGuest, workflowContext.navigateToDashboard])

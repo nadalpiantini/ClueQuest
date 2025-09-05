@@ -93,7 +93,6 @@ export function RegisterForm({ onSubmit, loading = false, error, className }: Re
 
   const handleSocialRegister = (provider: 'google' | 'github') => {
     // Integration with Supabase social auth
-    console.log(`Register with ${provider}`)
   }
 
   const nextStep = async () => {
@@ -416,7 +415,6 @@ export function RegisterPage() {
 
       // Temporary mock
       await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Register:', data)
       router.push('/auth/verify-email')
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed")

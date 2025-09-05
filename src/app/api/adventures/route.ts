@@ -88,7 +88,6 @@ export async function POST(request: NextRequest) {
         device_limits: deviceLimits || {}
       }
 
-      console.log('🎮 Development mode: Created mock adventure:', mockAdventure.id)
       
       return NextResponse.json({
         success: true,
@@ -108,7 +107,6 @@ export async function POST(request: NextRequest) {
         .limit(1)
 
       if (connectionError) {
-        console.error('Database connection error:', connectionError)
         return NextResponse.json(
           { 
             error: 'Database connection failed', 
@@ -127,7 +125,6 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (selectError && selectError.code !== 'PGRST116') {
-        console.error('Error selecting organization:', selectError)
         return NextResponse.json(
           { 
             error: 'Failed to check existing organizations', 
@@ -139,7 +136,6 @@ export async function POST(request: NextRequest) {
 
       if (existingOrg) {
         organizationId = existingOrg.id
-        console.log('Using existing organization:', organizationId)
       } else {
         // Create a default organization if none exists
         const timestamp = Date.now()
@@ -158,7 +154,6 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (orgError) {
-          console.error('Error creating default organization:', orgError)
           return NextResponse.json(
             { 
               error: 'Failed to create default organization', 
@@ -170,11 +165,9 @@ export async function POST(request: NextRequest) {
         }
 
         organizationId = newOrg.id
-        console.log('Created new organization:', organizationId)
       }
 
     } catch (error) {
-      console.error('Organization setup error:', error)
       return NextResponse.json(
         { 
           error: 'Failed to setup organization', 
@@ -221,7 +214,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (adventureError) {
-      console.error('Error creating adventure:', adventureError)
       return NextResponse.json(
         { 
           error: 'Failed to create adventure', 
@@ -232,7 +224,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log('✅ Adventure created successfully:', adventure.id)
 
     // Create default roles if none provided
     if (!roles || roles.length === 0) {
@@ -250,7 +241,6 @@ export async function POST(request: NextRequest) {
         .insert(roleData)
 
       if (roleError) {
-        console.error('Error creating default roles:', roleError)
         // Don't fail the entire request for role creation errors
       }
     }
@@ -281,7 +271,6 @@ export async function POST(request: NextRequest) {
         .insert(sceneData)
 
       if (sceneError) {
-        console.error('Error creating default scenes:', sceneError)
         // Don't fail the entire request for scene creation errors
       }
     }
@@ -293,7 +282,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Adventure creation error:', error)
     return NextResponse.json(
       { 
         error: 'Internal server error', 
@@ -305,7 +293,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  console.log('📖 Fetching adventures list...')
   
   // Check if we're in development mode or if Supabase is not configured
   const isDevelopment = process.env.NODE_ENV === 'development' || !supabase
@@ -366,7 +353,6 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching adventures:', error)
       return NextResponse.json(
         { error: 'Failed to fetch adventures' },
         { status: 500 }
@@ -380,7 +366,6 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Adventures fetch error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

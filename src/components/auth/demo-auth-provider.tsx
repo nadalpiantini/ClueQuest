@@ -31,7 +31,6 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
         setIsDemoAuthenticated(true)
         setDemoUser(user)
       } catch (error) {
-        console.error('Error parsing demo user data:', error)
         localStorage.removeItem('demo-auth')
         localStorage.removeItem('demo-user')
       }

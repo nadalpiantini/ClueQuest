@@ -183,7 +183,6 @@ export async function POST(request: NextRequest) {
 
     if (!deepSeekResponse.ok) {
       const errorText = await deepSeekResponse.text()
-      console.error('DeepSeek API error:', deepSeekResponse.status, errorText)
       
       return NextResponse.json({
         response: 'Lo siento, hay un problema temporal con la generación de personajes. ¿Podrías describir más detalles sobre el tipo de personaje que quieres? Por ejemplo: ¿debería ser más enfocado en combate, magia, investigación o apoyo al equipo?',
@@ -223,7 +222,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Character generation error:', error)
     
     return NextResponse.json(
       { 

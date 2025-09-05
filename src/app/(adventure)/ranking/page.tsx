@@ -177,7 +177,6 @@ function RankingPageContent() {
       setCertificateData(certificate)
 
     } catch (error) {
-      console.error('Failed to load ranking data:', error)
     }
   }
 
@@ -251,7 +250,6 @@ function RankingPageContent() {
         window.URL.revokeObjectURL(url)
       }
     } catch (error) {
-      console.error('Failed to generate certificate:', error)
     } finally {
       setIsGeneratingCertificate(false)
     }

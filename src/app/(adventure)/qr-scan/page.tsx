@@ -91,7 +91,6 @@ function QRScanPageContent() {
         }
       }
     } catch (error) {
-      console.error('Camera initialization failed:', error)
       setError('Camera access denied. Please enable camera permissions.')
       setScanState('error')
     }
@@ -124,7 +123,6 @@ function QRScanPageContent() {
         setGeofenceStatus('inside') // Allow scanning without specific location
       }
     } catch (error) {
-      console.warn('Location access failed:', error)
       setGeofenceStatus('unavailable')
     }
   }
@@ -151,7 +149,6 @@ function QRScanPageContent() {
         setGeofenceStatus('unavailable')
       }
     } catch (error) {
-      console.error('Geofence check failed:', error)
       setGeofenceStatus('unavailable')
     }
   }
@@ -247,7 +244,6 @@ function QRScanPageContent() {
         throw new Error(result.error || 'Invalid QR code')
       }
     } catch (error: any) {
-      console.error('QR processing failed:', error)
       setError(error.message || 'Failed to process QR code')
       setScanState('error')
     }
@@ -285,7 +281,6 @@ function QRScanPageContent() {
         setFlashlightOn(!flashlightOn)
       }
     } catch (error) {
-      console.error('Flashlight toggle failed:', error)
     }
   }
 

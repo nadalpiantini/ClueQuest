@@ -86,7 +86,6 @@ export async function GET(
         .single()
 
       if (error) {
-        console.error('Database error:', error)
         return NextResponse.json(
           { error: 'Generation not found' },
           { status: 404 }
@@ -96,7 +95,6 @@ export async function GET(
       return NextResponse.json({ generation })
 
     } catch (dbError) {
-      console.error('Database error:', dbError)
       return NextResponse.json(
         { error: 'Database error' },
         { status: 500 }
@@ -104,7 +102,6 @@ export async function GET(
     }
 
   } catch (error) {
-    console.error('Get generation error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

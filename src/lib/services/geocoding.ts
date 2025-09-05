@@ -29,7 +29,6 @@ class GeocodingService {
     this.apiKey = process.env.GOOGLE_MAPS_API_KEY || ''
     
     if (!this.apiKey) {
-      console.warn('Google Maps API key not found. Geocoding will use fallback service.')
     }
   }
 
@@ -67,7 +66,6 @@ class GeocodingService {
         message: 'No results found for the given address'
       }
     } catch (error: any) {
-      console.error('Geocoding error:', error)
       
       // Fallback to mock service if API fails
       return this.fallbackGeocode(address)
@@ -107,7 +105,6 @@ class GeocodingService {
         message: 'No results found for the given coordinates'
       }
     } catch (error: any) {
-      console.error('Reverse geocoding error:', error)
       
       // Fallback to mock service if API fails
       return this.fallbackReverseGeocode(latitude, longitude)
@@ -159,7 +156,6 @@ class GeocodingService {
               }
             }
           } catch (detailError) {
-            console.warn('Failed to get place details for:', prediction.place_id)
           }
         }
 
@@ -168,7 +164,6 @@ class GeocodingService {
 
       return []
     } catch (error: any) {
-      console.error('Place search error:', error)
       
       // Fallback to mock service if API fails
       return this.fallbackSearchPlaces(query)

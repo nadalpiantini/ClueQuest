@@ -116,7 +116,6 @@ export class WebhookDeliveryService {
       }
 
     } catch (error) {
-      console.error('Webhook delivery failed:', error)
       throw error
     }
   }
@@ -249,7 +248,6 @@ export class WebhookDeliveryService {
       return data || []
 
     } catch (error) {
-      console.error('Error fetching webhook endpoints:', error)
       return []
     }
   }
@@ -289,7 +287,6 @@ export class WebhookDeliveryService {
       })
 
     } catch (error) {
-      console.error('Error logging webhook delivery:', error)
       // Don't throw - logging failure shouldn't break webhook delivery
     }
   }
@@ -318,7 +315,6 @@ export class WebhookDeliveryService {
       })
 
     } catch (error) {
-      console.error('Error logging webhook delivery summary:', error)
     }
   }
 
@@ -440,7 +436,6 @@ export class WebhookDeliveryService {
       }
 
     } catch (error) {
-      console.error('Error getting webhook stats:', error)
       throw error
     }
   }
@@ -513,7 +508,6 @@ export class WebhookDeliveryService {
       return { retried }
 
     } catch (error) {
-      console.error('Error retrying failed deliveries:', error)
       throw error
     }
   }

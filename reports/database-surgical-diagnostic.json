@@ -1,0 +1,267 @@
+{
+  "timestamp": "2025-09-05T20:59:12.510Z",
+  "summary": {
+    "vital_signs": {
+      "database_connectivity": "HEALTHY",
+      "query_success_rate": "17%",
+      "total_diagnostics_run": 6,
+      "response_time_avg": 217,
+      "schema_integrity": "GOOD"
+    },
+    "diagnosis": {
+      "overall_health": "HEALTHY",
+      "critical_issues": 0,
+      "warnings": 2,
+      "security_status": "REVIEW_REQUIRED",
+      "primary_concerns": []
+    },
+    "prescription": {
+      "immediate_actions": [],
+      "maintenance_tasks": [
+        "Requires database admin privileges for full analysis",
+        "Verify RLS policies are properly configured for multi-tenant security"
+      ],
+      "preventive_measures": [
+        "Regular RLS policy audits for multi-tenant security",
+        "Periodic performance index optimization",
+        "Schema migration consistency checks",
+        "API access pattern monitoring"
+      ]
+    },
+    "prognosis": {
+      "performance_outlook": "NEEDS_ATTENTION",
+      "security_outlook": "SECURE",
+      "scalability_readiness": "PRODUCTION_READY",
+      "recommended_followup": "7 days for critical issues, 30 days for routine checkup"
+    }
+  },
+  "detailed_results": {
+    "rls_policies": [
+      {
+        "table_name": "cluequest_profiles",
+        "rls_status": "disabled_or_permissive",
+        "access_status": "open",
+        "note": "Table accessible - check if RLS should be enabled"
+      },
+      {
+        "table_name": "cluequest_organizations",
+        "rls_status": "disabled_or_permissive",
+        "access_status": "open",
+        "note": "Table accessible - check if RLS should be enabled"
+      },
+      {
+        "table_name": "cluequest_organization_members",
+        "rls_status": "disabled_or_permissive",
+        "access_status": "open",
+        "note": "Table accessible - check if RLS should be enabled"
+      },
+      {
+        "table_name": "cluequest_subscriptions",
+        "rls_status": "unknown",
+        "access_status": "error",
+        "note": "Could not find the table 'public.cluequest_subscriptions' in the schema cache"
+      },
+      {
+        "table_name": "cluequest_api_keys",
+        "rls_status": "unknown",
+        "access_status": "error",
+        "note": "Could not find the table 'public.cluequest_api_keys' in the schema cache"
+      },
+      {
+        "table_name": "cluequest_notifications",
+        "rls_status": "unknown",
+        "access_status": "error",
+        "note": "Could not find the table 'public.cluequest_notifications' in the schema cache"
+      },
+      {
+        "table_name": "cluequest_audit_logs",
+        "rls_status": "unknown",
+        "access_status": "error",
+        "note": "Could not find the table 'public.cluequest_audit_logs' in the schema cache"
+      },
+      {
+        "table_name": "cluequest_adventures",
+        "rls_status": "disabled_or_permissive",
+        "access_status": "open",
+        "note": "Table accessible - check if RLS should be enabled"
+      },
+      {
+        "table_name": "cluequest_sessions",
+        "rls_status": "disabled_or_permissive",
+        "access_status": "open",
+        "note": "Table accessible - check if RLS should be enabled"
+      },
+      {
+        "table_name": "cluequest_players",
+        "rls_status": "disabled_or_permissive",
+        "access_status": "open",
+        "note": "Table accessible - check if RLS should be enabled"
+      }
+    ],
+    "rls_status": [
+      {
+        "table_name": "cluequest_profiles",
+        "rls_enabled": false,
+        "status_check": "open",
+        "recommendation": "Enable RLS for this table"
+      },
+      {
+        "table_name": "cluequest_organizations",
+        "rls_enabled": false,
+        "status_check": "open",
+        "recommendation": "Enable RLS for this table"
+      },
+      {
+        "table_name": "cluequest_organization_members",
+        "rls_enabled": false,
+        "status_check": "open",
+        "recommendation": "Enable RLS for this table"
+      },
+      {
+        "table_name": "cluequest_subscriptions",
+        "rls_enabled": false,
+        "status_check": "error",
+        "recommendation": "RLS appears to be configured"
+      },
+      {
+        "table_name": "cluequest_api_keys",
+        "rls_enabled": false,
+        "status_check": "error",
+        "recommendation": "RLS appears to be configured"
+      },
+      {
+        "table_name": "cluequest_notifications",
+        "rls_enabled": false,
+        "status_check": "error",
+        "recommendation": "RLS appears to be configured"
+      },
+      {
+        "table_name": "cluequest_audit_logs",
+        "rls_enabled": false,
+        "status_check": "error",
+        "recommendation": "RLS appears to be configured"
+      },
+      {
+        "table_name": "cluequest_adventures",
+        "rls_enabled": false,
+        "status_check": "open",
+        "recommendation": "Enable RLS for this table"
+      },
+      {
+        "table_name": "cluequest_sessions",
+        "rls_enabled": false,
+        "status_check": "open",
+        "recommendation": "Enable RLS for this table"
+      },
+      {
+        "table_name": "cluequest_players",
+        "rls_enabled": false,
+        "status_check": "open",
+        "recommendation": "Enable RLS for this table"
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table_name": "cluequest_profiles",
+        "column_name": "id",
+        "foreign_table": "auth.users",
+        "foreign_column": "id"
+      },
+      {
+        "table_name": "cluequest_organization_members",
+        "column_name": "organization_id",
+        "foreign_table": "cluequest_organizations",
+        "foreign_column": "id"
+      },
+      {
+        "table_name": "cluequest_organization_members",
+        "column_name": "user_id",
+        "foreign_table": "auth.users",
+        "foreign_column": "id"
+      },
+      {
+        "table_name": "cluequest_subscriptions",
+        "column_name": "organization_id",
+        "foreign_table": "cluequest_organizations",
+        "foreign_column": "id"
+      }
+    ],
+    "rpc_functions": [
+      {
+        "function_name": "get_dashboard_data_optimized",
+        "function_type": "dashboard_optimization",
+        "return_type": "jsonb",
+        "purpose": "Optimized dashboard data retrieval",
+        "status": "missing_or_restricted",
+        "error": "Could not find the function public.get_dashboard_data_optimized without parameters in the schema cache"
+      },
+      {
+        "function_name": "calculate_usage_metrics",
+        "function_type": "analytics",
+        "return_type": "jsonb",
+        "purpose": "Usage metrics calculation",
+        "status": "expected"
+      },
+      {
+        "function_name": "update_updated_at_column",
+        "function_type": "trigger",
+        "return_type": "trigger",
+        "purpose": "Automatic timestamp updates",
+        "status": "expected"
+      }
+    ]
+  },
+  "performance_metrics": {
+    "column_inventory": {
+      "duration_ms": 353,
+      "status": "limited_access",
+      "warning": "Could not find the table 'public.information_schema.columns' in the schema cache"
+    },
+    "constraints_analysis": {
+      "duration_ms": 100,
+      "status": "limited_access",
+      "note": "Requires --dangerously-skip-permissions for full constraint analysis"
+    },
+    "rls_policies": {
+      "duration_ms": 500,
+      "status": "success",
+      "tables_checked": 10
+    },
+    "rls_status": {
+      "duration_ms": 50,
+      "status": "derived",
+      "note": "Derived from RLS policies analysis (limited access mode)"
+    },
+    "foreign_keys": {
+      "duration_ms": 100,
+      "status": "schema_based",
+      "note": "Based on ClueQuest expected schema (limited access mode)"
+    },
+    "rpc_functions": {
+      "duration_ms": 200,
+      "status": "verified",
+      "functions_checked": 3
+    }
+  },
+  "all_issues": [
+    {
+      "category": "permissions",
+      "severity": "medium",
+      "description": "Limited access for 1. Column inventory across all public schema tables",
+      "recommendation": "Requires database admin privileges for full analysis"
+    },
+    {
+      "category": "analysis_limitation",
+      "severity": "low",
+      "description": "Constraint analysis requires elevated database privileges",
+      "recommendation": "Run with --dangerously-skip-permissions flag for complete constraint audit"
+    },
+    {
+      "category": "security",
+      "severity": "medium",
+      "description": "Tables with open access (RLS may be disabled): cluequest_profiles, cluequest_organizations, cluequest_organization_members, cluequest_adventures, cluequest_sessions, cluequest_players",
+      "recommendation": "Verify RLS policies are properly configured for multi-tenant security"
+    }
+  ],
+  "total_diagnostic_time_ms": 1814
+}

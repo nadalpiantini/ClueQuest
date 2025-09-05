@@ -126,7 +126,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Story generation error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -210,15 +209,12 @@ async function generateStoryInBackground(
           })
           .eq('id', generationId)
       } catch (dbError) {
-        console.error('Database update error:', dbError)
         // Continue without DB update in development
       }
     }
 
-    console.log(`✅ Story generation completed for ID: ${generationId}`)
 
   } catch (error) {
-    console.error('Background generation error:', error)
     
     // Update generation status to failed (skip DB in development if no auth)
     if (params.userId && params.organizationId) {
@@ -233,7 +229,6 @@ async function generateStoryInBackground(
           })
           .eq('id', generationId)
       } catch (dbError) {
-        console.error('Database update error:', dbError)
         // Continue without DB update in development
       }
     }

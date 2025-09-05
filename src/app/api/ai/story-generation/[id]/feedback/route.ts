@@ -94,7 +94,6 @@ export async function POST(
     }
 
     if (feedbackResult.error) {
-      console.error('Error saving feedback:', feedbackResult.error)
       return NextResponse.json(
         { success: false, error: 'Failed to save feedback' },
         { status: 500 }
@@ -128,7 +127,6 @@ export async function POST(
         .eq('id', params.id)
 
       if (updateError) {
-        console.error('Error updating generation:', updateError)
         return NextResponse.json(
           { success: false, error: 'Failed to update generation' },
           { status: 500 }
@@ -143,7 +141,6 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('Error in feedback POST:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

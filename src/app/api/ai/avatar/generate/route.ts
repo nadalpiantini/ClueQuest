@@ -6,15 +6,12 @@ import { AvatarGenerationRequest, AvatarGenerationResult } from '@/types/adventu
 // Mock Leonardo AI client for development when API key is not available
 const createMockLeonardoClient = () => ({
   uploadImage: async (imageBuffer: Buffer, filename: string) => {
-    console.log('Mock Leonardo AI: Uploading image', filename)
     return `mock-image-id-${Date.now()}`
   },
   generateAvatar: async (imageId: string, styleId: string, role: string) => {
-    console.log('Mock Leonardo AI: Generating avatar for role', role)
     return `mock-generation-id-${Date.now()}`
   },
   getGenerationStatus: async (generationId: string) => {
-    console.log('Mock Leonardo AI: Checking generation status', generationId)
     return {
       status: 'COMPLETE',
       generated_images: [
@@ -93,7 +90,6 @@ export async function POST(request: NextRequest) {
       participantRole = roleMap[style_id] || 'Leader'
     }
 
-    console.log('Generating avatar for role:', participantRole)
 
     // Ensure storage bucket exists
     await ensureAvatarsBucket()
@@ -108,7 +104,6 @@ export async function POST(request: NextRequest) {
       const arrayBuffer = await imageResponse.arrayBuffer()
       imageBuffer = Buffer.from(arrayBuffer)
     } catch (error) {
-      console.error('Failed to download selfie:', error)
       return NextResponse.json(
         { error: 'Could not process selfie image' },
         { status: 400 }
@@ -125,7 +120,6 @@ export async function POST(request: NextRequest) {
         leonardoClient = createMockLeonardoClient()
       }
     } catch (error) {
-      console.log('Using mock Leonardo AI client for development')
       leonardoClient = createMockLeonardoClient()
     }
 
@@ -161,7 +155,6 @@ export async function POST(request: NextRequest) {
       })
 
     if (avatarUploadError) {
-      console.error('Failed to store generated avatar:', avatarUploadError)
       return NextResponse.json(
         { error: 'Failed to store generated avatar' },
         { status: 500 }
@@ -196,7 +189,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (dbError) {
-      console.error('Failed to save avatar to database:', dbError)
       // Continue anyway, we have the generated image
     }
 
@@ -217,14 +209,12 @@ export async function POST(request: NextRequest) {
         await supabase.storage
           .from(AVATAR_STORAGE_CONFIG.bucket)
           .remove([`${AVATAR_STORAGE_CONFIG.folders.selfies}/${selfiePathMatch[1]}`])
-          .catch(console.error) // Ignore cleanup errors
       }
     }
 
     return NextResponse.json(result)
 
   } catch (error) {
-    console.error('Avatar generation error:', error)
     
     // Return helpful error messages
     if (error instanceof Error) {

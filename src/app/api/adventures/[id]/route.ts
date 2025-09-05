@@ -60,7 +60,6 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('Error fetching adventure:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -95,7 +94,6 @@ export async function PUT(
       .single()
 
     if (updateError) {
-      console.error('Error updating adventure:', updateError)
       return NextResponse.json(
         { error: 'Failed to update adventure' },
         { status: 500 }
@@ -108,7 +106,6 @@ export async function PUT(
     })
 
   } catch (error) {
-    console.error('Error updating adventure:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -137,7 +134,6 @@ export async function DELETE(
       .eq('id', id)
 
     if (deleteError) {
-      console.error('Error deleting adventure:', deleteError)
       return NextResponse.json(
         { error: 'Failed to delete adventure' },
         { status: 500 }
@@ -150,7 +146,6 @@ export async function DELETE(
     })
 
   } catch (error) {
-    console.error('Error deleting adventure:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

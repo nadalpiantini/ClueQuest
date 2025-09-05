@@ -97,7 +97,6 @@ export default function TitleAssistant({ isOpen, onClose, onTitleSelect, current
       setTitleSuggestions(data.titles || [])
       setCurrentStep(4)
     } catch (error) {
-      console.error('Title generation failed:', error)
       // Fallback titles if API fails
       setTitleSuggestions([
         {

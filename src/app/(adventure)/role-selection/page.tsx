@@ -289,7 +289,6 @@ function RoleSelectionPageContent() {
       setAdventure(adventureData)
       setRoles(adventureData.roles)
     } catch (error) {
-      console.error('Failed to load adventure data:', error)
     }
   }
 
@@ -329,7 +328,6 @@ function RoleSelectionPageContent() {
 
       setParticipants(participantsData)
     } catch (error) {
-      console.error('Failed to load participants:', error)
     }
   }
 
@@ -398,10 +396,8 @@ function RoleSelectionPageContent() {
         router.push(`/avatar-generation?session=${sessionCode}${isGuest ? '&guest=true' : ''}${roleParam}`)
       } else {
         const error = await response.json()
-        console.error('Failed to join session:', error)
       }
     } catch (error) {
-      console.error('Failed to select role:', error)
     } finally {
       setIsLoading(false)
     }

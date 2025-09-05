@@ -128,7 +128,6 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
         })
       }
     } catch (error) {
-      console.error('Story generation error:', error)
       setCurrentGeneration({
         ...currentGeneration!,
         status: 'failed'
@@ -162,7 +161,6 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
           setTimeout(poll, 1000) // Poll every second
         }
       } catch (error) {
-        console.error('Polling error:', error)
       }
     }
 
@@ -211,7 +209,6 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
         setCurrentGeneration(null)
       }, 1500)
     } catch (error) {
-      console.error('Error approving story:', error)
     } finally {
       setIsApplying(false)
     }

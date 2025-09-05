@@ -95,7 +95,6 @@ function IntroPageContent() {
       // Enable skip after 3 seconds for impatient users
       setTimeout(() => setCanSkip(true), 3000)
     } catch (error) {
-      console.error('Failed to load adventure story:', error)
       // Fallback to role selection if story fails
       router.push(`/role-selection?session=${sessionCode}`)
     }

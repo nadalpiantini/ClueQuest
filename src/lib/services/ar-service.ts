@@ -309,7 +309,6 @@ export class ARService {
       };
       
     } catch (error) {
-      console.error('AR experience creation failed:', error);
       throw error;
     }
   }
@@ -889,7 +888,6 @@ export class ARService {
   private async queueAssetOptimization(assetId: string): Promise<void> {
     // In a real implementation, this would queue the asset for background processing
     // using a job queue like Redis Bull or similar
-    console.log(`Queued asset ${assetId} for optimization`);
   }
 }
 

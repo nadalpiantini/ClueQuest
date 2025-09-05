@@ -40,7 +40,6 @@ function LoginForm() {
         // Use Next.js router for proper navigation
         router.push(redirectTo)
       } catch (error) {
-        console.error('Login error:', error)
         alert('Login failed. Please try again.')
       } finally {
         setIsLoading(false)
@@ -62,7 +61,6 @@ function LoginForm() {
       // Use Next.js router for proper navigation
       router.push(redirectTo)
     } catch (error) {
-      console.error('Demo login error:', error)
       alert('Demo login failed. Please try again.')
     } finally {
       setIsLoading(false)
@@ -217,7 +215,6 @@ function LoginForm() {
                       alert(`🎭 Host Mode Activated!\n\nLogged in as Adventure Creator\nRedirecting to Dashboard...`)
                       router.push('/dashboard')
                     } catch (error) {
-                      console.error('Host login error:', error)
                       alert('Host login failed. Please try again.')
                     } finally {
                       setIsLoading(false)
@@ -264,7 +261,6 @@ function LoginForm() {
                       alert(`🕵️ Guest Mode Activated!\n\nLogged in as Adventure Participant\nRedirecting to Join Page...`)
                       router.push('/join')
                     } catch (error) {
-                      console.error('Guest login error:', error)
                       alert('Guest login failed. Please try again.')
                     } finally {
                       setIsLoading(false)

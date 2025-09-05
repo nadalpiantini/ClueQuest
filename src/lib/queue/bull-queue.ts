@@ -95,27 +95,21 @@ function createQueue(name: string, config: typeof QUEUE_CONFIGS.email): Queue {
 
   // Global error handling
   queue.on('error', (error) => {
-    console.error(`Queue ${name} error:`, error)
   })
 
   queue.on('waiting', (jobId) => {
-    console.log(`Job ${jobId} is waiting in queue ${name}`)
   })
 
   queue.on('active', (job) => {
-    console.log(`Job ${job.id} started processing in queue ${name}`)
   })
 
   queue.on('completed', (job, result) => {
-    console.log(`Job ${job.id} completed in queue ${name}`, result)
   })
 
   queue.on('failed', (job, err) => {
-    console.error(`Job ${job.id} failed in queue ${name}:`, err)
   })
 
   queue.on('stalled', (job) => {
-    console.warn(`Job ${job.id} stalled in queue ${name}`)
   })
 
   queues[name] = queue
@@ -188,7 +182,6 @@ export class EmailQueue {
 
       return { success: true, messageId: data?.id }
     } catch (error) {
-      console.error('Welcome email failed:', error)
       throw error
     }
   }
@@ -216,7 +209,6 @@ export class EmailQueue {
 
       return { success: true, messageId: data?.id }
     } catch (error) {
-      console.error('Password reset email failed:', error)
       throw error
     }
   }
@@ -245,7 +237,6 @@ export class EmailQueue {
 
       return { successful, failed, results }
     } catch (error) {
-      console.error('Notification email failed:', error)
       throw error
     }
   }
@@ -360,7 +351,6 @@ export class WebhookQueue {
       }
 
     } catch (error) {
-      console.error('Webhook delivery failed:', error)
       throw error
     }
   }
@@ -436,7 +426,6 @@ export class AnalyticsQueue {
       }
 
     } catch (error) {
-      console.error('Event processing failed:', error)
       throw error
     }
   }
@@ -458,7 +447,6 @@ export class AnalyticsQueue {
       }
 
     } catch (error) {
-      console.error('Report generation failed:', error)
       throw error
     }
   }
@@ -513,7 +501,6 @@ export class AnalyticsQueue {
       }
 
     } catch (error) {
-      console.error('Data cleanup failed:', error)
       throw error
     }
   }

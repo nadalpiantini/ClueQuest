@@ -170,7 +170,6 @@ function ChallengesPageContent() {
       }
 
     } catch (error) {
-      console.error('Failed to load challenges:', error)
       setChallengeState('failed')
     }
   }
@@ -268,7 +267,6 @@ function ChallengesPageContent() {
         throw new Error('Submission failed')
       }
     } catch (error) {
-      console.error('Challenge submission failed:', error)
       setChallengeState('failed')
       setSubmissionResult({
         correct: false,
@@ -382,7 +380,6 @@ function ChallengesPageContent() {
         }
       }, 30000)
     } catch (error) {
-      console.error('Failed to start audio recording:', error)
     }
   }
 

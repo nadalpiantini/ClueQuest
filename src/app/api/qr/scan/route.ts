@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
   } catch (error) {
-    console.error('QR scan error:', error)
     return NextResponse.json({ error: 'Invalid QR scan' }, { status: 400 })
   }
 }

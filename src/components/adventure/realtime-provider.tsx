@@ -108,7 +108,6 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     const { reconnectAttempts } = connectionMetricsRef.current
     
     if (reconnectAttempts > 5) {
-      console.error('Max reconnection attempts reached')
       setConnectionQuality('disconnected')
       return
     }
@@ -216,7 +215,6 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
         updateConnectionQuality(latency)
       })
       .subscribe((status: any) => {
-        console.log('Realtime channel status:', status)
         
         if (status === 'SUBSCRIBED') {
           setIsConnected(true)
@@ -239,7 +237,6 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
 
   const sendEvent = (event: Omit<RealtimeEvent, 'timestamp'>) => {
     if (!channelRef.current || !isConnected) {
-      console.warn('Cannot send event: not connected to realtime channel')
       return
     }
 
@@ -259,7 +256,6 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
   }
 
   const handleRealtimeEvent = (event: RealtimeEvent) => {
-    console.log('Realtime event received:', event)
 
     switch (event.type) {
       case 'participant_joined':
@@ -310,7 +306,6 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
         break
         
       default:
-        console.log('Unhandled realtime event:', event.type)
     }
   }
 

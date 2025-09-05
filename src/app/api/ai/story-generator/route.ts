@@ -160,7 +160,6 @@ export async function POST(request: NextRequest) {
 
     if (!deepSeekResponse.ok) {
       const errorText = await deepSeekResponse.text()
-      console.error('DeepSeek API error:', deepSeekResponse.status, errorText)
       
       // Return fallback story structure
       return NextResponse.json({
@@ -193,8 +192,6 @@ export async function POST(request: NextRequest) {
     try {
       storyStructure = JSON.parse(aiResponse.trim())
     } catch (parseError) {
-      console.error('Failed to parse DeepSeek response:', parseError)
-      console.error('Raw response:', aiResponse)
       
       // Return fallback if parsing fails
       return NextResponse.json({
@@ -238,7 +235,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Story generation error:', error)
     
     // Return minimal fallback story
     return NextResponse.json(

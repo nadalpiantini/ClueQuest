@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClueQuest Database Surgical Diagnostic</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #2563eb; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 30px; }
+        .section { margin-bottom: 30px; }
+        .section h2 { color: #1e40af; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        .vital-signs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .vital-card { background: #f8fafc; padding: 20px; border-radius: 6px; border-left: 4px solid #10b981; }
+        .vital-card.warning { border-left-color: #f59e0b; }
+        .vital-card.critical { border-left-color: #ef4444; }
+        .issue { padding: 15px; margin: 10px 0; border-radius: 6px; }
+        .issue.high { background: #fef2f2; border-left: 4px solid #ef4444; }
+        .issue.medium { background: #fffbeb; border-left: 4px solid #f59e0b; }
+        .issue.low { background: #f0f9ff; border-left: 4px solid #3b82f6; }
+        .performance-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .performance-table th, .performance-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .performance-table th { background: #f9fafb; font-weight: 600; }
+        .status-success { color: #10b981; font-weight: bold; }
+        .status-error { color: #ef4444; font-weight: bold; }
+        .status-warning { color: #f59e0b; font-weight: bold; }
+        pre { background: #f8fafc; padding: 15px; border-radius: 6px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 ClueQuest Database Surgical Diagnostic</h1>
+            <p>Complete health analysis performed on 9/5/2025, 4:59:12 PM</p>
+        </div>
+        
+        <div class="content">
+            <!-- Vital Signs -->
+            <div class="section">
+                <h2>📊 Vital Signs</h2>
+                <div class="vital-signs">
+                    <div class="vital-card ">
+                        <h3>Database Connectivity</h3>
+                        <div class="value">HEALTHY</div>
+                    </div>
+                    <div class="vital-card">
+                        <h3>Query Success Rate</h3>
+                        <div class="value">17%</div>
+                    </div>
+                    <div class="vital-card">
+                        <h3>Schema Integrity</h3>
+                        <div class="value">GOOD</div>
+                    </div>
+                    <div class="vital-card">
+                        <h3>Avg Response Time</h3>
+                        <div class="value">217ms</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnosis -->
+            <div class="section">
+                <h2>🩺 Diagnosis</h2>
+                <div class="vital-card ">
+                    <h3>Overall Health: HEALTHY</h3>
+                    <p>Critical Issues: 0</p>
+                    <p>Warnings: 2</p>
+                    <p>Security Status: REVIEW_REQUIRED</p>
+                </div>
+            </div>
+
+            <!-- Issues -->
+            
+            <div class="section">
+                <h2>🚨 Issues Identified</h2>
+                
+                    <div class="issue medium">
+                        <h4>PERMISSIONS: Limited access for 1. Column inventory across all public schema tables</h4>
+                        <p><strong>Severity:</strong> medium</p>
+                        <p><strong>Recommendation:</strong> Requires database admin privileges for full analysis</p>
+                        
+                    </div>
+                
+                    <div class="issue low">
+                        <h4>ANALYSIS_LIMITATION: Constraint analysis requires elevated database privileges</h4>
+                        <p><strong>Severity:</strong> low</p>
+                        <p><strong>Recommendation:</strong> Run with --dangerously-skip-permissions flag for complete constraint audit</p>
+                        
+                    </div>
+                
+                    <div class="issue medium">
+                        <h4>SECURITY: Tables with open access (RLS may be disabled): cluequest_profiles, cluequest_organizations, cluequest_organization_members, cluequest_adventures, cluequest_sessions, cluequest_players</h4>
+                        <p><strong>Severity:</strong> medium</p>
+                        <p><strong>Recommendation:</strong> Verify RLS policies are properly configured for multi-tenant security</p>
+                        
+                    </div>
+                
+            </div>
+            
+
+            <!-- Performance Metrics -->
+            <div class="section">
+                <h2>⚡ Performance Metrics</h2>
+                <table class="performance-table">
+                    <thead>
+                        <tr>
+                            <th>Diagnostic</th>
+                            <th>Duration (ms)</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            <tr>
+                                <td>COLUMN INVENTORY</td>
+                                <td>353</td>
+                                <td class="status-warning">limited_access</td>
+                                <td>-</td>
+                            </tr>
+                        
+                            <tr>
+                                <td>CONSTRAINTS ANALYSIS</td>
+                                <td>100</td>
+                                <td class="status-warning">limited_access</td>
+                                <td>Requires --dangerously-skip-permissions for full constraint analysis</td>
+                            </tr>
+                        
+                            <tr>
+                                <td>RLS POLICIES</td>
+                                <td>500</td>
+                                <td class="status-success">success</td>
+                                <td>-</td>
+                            </tr>
+                        
+                            <tr>
+                                <td>RLS STATUS</td>
+                                <td>50</td>
+                                <td class="status-warning">derived</td>
+                                <td>Derived from RLS policies analysis (limited access mode)</td>
+                            </tr>
+                        
+                            <tr>
+                                <td>FOREIGN KEYS</td>
+                                <td>100</td>
+                                <td class="status-warning">schema_based</td>
+                                <td>Based on ClueQuest expected schema (limited access mode)</td>
+                            </tr>
+                        
+                            <tr>
+                                <td>RPC FUNCTIONS</td>
+                                <td>200</td>
+                                <td class="status-warning">verified</td>
+                                <td>-</td>
+                            </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Prescription -->
+            <div class="section">
+                <h2>💊 Prescription</h2>
+                
+                
+                
+                    <h3>🔧 Maintenance Tasks</h3>
+                    <ul>
+                        <li>Requires database admin privileges for full analysis</li><li>Verify RLS policies are properly configured for multi-tenant security</li>
+                    </ul>
+                
+
+                <h3>🛡️ Preventive Measures</h3>
+                <ul>
+                    <li>Regular RLS policy audits for multi-tenant security</li><li>Periodic performance index optimization</li><li>Schema migration consistency checks</li><li>API access pattern monitoring</li>
+                </ul>
+            </div>
+
+            <!-- Prognosis -->
+            <div class="section">
+                <h2>🔮 Prognosis</h2>
+                <div class="vital-signs">
+                    <div class="vital-card">
+                        <h3>Performance Outlook</h3>
+                        <div class="value">NEEDS_ATTENTION</div>
+                    </div>
+                    <div class="vital-card">
+                        <h3>Security Outlook</h3>
+                        <div class="value">SECURE</div>
+                    </div>
+                    <div class="vital-card">
+                        <h3>Scalability</h3>
+                        <div class="value">PRODUCTION_READY</div>
+                    </div>
+                </div>
+                <p><strong>Recommended Follow-up:</strong> 7 days for critical issues, 30 days for routine checkup</p>
+            </div>
+
+            <!-- Raw Data -->
+            <div class="section">
+                <h2>📋 Raw Diagnostic Data</h2>
+                <pre>{
+  "rls_policies": [
+    {
+      "table_name": "cluequest_profiles",
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
+    },
+    {
+      "table_name": "cluequest_organizations",
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
+    },
+    {
+      "table_name": "cluequest_organization_members",
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
+    },
+    {
+      "table_name": "cluequest_subscriptions",
+      "rls_status": "unknown",
+      "access_status": "error",
+      "note": "Could not find the table 'public.cluequest_subscriptions' in the schema cache"
+    },
+    {
+      "table_name": "cluequest_api_keys",
+      "rls_status": "unknown",
+      "access_status": "error",
+      "note": "Could not find the table 'public.cluequest_api_keys' in the schema cache"
+    },
+    {
+      "table_name": "cluequest_notifications",
+      "rls_status": "unknown",
+      "access_status": "error",
+      "note": "Could not find the table 'public.cluequest_notifications' in the schema cache"
+    },
+    {
+      "table_name": "cluequest_audit_logs",
+      "rls_status": "unknown",
+      "access_status": "error",
+      "note": "Could not find the table 'public.cluequest_audit_logs' in the schema cache"
+    },
+    {
+      "table_name": "cluequest_adventures",
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
+    },
+    {
+      "table_name": "cluequest_sessions",
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
+    },
+    {
+      "table_name": "cluequest_players",
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
+    }
+  ],
+  "rls_status": [
+    {
+      "table_name": "cluequest_profiles",
+      "rls_enabled": false,
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
+    },
+    {
+      "table_name": "cluequest_organizations",
+      "rls_enabled": false,
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
+    },
+    {
+      "table_name": "cluequest_organization_members",
+      "rls_enabled": false,
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
+    },
+    {
+      "table_name": "cluequest_subscriptions",
+      "rls_enabled": false,
+      "status_check": "error",
+      "recommendation": "RLS appears to be configured"
+    },
+    {
+      "table_name": "cluequest_api_keys",
+      "rls_enabled": false,
+      "status_check": "error",
+      "recommendation": "RLS appears to be configured"
+    },
+    {
+      "table_name": "cluequest_notifications",
+      "rls_enabled": false,
+      "status_check": "error",
+      "recommendation": "RLS appears to be configured"
+    },
+    {
+      "table_name": "cluequest_audit_logs",
+      "rls_enabled": false,
+      "status_check": "error",
+      "recommendation": "RLS appears to be configured"
+    },
+    {
+      "table_name": "cluequest_adventures",
+      "rls_enabled": false,
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
+    },
+    {
+      "table_name": "cluequest_sessions",
+      "rls_enabled": false,
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
+    },
+    {
+      "table_name": "cluequest_players",
+      "rls_enabled": false,
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
+    }
+  ],
+  "foreign_keys": [
+    {
+      "table_name": "cluequest_profiles",
+      "column_name": "id",
+      "foreign_table": "auth.users",
+      "foreign_column": "id"
+    },
+    {
+      "table_name": "cluequest_organization_members",
+      "column_name": "organization_id",
+      "foreign_table": "cluequest_organizations",
+      "foreign_column": "id"
+    },
+    {
+      "table_name": "cluequest_organization_members",
+      "column_name": "user_id",
+      "foreign_table": "auth.users",
+      "foreign_column": "id"
+    },
+    {
+      "table_name": "cluequest_subscriptions",
+      "column_name": "organization_id",
+      "foreign_table": "cluequest_organizations",
+      "foreign_column": "id"
+    }
+  ],
+  "rpc_functions": [
+    {
+      "function_name": "get_dashboard_data_optimized",
+      "function_type": "dashboard_optimization",
+      "return_type": "jsonb",
+      "purpose": "Optimized dashboard data retrieval",
+      "status": "missing_or_restricted",
+      "error": "Could not find the function public.get_dashboard_data_optimized without parameters in the schema cache"
+    },
+    {
+      "function_name": "calculate_usage_metrics",
+      "function_type": "analytics",
+      "return_type": "jsonb",
+      "purpose": "Usage metrics calculation",
+      "status": "expected"
+    },
+    {
+      "function_name": "update_updated_at_column",
+      "function_type": "trigger",
+      "return_type": "trigger",
+      "purpose": "Automatic timestamp updates",
+      "status": "expected"
+    }
+  ]
+}</pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

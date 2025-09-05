@@ -11,7 +11,6 @@ export async function ensureAvatarsBucket() {
   const { data: buckets, error: listError } = await supabase.storage.listBuckets()
   
   if (listError) {
-    console.error('Failed to list buckets:', listError)
     return false
   }
   
@@ -26,11 +25,9 @@ export async function ensureAvatarsBucket() {
     })
     
     if (createError) {
-      console.error('Failed to create avatars bucket:', createError)
       return false
     }
     
-    console.log('Created avatars storage bucket')
   }
   
   return true

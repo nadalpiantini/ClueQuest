@@ -51,14 +51,12 @@ export async function createClient(cookieStore = cookies()) {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
             // Handle case where cookies can't be set (e.g., middleware)
-            console.warn('Failed to set cookie:', error)
           }
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options })
           } catch (error) {
-            console.warn('Failed to remove cookie:', error)
           }
         },
       },
@@ -222,7 +220,6 @@ export class ResilientSupabaseClient {
       }
 
     } catch (error) {
-      console.error('Transaction failed:', error)
       
       return {
         success: false,

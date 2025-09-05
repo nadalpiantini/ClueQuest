@@ -483,7 +483,6 @@ export class HealthCheckService {
 
     if (breaker.failures >= this.CIRCUIT_BREAKER_THRESHOLD) {
       breaker.state = 'open'
-      console.warn(`Circuit breaker opened for component: ${component}`)
     }
   }
 

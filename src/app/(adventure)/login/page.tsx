@@ -95,7 +95,6 @@ function AdventureLoginForm() {
         setError('Session not found or expired')
       }
     } catch (error) {
-      console.error('Failed to load session info:', error)
       setError('Unable to connect to session')
     }
   }

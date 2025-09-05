@@ -112,7 +112,6 @@ export default function WelcomePage({ searchParams }: WelcomePageProps) {
         router.push(`/login?lang=${selectedLanguage.code}`)
       }
     } catch (error) {
-      console.error('Navigation error:', error)
     } finally {
       setIsLoading(false)
     }

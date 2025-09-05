@@ -98,7 +98,6 @@ export async function getCurrentUser() {
     if (error) throw error
     return user
   } catch (error) {
-    console.error('Error fetching current user:', error)
     return null
   }
 }
@@ -119,7 +118,6 @@ export async function signOut() {
     // Redirect to login page
     window.location.href = '/auth/login'
   } catch (error) {
-    console.error('Error during sign out:', error)
     // Force redirect even if there's an error
     window.location.href = '/auth/login'
   }

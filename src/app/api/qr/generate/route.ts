@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('QR generation error:', error)
     return NextResponse.json({ error: 'QR generation failed' }, { status: 400 })
   }
 }

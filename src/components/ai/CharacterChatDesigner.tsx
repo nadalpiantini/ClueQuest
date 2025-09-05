@@ -116,7 +116,6 @@ export default function CharacterChatDesigner({
       }
 
     } catch (error) {
-      console.error('Chat error:', error)
       
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),

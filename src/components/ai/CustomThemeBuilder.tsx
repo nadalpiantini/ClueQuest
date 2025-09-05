@@ -142,7 +142,6 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
       setStep(3) // Move to preview step
       
     } catch (error) {
-      console.error('Theme generation error:', error)
       alert('Error generating theme. Please try again.')
     }
 

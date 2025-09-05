@@ -130,9 +130,7 @@ Adventure Builder: https://cluequest.app/builder
       link.click()
       URL.revokeObjectURL(url)
       
-      console.log('📄 PDF export completed')
     } catch (error) {
-      console.error('Failed to export PDF:', error)
     } finally {
       setIsExporting(false)
     }
@@ -155,9 +153,7 @@ Adventure Builder: https://cluequest.app/builder
       link.click()
       URL.revokeObjectURL(url)
       
-      console.log('📦 ZIP export completed')
     } catch (error) {
-      console.error('Failed to export ZIP:', error)
     } finally {
       setIsExporting(false)
     }
@@ -196,7 +192,6 @@ Adventure Builder: https://cluequest.app/builder
       setCopySuccess(true)
       setTimeout(() => setCopySuccess(false), 2000)
     } catch (error) {
-      console.error('Failed to copy installation guide:', error)
     }
   }
 

@@ -57,7 +57,6 @@ export class QRSecurityService {
     };
     
     if (this.hmacSecret === 'fallback-secret-change-in-production') {
-      console.warn('⚠️ Using fallback HMAC secret. Set QR_HMAC_SECRET environment variable for production.');
     }
   }
   
@@ -291,7 +290,6 @@ export class QRSecurityService {
       };
       
     } catch (error) {
-      console.error('QR validation error:', error);
       return {
         valid: false,
         error: 'validation_failed',
@@ -357,7 +355,6 @@ export class QRSecurityService {
       return speedKmh;
       
     } catch (error) {
-      console.error('Error checking travel speed:', error);
       return 0; // Assume safe on error
     }
   }
@@ -381,7 +378,6 @@ export class QRSecurityService {
       return (count || 0) > this.defaultConfig.maxScansPerUser;
       
     } catch (error) {
-      console.error('Error checking rate limit:', error);
       return false; // Assume safe on error
     }
   }
@@ -417,7 +413,6 @@ export class QRSecurityService {
       return uniqueFingerprints.size > 2 && !uniqueFingerprints.has(deviceFingerprint);
       
     } catch (error) {
-      console.error('Error validating device fingerprint:', error);
       return false; // Assume safe on error
     }
   }

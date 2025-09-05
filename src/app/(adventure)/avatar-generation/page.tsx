@@ -139,7 +139,6 @@ function AvatarGenerationPageContent() {
       // Stop the stream
       stream.getTracks().forEach(track => track.stop())
     } catch (error) {
-      console.error('Camera access failed:', error)
       setError('Camera access denied. Please upload a photo instead.')
     }
   }
@@ -243,7 +242,6 @@ function AvatarGenerationPageContent() {
       localStorage.setItem('cluequest_participant', JSON.stringify(participantData))
 
     } catch (error: any) {
-      console.error('Avatar generation failed:', error)
       setError(error.message || 'Generation failed. Please try again.')
       setIsGenerating(false)
       setStep('preview')

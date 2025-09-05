@@ -153,7 +153,6 @@ function AdventureHubContent() {
       })
 
     } catch (error) {
-      console.error('Failed to load adventure data:', error)
     }
   }
 
@@ -186,14 +185,12 @@ function AdventureHubContent() {
             lng: position.coords.longitude
           })
         },
-        (error) => console.warn('Location watch error:', error),
         { enableHighAccuracy: true, maximumAge: 30000 }
       )
 
       // Cleanup on unmount
       return () => navigator.geolocation.clearWatch(watchId)
     } catch (error) {
-      console.warn('Location access denied:', error)
       setLocationAccess('denied')
     }
   }
@@ -253,7 +250,6 @@ function AdventureHubContent() {
       // Navigate to QR scanner with location context
       router.push(`/qr-scan?session=${sessionCode}&location=${qrLocation.id}${isGuest ? '&guest=true' : ''}`)
     } catch (error) {
-      console.error('Failed to start QR scan:', error)
     } finally {
       setIsScanning(false)
     }

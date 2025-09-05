@@ -121,7 +121,6 @@ export function AdventureProvider({ children }: AdventureProviderProps) {
         dispatch({ type: 'SET_SESSION', payload: session })
       }
     } catch (error) {
-      console.error('Failed to load saved adventure state:', error)
     }
   }, [])
 

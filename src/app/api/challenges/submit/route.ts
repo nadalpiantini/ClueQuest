@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(result)
   } catch (error) {
-    console.error('Challenge submission error:', error)
     return NextResponse.json({ error: 'Invalid submission' }, { status: 400 })
   }
 }
