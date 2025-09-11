@@ -13,17 +13,287 @@ import {
   MapPin,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  Crown,
+  Shield,
+  Wand2,
+  Sword,
+  Heart,
+  Star,
+  ChevronDown,
+  MessageSquare
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import React from 'react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 
-export default function DemoPage() {
+// Active players data with roles and avatars
+type ActivePlayer = {
+  id: string
+  name: string
+  role: {
+    name: string
+    color: string
+    icon: React.ComponentType<any>
+  }
+  avatar_url?: string
+  status: 'online' | 'away' | 'busy'
+  score: number
+  isGuest: boolean
+}
+
+const mockActivePlayers: ActivePlayer[] = [
+  {
+    id: '1',
+    name: 'Sarah Chen',
+    role: { name: 'Leader', color: '#8B5CF6', icon: Crown },
+    avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100&h=100&fit=crop&crop=faces',
+    status: 'online',
+    score: 2450,
+    isGuest: false
+  },
+  {
+    id: '2', 
+    name: 'Alex Rodriguez',
+    role: { name: 'Warrior', color: '#DC2626', icon: Sword },
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
+    status: 'online',
+    score: 2380,
+    isGuest: false
+  },
+  {
+    id: '3',
+    name: 'Emma Thompson',
+    role: { name: 'Mage', color: '#0EA5E9', icon: Wand2 },
+    avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=faces',
+    status: 'online',
+    score: 2290,
+    isGuest: false
+  },
+  {
+    id: '4',
+    name: 'Marcus Johnson',
+    role: { name: 'Healer', color: '#10B981', icon: Heart },
+    avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces',
+    status: 'away',
+    score: 2150,
+    isGuest: false
+  },
+  {
+    id: '5',
+    name: 'Luna Garcia',
+    role: { name: 'Scout', color: '#059669', icon: Star },
+    avatar_url: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=faces',
+    status: 'online',
+    score: 1980,
+    isGuest: false
+  },
+  {
+    id: '6',
+    name: 'Guest_Player_01',
+    role: { name: 'Warrior', color: '#DC2626', icon: Sword },
+    status: 'online',
+    score: 1850,
+    isGuest: true
+  },
+  {
+    id: '7',
+    name: 'David Kim',
+    role: { name: 'Scout', color: '#059669', icon: Star },
+    avatar_url: 'https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop&crop=faces',
+    status: 'busy',
+    score: 1720,
+    isGuest: false
+  },
+  {
+    id: '8',
+    name: 'Guest_Explorer',
+    role: { name: 'Mage', color: '#0EA5E9', icon: Wand2 },
+    status: 'online',
+    score: 1650,
+    isGuest: true
+  }
+]
+
+// Active Players Dropdown Component
+const ActivePlayersDropdown = ({ players, isPlaying }: { players: ActivePlayer[], isPlaying: boolean }) => {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online': return 'bg-emerald-400'
+      case 'away': return 'bg-amber-400'  
+      case 'busy': return 'bg-red-400'
+      default: return 'bg-gray-400'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'online': return 'Online'
+      case 'away': return 'Away'
+      case 'busy': return 'In Challenge'
+      default: return 'Offline'
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-600/50 hover:border-slate-500 font-semibold transition-all duration-200 hover:scale-105 touch-target"
+      >
+        <Users className="h-5 w-5 text-amber-400" />
+        <span>{players.length} Active Players</span>
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Mobile backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setIsOpen(false)}
+            />
+            
+            {/* Dropdown content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-full left-0 mt-2 w-80 max-w-[90vw] md:w-96 bg-slate-800/95 backdrop-blur-xl border border-slate-600/50 rounded-2xl shadow-2xl z-50 max-h-[70vh] overflow-hidden"
+            >
+              <div className="p-4 border-b border-slate-600/30">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-amber-200">Active Players</h3>
+                  <Badge className="bg-emerald-600/20 text-emerald-300 border-emerald-500/30">
+                    {players.filter(p => p.status === 'online').length} Online
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="max-h-80 overflow-y-auto gaming-scroll">
+                <div className="p-2 space-y-1">
+                  {players.map((player) => {
+                    const RoleIcon = player.role.icon
+                    
+                    return (
+                      <motion.div
+                        key={player.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700/50 transition-colors cursor-pointer group"
+                      >
+                        {/* Avatar */}
+                        <div className="relative">
+                          <Avatar size="md" className="ring-2 ring-slate-600 group-hover:ring-amber-400/50 transition-colors">
+                            {player.avatar_url ? (
+                              <AvatarImage src={player.avatar_url} alt={player.name} />
+                            ) : null}
+                            <AvatarFallback 
+                              name={player.name}
+                              className={`text-white font-bold ${player.isGuest ? 'bg-slate-600' : 'bg-gradient-to-br from-purple-500 to-blue-500'}`}
+                            />
+                          </Avatar>
+                          
+                          {/* Status indicator */}
+                          <div 
+                            className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-800 ${getStatusColor(player.status)} ${
+                              player.status === 'online' && isPlaying ? 'animate-pulse' : ''
+                            }`}
+                            title={getStatusText(player.status)}
+                          />
+                        </div>
+
+                        {/* Player info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-slate-200 truncate">
+                              {player.name}
+                            </p>
+                            {player.isGuest && (
+                              <Badge variant="outline" className="text-xs text-slate-400 border-slate-600">
+                                Guest
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-1">
+                            {/* Role */}
+                            <div className="flex items-center gap-1.5">
+                              <div 
+                                className="w-4 h-4 rounded-full center-flex"
+                                style={{ backgroundColor: player.role.color }}
+                              >
+                                <RoleIcon className="w-2.5 h-2.5 text-white" />
+                              </div>
+                              <span className="text-xs font-medium" style={{ color: player.role.color }}>
+                                {player.role.name}
+                              </span>
+                            </div>
+                            
+                            {/* Score */}
+                            <span className="text-xs text-slate-400 ml-auto">
+                              {player.score.toLocaleString()} pts
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </div>
+              
+              {/* Footer with team stats */}
+              <div className="p-4 border-t border-slate-600/30 bg-slate-800/50">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-lg font-bold text-emerald-300">
+                      {players.filter(p => p.status === 'online').length}
+                    </div>
+                    <div className="text-xs text-slate-400">Online</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-amber-300">
+                      {Math.round(players.reduce((acc, p) => acc + p.score, 0) / players.length).toLocaleString()}
+                    </div>
+                    <div className="text-xs text-slate-400">Avg Score</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-purple-300">
+                      {new Set(players.map(p => p.role.name)).size}
+                    </div>
+                    <div className="text-xs text-slate-400">Roles</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function DemoPageContent() {
+  const searchParams = useSearchParams()
+  const demoType = searchParams?.get('type') || 'default'
+  
   const [demoStep, setDemoStep] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [playerCount, setPlayerCount] = useState(12)
   const [timeRemaining, setTimeRemaining] = useState(23 * 60 + 47) // 23:47
+  const [activePlayers, setActivePlayers] = useState<ActivePlayer[]>(mockActivePlayers)
 
   // Demo steps simulation
   const demoSteps = [
@@ -65,10 +335,21 @@ export default function DemoPage() {
       setDemoStep((prev) => (prev + 1) % demoSteps.length)
       setPlayerCount((prev) => prev + Math.floor(Math.random() * 3) - 1)
       setTimeRemaining((prev) => Math.max(0, prev - Math.floor(Math.random() * 5) + 2))
+      
+      // Simulate active players changes for social demo
+      if (demoType === 'social') {
+        setActivePlayers(prev => prev.map(player => ({
+          ...player,
+          score: player.score + Math.floor(Math.random() * 50) + 10,
+          status: Math.random() > 0.9 ? 
+            (player.status === 'online' ? 'busy' : 'online') : 
+            player.status
+        })))
+      }
     }, 3000)
 
     return () => clearInterval(timer)
-  }, [isPlaying, demoSteps.length])
+  }, [isPlaying, demoSteps.length, demoType])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -112,11 +393,14 @@ export default function DemoPage() {
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-4 bg-gradient-to-r from-purple-400 via-amber-300 to-purple-400 bg-clip-text text-transparent">
-              ClueQuest in Action
+              {demoType === 'social' ? 'Social Adventure Hub' : 'ClueQuest in Action'}
             </h1>
             
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              Watch a simulated corporate team-building adventure unfold in real-time
+              {demoType === 'social' 
+                ? 'Experience real-time collaboration with live player interactions and team dynamics'
+                : 'Watch a simulated corporate team-building adventure unfold in real-time'
+              }
             </p>
           </motion.div>
 
@@ -163,6 +447,19 @@ export default function DemoPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Social Features - Active Players Dropdown */}
+                {demoType === 'social' && (
+                  <div className="mb-6 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <ActivePlayersDropdown players={activePlayers} isPlaying={isPlaying} />
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-600/20 border border-emerald-500/30">
+                        <MessageSquare className="h-4 w-4 text-emerald-400" />
+                        <span className="text-sm text-emerald-300 font-medium">Social Mode</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Adventure Status */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
@@ -450,5 +747,13 @@ export default function DemoPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function DemoPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <DemoPageContent />
+    </React.Suspense>
   )
 }

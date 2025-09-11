@@ -6,9 +6,28 @@ let supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = 
 
 export function createClient() {
   if (!supabaseInstance) {
+    // Validate environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || supabaseUrl === 'TU_URL_AQUI') {
+      throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured. Please check your .env.local file.')
+    }
+    
+    if (!supabaseAnonKey || supabaseAnonKey === 'TU_ANON_KEY_AQUI') {
+      throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is not configured. Please check your .env.local file.')
+    }
+    
+    // Validate URL format
+    try {
+      new URL(supabaseUrl)
+    } catch {
+      throw new Error(`Invalid Supabase URL format: ${supabaseUrl}. Please check your .env.local file.`)
+    }
+    
     supabaseInstance = createBrowserClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl,
+      supabaseAnonKey,
       {
         // Global settings for performance and reliability
         global: {

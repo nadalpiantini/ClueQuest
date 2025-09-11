@@ -199,7 +199,7 @@ function RankingPageContent() {
   }
 
   const handleShareResults = async () => {
-    if (navigator.share && certificateData) {
+    if (typeof window !== 'undefined' && navigator.share && certificateData) {
       try {
         await navigator.share({
           title: `ClueQuest Adventure Complete!`,
@@ -280,13 +280,13 @@ function RankingPageContent() {
                 key={i}
                 className="absolute w-2 h-2 bg-yellow-400 rounded-full"
                 initial={{
-                  x: Math.random() * window.innerWidth,
+                  x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1200,
                   y: -20,
                   rotate: 0,
                   scale: Math.random() * 0.5 + 0.5
                 }}
                 animate={{
-                  y: window.innerHeight + 20,
+                  y: typeof window !== 'undefined' ? window.innerHeight + 20 : 800,
                   rotate: 360,
                   transition: {
                     duration: Math.random() * 3 + 2,

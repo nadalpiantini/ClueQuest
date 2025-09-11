@@ -223,13 +223,13 @@ export class QRSecurityService {
       
       // Location validation if required
       let distanceMeters: number | undefined;
-      if (playerLocation && scene.location && this.defaultConfig.enableLocationValidation) {
+      if (playerLocation && (scene as any).location && this.defaultConfig.enableLocationValidation) {
         distanceMeters = this.calculateDistance(
           playerLocation,
-          scene.location as GeoLocation
+          (scene as any).location as GeoLocation
         );
         
-        const proximityTolerance = scene.proximity_radius || this.defaultConfig.proximityToleranceMeters;
+        const proximityTolerance = (scene as any).proximity_radius || this.defaultConfig.proximityToleranceMeters;
         
         if (distanceMeters > proximityTolerance) {
           riskScore += Math.min(50, Math.round((distanceMeters - proximityTolerance) / 10));
@@ -279,7 +279,7 @@ export class QRSecurityService {
       return {
         valid: riskScore < 70, // Risk threshold
         scene_id: tokenPayload.scene_id,
-        points_awarded: riskScore < 70 ? scene.points_reward : 0,
+        points_awarded: riskScore < 70 ? (scene as any).points_reward : 0,
         risk_score: riskScore,
         fraud_indicators: fraudIndicators,
         distance_meters: distanceMeters,
@@ -405,8 +405,8 @@ export class QRSecurityService {
       // Check if device fingerprint has changed dramatically
       const uniqueFingerprints = new Set(
         playerScans
-          .map(scan => scan.device_fingerprint)
-          .filter(fp => fp && fp.length > 0)
+          .map((scan: any) => scan.device_fingerprint)
+          .filter((fp: any) => fp && fp.length > 0)
       );
       
       // More than 2 different fingerprints in recent scans is suspicious
@@ -572,7 +572,7 @@ export class QRSecurityService {
     
     // Generate QR codes for all scenes
     const qrCodes = await Promise.all(
-      scenes.map(async (scene) => {
+      scenes.map(async (scene: any) => {
         const qrData = await this.generateQRCodeForScene(scene.id, sessionId);
         
         return {

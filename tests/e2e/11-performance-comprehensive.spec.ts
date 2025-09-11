@@ -30,10 +30,10 @@ test.describe('Performance & Comprehensive Testing', () => {
                   vitals.LCP = entry.startTime;
                   break;
                 case 'first-input-delay':
-                  vitals.FID = entry.processingStart - entry.startTime;
+                  vitals.FID = (entry as any).processingStart - entry.startTime;
                   break;
                 case 'cumulative-layout-shift':
-                  vitals.CLS += entry.value;
+                  vitals.CLS += (entry as any).value;
                   break;
                 case 'first-contentful-paint':
                   vitals.FCP = entry.startTime;
@@ -73,13 +73,14 @@ test.describe('Performance & Comprehensive Testing', () => {
       console.log('🚀 Core Web Vitals:', metrics);
       
       // Core Web Vitals thresholds
-      expect(metrics.FCP).toBeLessThan(1800); // Good: < 1.8s
-      expect(metrics.LCP).toBeLessThan(2500); // Good: < 2.5s
-      expect(metrics.CLS).toBeLessThan(0.1);  // Good: < 0.1
-      expect(metrics.TTFB).toBeLessThan(800); // Good: < 0.8s
+      const vitals = metrics as any;
+      expect(vitals.FCP).toBeLessThan(1800); // Good: < 1.8s
+      expect(vitals.LCP).toBeLessThan(2500); // Good: < 2.5s
+      expect(vitals.CLS).toBeLessThan(0.1);  // Good: < 0.1
+      expect(vitals.TTFB).toBeLessThan(800); // Good: < 0.8s
       
-      if (metrics.FID > 0) {
-        expect(metrics.FID).toBeLessThan(100); // Good: < 100ms
+      if (vitals.FID > 0) {
+        expect(vitals.FID).toBeLessThan(100); // Good: < 100ms
       }
     });
 
@@ -109,7 +110,7 @@ test.describe('Performance & Comprehensive Testing', () => {
       };
       
       responses.forEach(response => {
-        resourceTypes[response.type] = (resourceTypes[response.type] || 0) + 1;
+        (resourceTypes as any)[response.type] = ((resourceTypes as any)[response.type] || 0) + 1;
       });
       
       console.log('📦 Resource breakdown:', resourceTypes);
@@ -155,17 +156,17 @@ test.describe('Performance & Comprehensive Testing', () => {
       const bundleSizes = {};
       for (const [type, sizes] of Object.entries(resourceSizes)) {
         const totalSize = (sizes as number[]).reduce((sum, size) => sum + size, 0);
-        bundleSizes[type] = Math.round(totalSize / 1024); // KB
+        (bundleSizes as any)[type] = Math.round(totalSize / 1024); // KB
       }
       
       console.log('📊 Bundle sizes (KB):', bundleSizes);
       
       // Bundle size thresholds
-      if (bundleSizes['script']) {
-        expect(bundleSizes['script']).toBeLessThan(500); // < 500KB JavaScript
+      if ((bundleSizes as any)['script']) {
+        expect((bundleSizes as any)['script']).toBeLessThan(500); // < 500KB JavaScript
       }
-      if (bundleSizes['stylesheet']) {
-        expect(bundleSizes['stylesheet']).toBeLessThan(100); // < 100KB CSS
+      if ((bundleSizes as any)['stylesheet']) {
+        expect((bundleSizes as any)['stylesheet']).toBeLessThan(100); // < 100KB CSS
       }
     });
   });
@@ -250,7 +251,7 @@ test.describe('Performance & Comprehensive Testing', () => {
           }
           
         } catch (error) {
-          console.log(`Session ${index + 1} error:`, error.message);
+          console.log(`Session ${index + 1} error:`, (error as Error).message);
         }
       }));
       

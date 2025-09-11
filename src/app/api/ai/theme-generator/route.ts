@@ -72,64 +72,64 @@ function checkThemeRateLimit(clientIP: string): boolean {
 }
 
 function buildThemePrompt(request: ThemeGenerationRequest): string {
-  return `Eres un diseñador UI/UX experto especializado en sistemas de diseño y temas visuales para aplicaciones interactivas y juegos.
+  return `You are an expert UI/UX designer specialized in design systems and visual themes for interactive applications and games.
 
-SOLICITUD DEL USUARIO:
-- Descripción: "${request.description}"
-- Estilo: "${request.style}"
-- Audiencia objetivo: "${request.targetAudience}"
-- Palabras clave de ambiente: ${request.moodKeywords.join(', ')}
-${request.industryContext ? `- Contexto industrial: ${request.industryContext}` : ''}
-${request.customRequirements ? `- Requisitos especiales: ${request.customRequirements}` : ''}
+USER REQUEST:
+- Description: "${request.description}"
+- Style: "${request.style}"
+- Target Audience: "${request.targetAudience}"
+- Mood Keywords: ${request.moodKeywords.join(', ')}
+${request.industryContext ? `- Industry Context: ${request.industryContext}` : ''}
+${request.customRequirements ? `- Special Requirements: ${request.customRequirements}` : ''}
 
-INSTRUCCIONES:
-Crea un tema visual completo y cohesivo que capture perfectamente la esencia descrita. El tema debe ser:
-1. Visualmente atractivo y profesional
-2. Apropiado para aventuras interactivas/escape rooms
-3. Accesible (contraste WCAG AA)
-4. Moderno y responsive
+INSTRUCTIONS:
+Create a complete and cohesive visual theme that perfectly captures the described essence. The theme must be:
+1. Visually attractive and professional
+2. Appropriate for interactive adventures/escape rooms
+3. Accessible (WCAG AA contrast)
+4. Modern and responsive
 
-RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO:
+RESPOND ONLY WITH VALID JSON:
 
 {
-  "name": "Nombre descriptivo del tema",
-  "description": "Descripción breve y atractiva (1-2 oraciones)",
+  "name": "Descriptive theme name",
+  "description": "Brief and attractive description (1-2 sentences)",
   "colors": {
-    "primary": "#hexcolor (color principal para botones, links)",
-    "secondary": "#hexcolor (color secundario para acentos)",
-    "accent": "#hexcolor (color de énfasis y highlights)",
-    "background": "#hexcolor (fondo principal oscuro)",
-    "surface": "#hexcolor (tarjetas y superficies elevadas)",
-    "text": "#hexcolor (texto principal, debe contrastar bien)"
+    "primary": "#hexcolor (main color for buttons, links)",
+    "secondary": "#hexcolor (secondary color for accents)",
+    "accent": "#hexcolor (emphasis and highlight color)",
+    "background": "#hexcolor (main dark background)",
+    "surface": "#hexcolor (cards and elevated surfaces)",
+    "text": "#hexcolor (main text, must contrast well)"
   },
   "gradients": {
-    "hero": "linear-gradient(...) para hero sections",
-    "card": "linear-gradient(...) para tarjetas/cards",
-    "button": "linear-gradient(...) para botones principales"
+    "hero": "linear-gradient(...) for hero sections",
+    "card": "linear-gradient(...) for cards",
+    "button": "linear-gradient(...) for main buttons"
   },
   "fonts": {
-    "heading": "Fuente para títulos (ej: 'Inter', 'Poppins')",
-    "body": "Fuente para texto (ej: 'Inter', 'Source Sans Pro')",
-    "accent": "Fuente decorativa para acentos"
+    "heading": "Font for titles (e.g: 'Inter', 'Poppins')",
+    "body": "Font for text (e.g: 'Inter', 'Source Sans Pro')",
+    "accent": "Decorative font for accents"
   },
   "imagery": {
-    "style": "Estilo visual recomendado",
-    "suggestions": ["elemento visual 1", "elemento visual 2", "elemento visual 3"]
+    "style": "Recommended visual style",
+    "suggestions": ["visual element 1", "visual element 2", "visual element 3"]
   },
   "animations": {
-    "style": "Estilo de animaciones (elegante, enérgico, sutil)",
-    "duration": "Duración típica (ej: '300ms', '500ms')",
-    "easing": "Curva de animación (ej: 'ease-out', 'cubic-bezier(0.4, 0, 0.2, 1)')"
+    "style": "Animation style (elegant, energetic, subtle)",
+    "duration": "Typical duration (e.g: '300ms', '500ms')",
+    "easing": "Animation curve (e.g: 'ease-out', 'cubic-bezier(0.4, 0, 0.2, 1)')"
   },
-  "category": "Categoría del tema (Fantasy, Corporate, Tech, etc.)",
-  "moodBoard": ["palabra clave 1", "palabra clave 2", "palabra clave 3", "palabra clave 4"]
+  "category": "Theme category (Fantasy, Corporate, Tech, etc.)",
+  "moodBoard": ["keyword 1", "keyword 2", "keyword 3", "keyword 4"]
 }
 
-IMPORTANTE: 
-- Todos los colores en formato hexadecimal
-- Colores deben tener buen contraste para accesibilidad
-- El tema debe ser cohesivo y profesional
-- Responde SOLO con JSON válido, sin texto adicional`
+IMPORTANT: 
+- All colors in hexadecimal format
+- Colors must have good contrast for accessibility
+- The theme must be cohesive and professional
+- Respond ONLY with valid JSON, no additional text`
 }
 
 export async function POST(request: NextRequest) {
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: 'Eres un diseñador UI/UX experto especializado en sistemas de diseño. Creas temas visuales cohesivos y accesibles. SIEMPRE respondes únicamente con JSON válido.'
+            content: 'You are an expert UI/UX designer specialized in design systems. You create cohesive and accessible visual themes. ALWAYS respond only with valid JSON.'
           },
           {
             role: 'user',

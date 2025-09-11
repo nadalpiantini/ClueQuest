@@ -6,7 +6,7 @@ async function globalSetup(config: FullConfig) {
   console.log(`📱 Testing ${config.projects.length} device/browser configurations`);
   
   // Verify server is running
-  const baseURL = config.projects[0]?.use?.baseURL || 'http://localhost:5173';
+  const baseURL = config.projects[0]?.use?.baseURL || 'http://localhost:3000';
   
   try {
     const response = await fetch(baseURL);

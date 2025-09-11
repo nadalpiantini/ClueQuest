@@ -32,7 +32,7 @@
     <div class="container">
         <div class="header">
             <h1>🏥 ClueQuest Database Surgical Diagnostic</h1>
-            <p>Complete health analysis performed on 9/5/2025, 4:59:12 PM</p>
+            <p>Complete health analysis performed on 9/6/2025, 9:38:30 AM</p>
         </div>
         
         <div class="content">
@@ -54,7 +54,7 @@
                     </div>
                     <div class="vital-card">
                         <h3>Avg Response Time</h3>
-                        <div class="value">217ms</div>
+                        <div class="value">224ms</div>
                     </div>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                     </div>
                 
                     <div class="issue medium">
-                        <h4>SECURITY: Tables with open access (RLS may be disabled): cluequest_profiles, cluequest_organizations, cluequest_organization_members, cluequest_adventures, cluequest_sessions, cluequest_players</h4>
+                        <h4>SECURITY: Tables with open access (RLS may be disabled): cluequest_profiles, cluequest_organizations, cluequest_organization_members, cluequest_subscriptions, cluequest_api_keys, cluequest_notifications, cluequest_audit_logs, cluequest_adventures, cluequest_sessions, cluequest_players</h4>
                         <p><strong>Severity:</strong> medium</p>
                         <p><strong>Recommendation:</strong> Verify RLS policies are properly configured for multi-tenant security</p>
                         
@@ -115,7 +115,7 @@
                         
                             <tr>
                                 <td>COLUMN INVENTORY</td>
-                                <td>353</td>
+                                <td>394</td>
                                 <td class="status-warning">limited_access</td>
                                 <td>-</td>
                             </tr>
@@ -222,27 +222,27 @@
     },
     {
       "table_name": "cluequest_subscriptions",
-      "rls_status": "unknown",
-      "access_status": "error",
-      "note": "Could not find the table 'public.cluequest_subscriptions' in the schema cache"
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
     },
     {
       "table_name": "cluequest_api_keys",
-      "rls_status": "unknown",
-      "access_status": "error",
-      "note": "Could not find the table 'public.cluequest_api_keys' in the schema cache"
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
     },
     {
       "table_name": "cluequest_notifications",
-      "rls_status": "unknown",
-      "access_status": "error",
-      "note": "Could not find the table 'public.cluequest_notifications' in the schema cache"
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
     },
     {
       "table_name": "cluequest_audit_logs",
-      "rls_status": "unknown",
-      "access_status": "error",
-      "note": "Could not find the table 'public.cluequest_audit_logs' in the schema cache"
+      "rls_status": "disabled_or_permissive",
+      "access_status": "open",
+      "note": "Table accessible - check if RLS should be enabled"
     },
     {
       "table_name": "cluequest_adventures",
@@ -285,26 +285,26 @@
     {
       "table_name": "cluequest_subscriptions",
       "rls_enabled": false,
-      "status_check": "error",
-      "recommendation": "RLS appears to be configured"
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
     },
     {
       "table_name": "cluequest_api_keys",
       "rls_enabled": false,
-      "status_check": "error",
-      "recommendation": "RLS appears to be configured"
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
     },
     {
       "table_name": "cluequest_notifications",
       "rls_enabled": false,
-      "status_check": "error",
-      "recommendation": "RLS appears to be configured"
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
     },
     {
       "table_name": "cluequest_audit_logs",
       "rls_enabled": false,
-      "status_check": "error",
-      "recommendation": "RLS appears to be configured"
+      "status_check": "open",
+      "recommendation": "Enable RLS for this table"
     },
     {
       "table_name": "cluequest_adventures",
@@ -357,8 +357,7 @@
       "function_type": "dashboard_optimization",
       "return_type": "jsonb",
       "purpose": "Optimized dashboard data retrieval",
-      "status": "missing_or_restricted",
-      "error": "Could not find the function public.get_dashboard_data_optimized without parameters in the schema cache"
+      "status": "available"
     },
     {
       "function_name": "calculate_usage_metrics",

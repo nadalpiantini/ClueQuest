@@ -46,7 +46,7 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
           await helpers.takeScreenshot(`touch-targets-${route.replace('/', 'home')}`);
           
         } catch (error) {
-          console.log(`⚠️ Could not test ${route}:`, error.message);
+          console.log(`⚠️ Could not test ${route}:`, (error as Error).message);
         }
       }
     });
@@ -116,7 +116,7 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
               const modal = page.locator('[role="dialog"], .modal, .popup');
               if (await modal.count() > 0) {
                 try {
-                  await helpers.verifyModal(modal.first());
+                  await helpers.verifyModal('[role="dialog"], .modal, .popup');
                   console.log(`✅ ${viewport.name} - Modal perfectly centered`);
                   
                   // Close modal
@@ -129,7 +129,7 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
                   await page.waitForTimeout(300);
                   
                 } catch (error) {
-                  console.log(`❌ ${viewport.name} - Modal centering failed:`, error.message);
+                  console.log(`❌ ${viewport.name} - Modal centering failed:`, (error as Error).message);
                   await helpers.takeScreenshot(`modal-centering-failed-${viewport.name.replace(' ', '-')}`);
                 }
                 break;
@@ -195,7 +195,7 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
           style.getPropertyValue = function(property) {
             if (property.startsWith('--') || property.includes('safe-area')) {
               const cleanProperty = property.replace('--', '');
-              return safeAreaProps[cleanProperty] || originalGetPropertyValue.call(this, property);
+              return (safeAreaProps as Record<string, string>)[cleanProperty] || originalGetPropertyValue.call(this, property);
             }
             return originalGetPropertyValue.call(this, property);
           };
@@ -433,8 +433,8 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
 
   test.describe('Touch Interactions and Gestures', () => {
     test('should support touch interactions properly', async ({ page }) => {
-      if (!page.context().options.isMobile) {
-        test.skip('Skipping touch test on desktop');
+      if (!page.viewportSize() || page.viewportSize()!.width > 768) {
+        test.skip();
       }
       
       await helpers.navigateAndVerify('/');
@@ -465,8 +465,8 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
     });
 
     test('should handle swipe gestures where appropriate', async ({ page }) => {
-      if (!page.context().options.isMobile) {
-        test.skip('Skipping swipe test on desktop');
+      if (!page.viewportSize() || page.viewportSize()!.width > 768) {
+        test.skip();
       }
       
       await helpers.navigateAndVerify('/');
@@ -497,8 +497,8 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
     });
 
     test('should prevent accidental touches and double-taps', async ({ page }) => {
-      if (!page.context().options.isMobile) {
-        test.skip('Skipping double-tap test on desktop');
+      if (!page.viewportSize() || page.viewportSize()!.width > 768) {
+        test.skip();
       }
       
       await helpers.navigateAndVerify('/');
@@ -518,8 +518,8 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
 
   test.describe('Mobile-Specific Features', () => {
     test('should support device orientation changes', async ({ page }) => {
-      if (!page.context().options.isMobile) {
-        test.skip('Skipping orientation test on desktop');
+      if (!page.viewportSize() || page.viewportSize()!.width > 768) {
+        test.skip();
       }
       
       await helpers.navigateAndVerify('/');
@@ -584,8 +584,8 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
 
   test.describe('Accessibility on Mobile', () => {
     test('should maintain accessibility on touch devices', async ({ page }) => {
-      if (!page.context().options.isMobile) {
-        test.skip('Skipping mobile accessibility test on desktop');
+      if (!page.viewportSize() || page.viewportSize()!.width > 768) {
+        test.skip();
       }
       
       await helpers.navigateAndVerify('/');
@@ -610,8 +610,8 @@ test.describe('Mobile Optimization - Comprehensive Testing', () => {
     });
 
     test('should support screen reader gestures', async ({ page }) => {
-      if (!page.context().options.isMobile) {
-        test.skip('Skipping screen reader test on desktop');
+      if (!page.viewportSize() || page.viewportSize()!.width > 768) {
+        test.skip();
       }
       
       await helpers.navigateAndVerify('/');

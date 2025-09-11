@@ -7,11 +7,11 @@ Tu sistema de avatares ahora está integrado con Leonardo AI para generar transf
 ## ⚙️ Configuración Requerida
 
 ### 1. API Key de Leonardo AI
-Tu API Key ya está proporcionada: `b5309493-c7e6-4fab-b856-0985049fb422`
+Tu API Key ya está proporcionada: `your_leonardo_api_key_here`
 
 Añádela a tu archivo `.env.local`:
 ```env
-LEONARDO_AI_API_KEY=b5309493-c7e6-4fab-b856-0985049fb422
+LEONARDO_AI_API_KEY=your_leonardo_api_key_here
 ```
 
 ### 2. Verificar Supabase Storage

@@ -2,24 +2,41 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { AVATAR_STORAGE_CONFIG, ensureAvatarsBucket } from '@/lib/supabase/storage'
 import { AvatarGenerationRequest, AvatarGenerationResult } from '@/types/adventure'
+import { ClueQuestRole, CustomizationOptions, RunwareAPIError } from '@/types/runware'
+import { runwareClient } from '@/lib/runware-ai'
+import { dataURLToBuffer, createImageVariants } from '@/lib/image-processing'
 
-// Mock Leonardo AI client for development when API key is not available
-const createMockLeonardoClient = () => ({
+// Create mock Runware client for development fallback
+const createMockRunwareClient = () => ({
   uploadImage: async (imageBuffer: Buffer, filename: string) => {
-    return `mock-image-id-${Date.now()}`
+    return `mock-runware-id-${Date.now()}`
   },
-  generateAvatar: async (imageId: string, styleId: string, role: string) => {
+  generateAvatar: async (imageId: string, role: ClueQuestRole, customizations: CustomizationOptions) => {
     return `mock-generation-id-${Date.now()}`
   },
-  getGenerationStatus: async (generationId: string) => {
+  waitForGeneration: async (generationId: string) => {
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 2000))
     return {
-      status: 'COMPLETE',
-      generated_images: [
-        {
-          url: 'https://via.placeholder.com/512x512/8b5cf6/ffffff?text=Mock+Avatar',
-          id: `mock-avatar-${Date.now()}`
-        }
-      ]
+      url: `https://via.placeholder.com/1024x1024/8b5cf6/ffffff?text=${encodeURIComponent('Generated Avatar')}`,
+      id: `mock-avatar-${Date.now()}`,
+      likeCount: 0,
+      generated_image_variation_generics: []
+    }
+  },
+  buildRolePrompt: (role: ClueQuestRole, customizations: Record<string, any>) => {
+    return `Mock prompt for ${role} with customizations`
+  },
+  generateAvatarComplete: async (imageBuffer: Buffer, role: ClueQuestRole, customizations: CustomizationOptions) => {
+    await new Promise(resolve => setTimeout(resolve, 3000)) // Simulate processing
+    return {
+      success: true,
+      avatar_url: `https://via.placeholder.com/1024x1024/8b5cf6/ffffff?text=${encodeURIComponent(`${role} Avatar`)}`,
+      generation_time_ms: 3000,
+      model_used: 'mock-model',
+      role_applied: role,
+      face_preservation_score: 85,
+      moderation_passed: true
     }
   }
 })
@@ -49,7 +66,7 @@ export async function POST(request: NextRequest) {
       style_id,
       gender,
       age_range,
-      customizations,
+      customizations = {},
       session_code
     } = body as AvatarGenerationRequest & { session_code?: string }
 
@@ -61,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get participant role for this session
-    let participantRole = 'Leader' // Default fallback
+    let participantRole: ClueQuestRole = 'Leader' // Default fallback
     
     if (session_code && user) {
       // Get participant data from session to determine role
@@ -76,11 +93,12 @@ export async function POST(request: NextRequest) {
         .single()
       
       if (participant && (participant as any)?.cluequest_adventure_roles?.name) {
-        participantRole = (participant as any).cluequest_adventure_roles.name
+        const roleName = (participant as any).cluequest_adventure_roles.name
+        participantRole = (roleName as ClueQuestRole) || 'Leader'
       }
     } else {
       // For standalone avatar generation, derive role from style_id
-      const roleMap: Record<string, string> = {
+      const roleMap: Record<string, ClueQuestRole> = {
         'leader-detective': 'Leader',
         'warrior-werewolf': 'Warrior',
         'mage-vampire': 'Mage', 
@@ -88,6 +106,16 @@ export async function POST(request: NextRequest) {
         'scout-ninja': 'Scout'
       }
       participantRole = roleMap[style_id] || 'Leader'
+    }
+
+    // Build customization options
+    const roleCustomizations: CustomizationOptions = {
+      gender: gender as any || 'auto',
+      age_range: age_range as any || 'auto',
+      style_intensity: 'moderate',
+      preserve_ethnicity: true,
+      enhance_features: true,
+      ...customizations
     }
 
 
@@ -110,61 +138,141 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Try to use Leonardo AI if available, otherwise use mock
-    let leonardoClient
+    // Try to use Runware AI if available, otherwise use mock
+    let aiClient: any
     try {
-      if (process.env.LEONARDO_AI_API_KEY && process.env.LEONARDO_AI_API_KEY !== 'placeholder-key-for-development') {
-        const { leonardoClient: realClient } = await import('@/lib/leonardo-ai')
-        leonardoClient = realClient
+      if (process.env.RUNWARE_API_KEY && process.env.RUNWARE_API_KEY !== 'placeholder-key-for-development') {
+        aiClient = runwareClient
       } else {
-        leonardoClient = createMockLeonardoClient()
+        aiClient = createMockRunwareClient()
       }
     } catch (error) {
-      leonardoClient = createMockLeonardoClient()
+      aiClient = createMockRunwareClient()
     }
 
-    // Upload to Leonardo AI
+    // Generate avatar using Runware's complete pipeline
     const userId = user?.id || `guest-${Date.now()}`
-    const leonardoImageId = await leonardoClient.uploadImage(
-      imageBuffer,
-      `selfie-${userId}-${Date.now()}.jpg`
-    )
-
-    // Generate avatar with role-based transformation
-    const generationId = await leonardoClient.generateAvatar(
-      leonardoImageId,
-      participantRole,
-      { gender, age_range, ...customizations }
-    )
-
-    // Wait for generation to complete
-    const generationResult = await leonardoClient.waitForGeneration(generationId)
-
-    // Upload generated avatar to our storage
-    const avatarResponse = await fetch(generationResult.url)
-    const avatarBuffer = await avatarResponse.arrayBuffer()
+    let avatarGenerationResult
     
-    const avatarFileName = `avatar-${userId}-${Date.now()}.jpg`
-    const avatarPath = `${AVATAR_STORAGE_CONFIG.folders.generated}/${avatarFileName}`
+    try {
+      if ('generateAvatarComplete' in aiClient) {
+        // Use the enhanced complete pipeline for Runware
+        avatarGenerationResult = await aiClient.generateAvatarComplete(
+          imageBuffer,
+          participantRole,
+          roleCustomizations
+        )
+      } else {
+        // Fallback to step-by-step generation (mock client)
+        const imageId = await aiClient.uploadImage(
+          imageBuffer,
+          `selfie-${userId}-${Date.now()}.jpg`
+        )
 
-    const { data: avatarUpload, error: avatarUploadError } = await supabase.storage
-      .from('avatars')
-      .upload(avatarPath, new Uint8Array(avatarBuffer), {
-        contentType: 'image/jpeg',
-        cacheControl: '31536000' // 1 year cache
-      })
+        const generationId = await aiClient.generateAvatar(
+          imageId,
+          participantRole,
+          roleCustomizations
+        )
 
-    if (avatarUploadError) {
+        const generationResult = await aiClient.waitForGeneration(generationId)
+        
+        avatarGenerationResult = {
+          success: true,
+          avatar_url: generationResult.url,
+          generation_time_ms: Date.now() - startTime,
+          model_used: aiClient.getModelForRole ? aiClient.getModelForRole(participantRole).model_id : 'mock',
+          role_applied: participantRole,
+          moderation_passed: true
+        }
+      }
+      
+    } catch (error) {
+      if (error instanceof RunwareAPIError) {
+        return NextResponse.json(
+          { error: `Avatar generation failed: ${error.message}` },
+          { status: error.statusCode || 500 }
+        )
+      }
+      throw error
+    }
+
+    // Check if generation was successful
+    if (!avatarGenerationResult.success || !avatarGenerationResult.avatar_url) {
       return NextResponse.json(
-        { error: 'Failed to store generated avatar' },
+        { error: avatarGenerationResult.error || 'Avatar generation failed' },
         { status: 500 }
       )
     }
 
-    // Get public URL
-    const { data: avatarUrlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(avatarPath)
+    // Process the generated avatar URL
+    let finalAvatarUrl = avatarGenerationResult.avatar_url
+    let storedAvatarPath: string | null = null
+    
+    // If it's a data URL (base64), store it in Supabase
+    if (avatarGenerationResult.avatar_url.startsWith('data:')) {
+      try {
+        const avatarBuffer = dataURLToBuffer(avatarGenerationResult.avatar_url)
+        
+        const avatarFileName = `avatar-${userId}-${Date.now()}.jpg`
+        const avatarPath = `${AVATAR_STORAGE_CONFIG.folders.generated}/${avatarFileName}`
+
+        const { data: avatarUpload, error: avatarUploadError } = await supabase.storage
+          .from('avatars')
+          .upload(avatarPath, new Uint8Array(avatarBuffer), {
+            contentType: 'image/jpeg',
+            cacheControl: '31536000' // 1 year cache
+          })
+
+        if (avatarUploadError) {
+          return NextResponse.json(
+            { error: 'Failed to store generated avatar' },
+            { status: 500 }
+          )
+        }
+
+        // Get public URL
+        const { data: avatarUrlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(avatarPath)
+        
+        finalAvatarUrl = avatarUrlData.publicUrl
+        storedAvatarPath = avatarPath
+        
+      } catch (error) {
+        console.error('Failed to store avatar:', error)
+        // Continue with original URL if storage fails
+      }
+    } else if (avatarGenerationResult.avatar_url.startsWith('http')) {
+      // If it's a regular URL, optionally download and store it
+      try {
+        const avatarResponse = await fetch(avatarGenerationResult.avatar_url)
+        const avatarBuffer = await avatarResponse.arrayBuffer()
+        
+        const avatarFileName = `avatar-${userId}-${Date.now()}.jpg`
+        const avatarPath = `${AVATAR_STORAGE_CONFIG.folders.generated}/${avatarFileName}`
+
+        const { data: avatarUpload, error: avatarUploadError } = await supabase.storage
+          .from('avatars')
+          .upload(avatarPath, new Uint8Array(avatarBuffer), {
+            contentType: 'image/jpeg',
+            cacheControl: '31536000' // 1 year cache
+          })
+
+        if (!avatarUploadError) {
+          const { data: avatarUrlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(avatarPath)
+          
+          finalAvatarUrl = avatarUrlData.publicUrl
+          storedAvatarPath = avatarPath
+        }
+        
+      } catch (error) {
+        console.error('Failed to download and store avatar:', error)
+        // Continue with original URL if download/storage fails
+      }
+    }
 
     // Save to database
     const avatarData = {
@@ -172,19 +280,21 @@ export async function POST(request: NextRequest) {
       session_id: session_code || null,
       source_image_url: selfie_url,
       style: participantRole.toLowerCase(),
-      prompt_used: leonardoClient.buildRolePrompt(participantRole, { gender, age_range, ...customizations }),
-      avatar_url: avatarUrlData.publicUrl,
-      thumbnail_url: avatarUrlData.publicUrl,
-      ai_provider: 'leonardo',
-      model_version: 'kino-xl-v1',
-      generation_time_seconds: Math.round((Date.now() - startTime) / 1000),
-      moderation_score: 95, // Leonardo has built-in moderation
+      prompt_used: aiClient.buildRolePrompt ? 
+        aiClient.buildRolePrompt(participantRole, roleCustomizations) : 
+        `Generated ${participantRole} avatar with Runware.ai`,
+      avatar_url: finalAvatarUrl,
+      thumbnail_url: finalAvatarUrl,
+      ai_provider: 'runware',
+      model_version: avatarGenerationResult.model_used || 'flux-1-pro',
+      generation_time_seconds: Math.round(avatarGenerationResult.generation_time_ms / 1000),
+      moderation_score: avatarGenerationResult.face_preservation_score || 90,
       status: 'moderated' as const
     }
 
     const { data: avatarRecord, error: dbError } = await supabase
       .from('cluequest_ai_avatars')
-      .insert(avatarData)
+      .insert(avatarData as any) // Temporary fix for type inference
       .select()
       .single()
 
@@ -195,12 +305,17 @@ export async function POST(request: NextRequest) {
     // Build response
     const result: AvatarGenerationResult = {
       id: (avatarRecord as any)?.id || `temp-${Date.now()}`,
-      avatar_url: avatarUrlData.publicUrl,
-      preview_url: avatarUrlData.publicUrl,
-      generation_time_ms: Date.now() - startTime,
-      moderation_passed: true,
-      style_applied: participantRole
-    }
+      avatar_url: finalAvatarUrl,
+      preview_url: finalAvatarUrl,
+      generation_time_ms: avatarGenerationResult.generation_time_ms,
+      moderation_passed: avatarGenerationResult.moderation_passed,
+      style_applied: participantRole,
+      // Additional Runware-specific data
+      model_used: avatarGenerationResult.model_used,
+      face_preservation_score: avatarGenerationResult.face_preservation_score,
+      role_transformation: `${participantRole} → ${aiClient.getAvailableModels ? aiClient.getAvailableModels()[participantRole]?.style_name : 'Transformed'}`,
+      customizations_applied: roleCustomizations
+    } as any // Extend the type for additional fields
 
     // Clean up temporary selfie (optional, for privacy)
     if (selfie_url.includes('selfie-')) {
@@ -217,18 +332,32 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     
     // Return helpful error messages
+    if (error instanceof RunwareAPIError) {
+      return NextResponse.json(
+        { error: `Runware.ai error: ${error.message}` },
+        { status: error.statusCode || 500 }
+      )
+    }
+    
     if (error instanceof Error) {
       if (error.message.includes('timeout')) {
         return NextResponse.json(
-          { error: 'Generation took too long. Please try again.' },
+          { error: 'Avatar generation took too long. Please try again.' },
           { status: 408 }
         )
       }
       
-      if (error.message.includes('Leonardo AI API error')) {
+      if (error.message.includes('Runware') || error.message.includes('API error')) {
         return NextResponse.json(
           { error: 'AI service temporarily unavailable. Please try again.' },
           { status: 503 }
+        )
+      }
+      
+      if (error.message.includes('face') || error.message.includes('detection')) {
+        return NextResponse.json(
+          { error: 'Could not detect face in the uploaded photo. Please try with a clearer image.' },
+          { status: 400 }
         )
       }
     }

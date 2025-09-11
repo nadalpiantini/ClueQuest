@@ -10,6 +10,7 @@ interface DemoUser {
 interface DemoAuthContextType {
   isDemoAuthenticated: boolean
   demoUser: DemoUser | null
+  isInitialized: boolean
   login: (user: DemoUser) => void
   logout: () => void
 }
@@ -19,9 +20,11 @@ const DemoAuthContext = createContext<DemoAuthContextType | undefined>(undefined
 export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
   const [isDemoAuthenticated, setIsDemoAuthenticated] = useState(false)
   const [demoUser, setDemoUser] = useState<DemoUser | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
     // Check for existing demo authentication on mount
+    // Only access localStorage after component is mounted to prevent hydration mismatch
     const demoAuth = localStorage.getItem('demo-auth')
     const userData = localStorage.getItem('demo-user')
     
@@ -35,6 +38,9 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('demo-user')
       }
     }
+    
+    // Mark as initialized after checking localStorage
+    setIsInitialized(true)
   }, [])
 
   const login = (user: DemoUser) => {
@@ -52,7 +58,7 @@ export function DemoAuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <DemoAuthContext.Provider value={{ isDemoAuthenticated, demoUser, login, logout }}>
+    <DemoAuthContext.Provider value={{ isDemoAuthenticated, demoUser, isInitialized, login, logout }}>
       {children}
     </DemoAuthContext.Provider>
   )

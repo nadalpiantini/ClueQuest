@@ -12,6 +12,124 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { ADVENTURE_THEMES, type Role, type Participant } from '@/types/adventure'
 
+// Genre to role category mapping - SURGICALLY PRECISE for perfect thematic coherence
+const GENRE_TO_ROLE_CATEGORY_MAP: Record<string, string[]> = {
+  // FANTASY: Pure magical and medieval fantasy roles only
+  'fantasy': ['Fantasy', 'Mystical', 'Historical'],
+  
+  // MYSTERY: Investigation and knowledge-based roles only
+  'mystery': ['Mystery', 'Academic'],
+  
+  // DETECTIVE: Same as mystery - focused investigation
+  'detective': ['Mystery', 'Academic'],
+  
+  // SCI-FI: Technology and science roles only
+  'sci-fi': ['Tech', 'Academic'],
+  
+  // HORROR: Supernatural and investigation roles only
+  'horror': ['Mystical', 'Mystery'],
+  
+  // ADVENTURE: Pure exploration and combat roles
+  'adventure': ['Adventure', 'Combat'],
+  
+  // TREASURE-HUNT: Exploration with mystery solving
+  'treasure-hunt': ['Adventure', 'Mystery'],
+  
+  // ESCAPE-ROOM: Problem-solving and technical roles
+  'escape-room': ['Academic', 'Tech'],
+  
+  // PUZZLE: Intellectual and creative problem-solving
+  'puzzle': ['Academic', 'Creative'],
+  
+  // CORPORATE: Business leadership roles only
+  'corporate': ['Corporate'],
+  
+  // EDUCATIONAL: Learning and knowledge roles
+  'educational': ['Academic', 'Modern'],
+  
+  // TEAM-BUILDING: Leadership and support roles
+  'team-building': ['Corporate', 'Support'],
+  
+  // SOCIAL: Creative and supportive roles
+  'social': ['Creative', 'Support'],
+  
+  // ENTERTAINMENT: Diverse fun roles
+  'entertainment': ['Creative', 'Fantasy', 'Adventure']
+}
+
+// All available roles with their categories (from builder)
+const ALL_ROLES = [
+  // Fantasy & Magic
+  { id: 'wizard', name: 'Wizard', emoji: '🧙‍♂️', description: 'Master of arcane mysteries', perks: ['Additional clues', '1.2x score multiplier', 'Magical vision'], color: 'purple', maxPlayers: 2, category: 'Fantasy' },
+  { id: 'sorceress', name: 'Sorceress', emoji: '🧙‍♀️', description: 'Enchantress of elemental forces', perks: ['Elemental insights', 'Weather prediction', 'Nature communication'], color: 'violet', maxPlayers: 2, category: 'Fantasy' },
+  { id: 'paladin', name: 'Paladin', emoji: '🛡️', description: 'Holy warrior and protector', perks: ['Divine protection', 'Team healing', 'Evil detection'], color: 'yellow', maxPlayers: 2, category: 'Fantasy' },
+  { id: 'rogue', name: 'Rogue', emoji: '🗡️', description: 'Master of stealth and cunning', perks: ['Lockpicking bonus', 'Stealth mode', 'Trap detection'], color: 'gray', maxPlayers: 3, category: 'Fantasy' },
+  { id: 'bard', name: 'Bard', emoji: '🎵', description: 'Storyteller and team motivator', perks: ['Team morale boost', 'Story knowledge', 'Persuasion bonus'], color: 'orange', maxPlayers: 2, category: 'Fantasy' },
+  { id: 'druid', name: 'Druid', emoji: '🌿', description: 'Nature guardian and shapeshifter', perks: ['Animal communication', 'Plant knowledge', 'Weather sense'], color: 'green', maxPlayers: 2, category: 'Fantasy' },
+  
+  // Combat & Action
+  { id: 'warrior', name: 'Warrior', emoji: '⚔️', description: 'Brave leader of the group', perks: ['Speed bonus points', 'Team leadership', 'Extra endurance'], color: 'red', maxPlayers: 3, category: 'Combat' },
+  { id: 'archer', name: 'Archer', emoji: '🏹', description: 'Precision marksman and scout', perks: ['Long-range vision', 'Target accuracy', 'Scouting bonus'], color: 'emerald', maxPlayers: 2, category: 'Combat' },
+  { id: 'knight', name: 'Knight', emoji: '🤺', description: 'Honorable champion and tactician', perks: ['Strategic planning', 'Honor bonus', 'Team coordination'], color: 'blue', maxPlayers: 2, category: 'Combat' },
+  { id: 'assassin', name: 'Assassin', emoji: '🥷', description: 'Silent eliminator and infiltrator', perks: ['Silent movement', 'Critical strikes', 'Information gathering'], color: 'slate', maxPlayers: 1, category: 'Combat' },
+  
+  // Investigation & Mystery
+  { id: 'detective', name: 'Detective', emoji: '🕵️', description: 'Expert clue investigator', perks: ['Advanced analysis', 'Fraud detection', 'Special intuition'], color: 'amber', maxPlayers: 2, category: 'Mystery' },
+  { id: 'forensic', name: 'Forensic Expert', emoji: '🔬', description: 'Scientific crime scene analyst', perks: ['Evidence analysis', 'DNA insights', 'Crime reconstruction'], color: 'cyan', maxPlayers: 2, category: 'Mystery' },
+  { id: 'spy', name: 'Secret Agent', emoji: '🕶️', description: 'Undercover intelligence operative', perks: ['Surveillance skills', 'Gadget access', 'Code breaking'], color: 'zinc', maxPlayers: 2, category: 'Mystery' },
+  { id: 'reporter', name: 'Investigative Reporter', emoji: '📰', description: 'Truth-seeking journalist', perks: ['Information network', 'Interview skills', 'Research bonus'], color: 'teal', maxPlayers: 3, category: 'Mystery' },
+  
+  // Intellectual & Academic
+  { id: 'scholar', name: 'Scholar', emoji: '📚', description: 'Keeper of ancient secrets', perks: ['Bonus knowledge', 'Clue translation', 'Ancestral wisdom'], color: 'emerald', maxPlayers: 3, category: 'Academic' },
+  { id: 'scientist', name: 'Mad Scientist', emoji: '🧪', description: 'Experimental researcher and inventor', perks: ['Invention creation', 'Formula knowledge', 'Lab analysis'], color: 'lime', maxPlayers: 2, category: 'Academic' },
+  { id: 'archaeologist', name: 'Archaeologist', emoji: '⛏️', description: 'Ancient artifact specialist', perks: ['Artifact knowledge', 'Historical insights', 'Excavation bonus'], color: 'amber', maxPlayers: 2, category: 'Academic' },
+  { id: 'librarian', name: 'Master Librarian', emoji: '📖', description: 'Guardian of knowledge and texts', perks: ['Text deciphering', 'Research speed', 'Memory palace'], color: 'indigo', maxPlayers: 2, category: 'Academic' },
+  
+  // Technology & Modern
+  { id: 'hacker', name: 'Hacker', emoji: '💻', description: 'Digital infiltration expert', perks: ['System access', 'Code breaking', 'Digital forensics'], color: 'green', maxPlayers: 2, category: 'Tech' },
+  { id: 'engineer', name: 'Engineer', emoji: '⚙️', description: 'Mechanical systems specialist', perks: ['Device repair', 'Blueprint reading', 'System analysis'], color: 'slate', maxPlayers: 3, category: 'Tech' },
+  { id: 'pilot', name: 'Pilot', emoji: '✈️', description: 'Navigation and transport expert', perks: ['Route optimization', 'Vehicle control', 'Emergency maneuvers'], color: 'sky', maxPlayers: 1, category: 'Tech' },
+  
+  // Support & Healing
+  { id: 'medic', name: 'Combat Medic', emoji: '⛑️', description: 'Battlefield healer and support', perks: ['Team healing', 'Injury assessment', 'Emergency response'], color: 'red', maxPlayers: 2, category: 'Support' },
+  
+  // Corporate & Leadership
+  { id: 'ceo', name: 'CEO', emoji: '👔', description: 'Strategic leader and decision maker', perks: ['Executive decisions', 'Resource allocation', 'Team motivation'], color: 'blue', maxPlayers: 1, category: 'Corporate' },
+  { id: 'consultant', name: 'Management Consultant', emoji: '💼', description: 'Process optimization expert', perks: ['Efficiency analysis', 'Problem solving', 'Strategic planning'], color: 'purple', maxPlayers: 2, category: 'Corporate' },
+  { id: 'negotiator', name: 'Negotiator', emoji: '🤝', description: 'Diplomatic solution finder', perks: ['Conflict resolution', 'Win-win solutions', 'Communication bonus'], color: 'emerald', maxPlayers: 2, category: 'Corporate' },
+  
+  // Creative & Artistic
+  { id: 'artist', name: 'Master Artist', emoji: '🎨', description: 'Creative visionary and pattern recognizer', perks: ['Visual puzzles', 'Creative solutions', 'Pattern recognition'], color: 'pink', maxPlayers: 2, category: 'Creative' },
+  { id: 'photographer', name: 'Photographer', emoji: '📸', description: 'Visual storyteller and observer', perks: ['Photo challenges', 'Detail spotting', 'Visual memory'], color: 'purple', maxPlayers: 3, category: 'Creative' },
+  { id: 'musician', name: 'Musician', emoji: '🎼', description: 'Sound master and rhythm keeper', perks: ['Audio puzzles', 'Sound patterns', 'Rhythm challenges'], color: 'violet', maxPlayers: 2, category: 'Creative' },
+  
+  // Survival & Adventure
+  { id: 'explorer', name: 'Explorer', emoji: '🧭', description: 'Wilderness survival expert', perks: ['Navigation skills', 'Survival techniques', 'Terrain knowledge'], color: 'yellow', maxPlayers: 2, category: 'Adventure' },
+  { id: 'treasure_hunter', name: 'Treasure Hunter', emoji: '🗝️', description: 'Seeker of hidden valuables', perks: ['Hidden object detection', 'Puzzle solving', 'Risk assessment'], color: 'amber', maxPlayers: 2, category: 'Adventure' },
+  { id: 'survivor', name: 'Survivor', emoji: '🎯', description: 'Resourceful problem solver', perks: ['Resource management', 'Improvisation', 'Crisis handling'], color: 'orange', maxPlayers: 3, category: 'Adventure' },
+  
+  // Mystical & Supernatural  
+  { id: 'psychic', name: 'Psychic Medium', emoji: '🔮', description: 'Supernatural insight specialist', perks: ['Future glimpses', 'Spirit communication', 'Psychic visions'], color: 'purple', maxPlayers: 1, category: 'Mystical' },
+  { id: 'vampire', name: 'Vampire', emoji: '🧛‍♀️', description: 'Night creature with enhanced senses', perks: ['Night vision', 'Enhanced speed', 'Mind influence'], color: 'red', maxPlayers: 1, category: 'Mystical' },
+  { id: 'werewolf', name: 'Werewolf', emoji: '🐺', description: 'Shapeshifter with primal instincts', perks: ['Animal senses', 'Tracking abilities', 'Pack coordination'], color: 'gray', maxPlayers: 2, category: 'Mystical' },
+  
+  // Historical & Classic
+  { id: 'pirate', name: 'Pirate Captain', emoji: '🏴‍☠️', description: 'Seafaring treasure hunter', perks: ['Treasure sense', 'Naval knowledge', 'Leadership'], color: 'amber', maxPlayers: 2, category: 'Historical' },
+  { id: 'ninja', name: 'Ninja', emoji: '🥷', description: 'Shadow warrior with ancient skills', perks: ['Stealth mastery', 'Ancient wisdom', 'Silent movement'], color: 'slate', maxPlayers: 2, category: 'Historical' },
+  { id: 'samurai', name: 'Samurai', emoji: '⚔️', description: 'Honorable warrior with code of ethics', perks: ['Honor bonus', 'Weapon mastery', 'Tactical insight'], color: 'red', maxPlayers: 2, category: 'Historical' },
+  
+  // Modern Specialists
+  { id: 'doctor', name: 'Emergency Doctor', emoji: '👩‍⚕️', description: 'Medical expert and life saver', perks: ['Medical knowledge', 'Emergency care', 'Diagnosis skills'], color: 'red', maxPlayers: 2, category: 'Modern' },
+  { id: 'teacher', name: 'Professor', emoji: '👨‍🏫', description: 'Educational guide and mentor', perks: ['Knowledge sharing', 'Learning acceleration', 'Wisdom bonus'], color: 'blue', maxPlayers: 3, category: 'Modern' },
+  { id: 'chef', name: 'Master Chef', emoji: '👨‍🍳', description: 'Culinary artist and nutrition expert', perks: ['Food knowledge', 'Recipe creation', 'Taste testing'], color: 'orange', maxPlayers: 2, category: 'Modern' }
+]
+
+// Function to get roles filtered by adventure genre
+const getRolesForGenre = (genre: string): any[] => {
+  const allowedCategories = GENRE_TO_ROLE_CATEGORY_MAP[genre] || []
+  return ALL_ROLES.filter(role => allowedCategories.includes(role.category))
+}
+
 interface RoleCardProps {
   role: Role
   isSelected: boolean
@@ -72,37 +190,27 @@ const RoleCard = ({ role, isSelected, onSelect, participantCount, isRecommended,
         </AnimatePresence>
 
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              {/* Role Icon */}
-              <div 
-                className="w-12 h-12 rounded-full center-flex text-white text-lg font-bold"
-                style={{ backgroundColor: role.color }}
-              >
-                <Icon className="w-6 h-6" />
-              </div>
-              
-              <div>
-                <CardTitle className="text-lg font-semibold">{role.name}</CardTitle>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs">
-                    <Users className="w-3 h-3 mr-1" />
-                    {participantCount}/{role.suggested_count}
-                  </Badge>
-                  {participantCount >= role.suggested_count && (
-                    <Badge variant="secondary" className="text-xs">
-                      FULL
-                    </Badge>
-                  )}
-                </div>
-              </div>
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl"
+              style={{ backgroundColor: role.color }}
+            >
+              <Icon className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-lg font-bold text-foreground">
+                {role.name}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {participantCount} / {role.suggested_count} players
+              </p>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Description */}
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {role.description}
           </p>
 
@@ -197,99 +305,72 @@ function RoleSelectionPageContent() {
 
   const loadAdventureData = async () => {
     try {
-      // Mock adventure data
+      // Get adventure genre from URL params or default to fantasy
+      const adventureGenre = searchParams.get('genre') || 'fantasy'
+      
+      // Get roles filtered by genre
+      const genreRoles = getRolesForGenre(adventureGenre)
+      
+      // Convert to the expected format
+      const formattedRoles = genreRoles.map((role, index) => ({
+        id: role.id,
+        adventure_id: '1',
+        name: role.name,
+        description: role.description,
+        color: getColorValue(role.color),
+        icon_url: null,
+        suggested_count: role.maxPlayers,
+        perks: role.perks.map((perk: string, perkIndex: number) => ({
+          id: `${role.id}_perk_${perkIndex}`,
+          name: perk,
+          description: perk,
+          perk_type: 'extra_points' as const,
+          value: 10,
+          conditions: []
+        })),
+        multipliers: [
+          { condition: `${role.category.toLowerCase()} challenges`, multiplier: 1.2, description: `Bonus for ${role.category.toLowerCase()} tasks` }
+        ]
+      }))
+
+      // Mock adventure data with filtered roles
       const adventureData = {
         id: '1',
-        title: 'The Enchanted Forest Quest',
-        theme: 'fantasy' as const,
-        roles: [
-          {
-            id: '1',
-            adventure_id: '1',
-            name: 'Leader',
-            description: 'Guide your team through challenges with natural charisma and strategic thinking.',
-            color: '#8B5CF6',
-            icon_url: null,
-            suggested_count: 1,
-            perks: [
-              { id: '1', name: 'Command Presence', description: 'Can rally team for group challenges', perk_type: 'team_buff' as const, value: 1.2, conditions: [] },
-              { id: '2', name: 'Strategic Mind', description: 'Receives hints about optimal paths', perk_type: 'hint_access' as const, value: 1, conditions: [] }
-            ],
-            multipliers: [
-              { condition: 'team challenges', multiplier: 1.5, description: 'Bonus for successful team coordination' }
-            ]
-          },
-          {
-            id: '2',
-            adventure_id: '1',
-            name: 'Warrior',
-            description: 'Face physical and combat challenges with courage and determination.',
-            color: '#DC2626',
-            icon_url: null,
-            suggested_count: 2,
-            perks: [
-              { id: '3', name: 'Combat Expert', description: 'Extra damage in battle challenges', perk_type: 'extra_points' as const, value: 25, conditions: ['combat'] },
-              { id: '4', name: 'Protective Stance', description: 'Can shield teammates from penalties', perk_type: 'team_buff' as const, value: 1, conditions: [] }
-            ],
-            multipliers: [
-              { condition: 'physical challenges', multiplier: 2.0, description: 'Double points for strength-based tasks' }
-            ]
-          },
-          {
-            id: '3',
-            adventure_id: '1',
-            name: 'Mage',
-            description: 'Harness magical knowledge to solve puzzles and unlock arcane secrets.',
-            color: '#0EA5E9',
-            icon_url: null,
-            suggested_count: 1,
-            perks: [
-              { id: '5', name: 'Arcane Knowledge', description: 'Can identify magical items and runes', perk_type: 'hint_access' as const, value: 1, conditions: ['magic'] },
-              { id: '6', name: 'Spell Mastery', description: 'Bonus points for puzzle solving', perk_type: 'extra_points' as const, value: 30, conditions: ['puzzle'] }
-            ],
-            multipliers: [
-              { condition: 'knowledge challenges', multiplier: 1.8, description: 'Bonus for wisdom-based challenges' }
-            ]
-          },
-          {
-            id: '4',
-            adventure_id: '1',
-            name: 'Healer',
-            description: 'Support your team with restoration abilities and team coordination.',
-            color: '#10B981',
-            icon_url: null,
-            suggested_count: 1,
-            perks: [
-              { id: '7', name: 'Team Recovery', description: 'Can restore team chances after failures', perk_type: 'team_buff' as const, value: 1, conditions: [] },
-              { id: '8', name: 'Empathy', description: 'Receives bonus points for helping others', perk_type: 'extra_points' as const, value: 20, conditions: ['cooperation'] }
-            ],
-            multipliers: [
-              { condition: 'team support', multiplier: 2.5, description: 'High bonus for collaborative actions' }
-            ]
-          },
-          {
-            id: '5',
-            adventure_id: '1',
-            name: 'Scout',
-            description: 'Use stealth and perception to discover hidden paths and secrets.',
-            color: '#059669',
-            icon_url: null,
-            suggested_count: 2,
-            perks: [
-              { id: '9', name: 'Eagle Eye', description: 'Can spot hidden QR codes and clues', perk_type: 'hint_access' as const, value: 1, conditions: ['exploration'] },
-              { id: '10', name: 'Swift Movement', description: 'Reduced cooldown between challenges', perk_type: 'speed_boost' as const, value: 0.8, conditions: [] }
-            ],
-            multipliers: [
-              { condition: 'exploration', multiplier: 1.6, description: 'Bonus for discovering secrets' }
-            ]
-          }
-        ]
+        title: `The ${adventureGenre.charAt(0).toUpperCase() + adventureGenre.slice(1)} Adventure`,
+        theme: adventureGenre,
+        roles: formattedRoles
       }
 
       setAdventure(adventureData)
-      setRoles(adventureData.roles)
+      setRoles(formattedRoles)
     } catch (error) {
+      console.error('Error loading adventure data:', error)
     }
+  }
+
+  // Helper function to convert color names to hex values
+  const getColorValue = (colorName: string): string => {
+    const colorMap: Record<string, string> = {
+      'purple': '#8B5CF6',
+      'violet': '#7C3AED',
+      'yellow': '#EAB308',
+      'gray': '#6B7280',
+      'orange': '#F97316',
+      'green': '#22C55E',
+      'red': '#DC2626',
+      'emerald': '#10B981',
+      'blue': '#3B82F6',
+      'slate': '#64748B',
+      'amber': '#F59E0B',
+      'cyan': '#06B6D4',
+      'zinc': '#71717A',
+      'teal': '#14B8A6',
+      'lime': '#84CC16',
+      'indigo': '#6366F1',
+      'sky': '#0EA5E9',
+      'pink': '#EC4899'
+    }
+    return colorMap[colorName] || '#8B5CF6'
   }
 
   const loadParticipants = async () => {
@@ -328,6 +409,7 @@ function RoleSelectionPageContent() {
 
       setParticipants(participantsData)
     } catch (error) {
+      console.error('Error loading participants:', error)
     }
   }
 
@@ -396,8 +478,10 @@ function RoleSelectionPageContent() {
         router.push(`/avatar-generation?session=${sessionCode}${isGuest ? '&guest=true' : ''}${roleParam}`)
       } else {
         const error = await response.json()
+        console.error('Error joining session:', error)
       }
     } catch (error) {
+      console.error('Error joining session:', error)
     } finally {
       setIsLoading(false)
     }
@@ -405,170 +489,139 @@ function RoleSelectionPageContent() {
 
   if (!adventure || roles.length === 0) {
     return (
-      <div className="min-h-screen center-flex">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p>Loading roles...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading adventure roles...</p>
         </div>
       </div>
     )
   }
 
-  const theme = ADVENTURE_THEMES[adventure.theme as keyof typeof ADVENTURE_THEMES]
-  const totalParticipants = participants.length
-  const selectedRole = roles.find(role => role.id === selectedRoleId)
+  const theme = ADVENTURE_THEMES[adventure.theme as keyof typeof ADVENTURE_THEMES] || ADVENTURE_THEMES.fantasy
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="pt-safe px-4 py-6 bg-card border-b">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold mb-2">Choose Your Role</h1>
-            <p className="text-muted-foreground">
-              Select a role that matches your playstyle and helps balance the team
-            </p>
-          </div>
+    <div 
+      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
+      style={{
+        backgroundImage: `linear-gradient(135deg, ${theme.colors.background} 0%, ${theme.colors.primary}20 50%, ${theme.colors.background} 100%)`
+      }}
+    >
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl font-bold text-white mb-4"
+          >
+            Choose Your Role
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-xl text-slate-300 mb-2"
+          >
+            {adventure.title}
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-slate-400"
+          >
+            Select a role that matches your playstyle and team needs
+          </motion.p>
+        </div>
 
-          {/* Team Balance Overview */}
-          {totalParticipants > 0 && (
-            <div className="bg-muted/50 rounded-lg p-4 mb-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Team Balance</span>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {totalParticipants + 1} players
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {roles.map(role => {
-                  const count = teamBalance[role.id] || 0
-                  const needed = role.suggested_count
-                  const percentage = Math.min((count / needed) * 100, 100)
-                  const isBalanced = count >= needed
-                  
-                  return (
-                    <div key={role.id} className="text-xs">
-                      <div className="flex justify-between mb-1">
-                        <span className={isBalanced ? 'text-green-600' : 'text-muted-foreground'}>
-                          {role.name}
-                        </span>
-                        <span className={isBalanced ? 'text-green-600' : 'text-muted-foreground'}>
-                          {count}/{needed}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={percentage} 
-                        className="h-1"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
+        {/* Team Balance Overview */}
+        {participants.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 border border-white/20"
+          >
+            <h3 className="text-lg font-semibold text-white mb-4">Team Balance</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {roles.map(role => {
+                const count = teamBalance[role.id] || 0
+                const percentage = (count / role.suggested_count) * 100
+                return (
+                  <div key={role.id} className="text-center">
+                    <p className="text-sm text-slate-300 mb-1">{role.name}</p>
+                    <Progress 
+                      value={Math.min(percentage, 100)} 
+                      className="h-2 mb-1"
+                    />
+                    <p className="text-xs text-slate-400">{count}/{role.suggested_count}</p>
+                  </div>
+                )
+              })}
             </div>
-          )}
+          </motion.div>
+        )}
 
-          {/* AI Recommendation */}
-          <AnimatePresence>
-            {aiRecommendation && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4"
-              >
-                <div className="flex items-start gap-2">
-                  <Star className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-medium text-blue-900 mb-1">AI Recommendation</p>
-                    <p className="text-blue-700">
-                      Your team needs a <strong>{roles.find(r => r.id === aiRecommendation)?.name}</strong> for optimal balance.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
+        {/* Roles Grid */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+        >
+          {roles.map((role) => (
+            <RoleCard
+              key={role.id}
+              role={role}
+              isSelected={selectedRoleId === role.id}
+              onSelect={() => handleRoleSelect(role.id)}
+              participantCount={teamBalance[role.id] || 0}
+              isRecommended={aiRecommendation === role.id}
+              theme={theme}
+            />
+          ))}
+        </motion.div>
 
-      {/* Role Grid */}
-      <div className="px-4 py-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {roles.map(role => (
-              <RoleCard
-                key={role.id}
-                role={role}
-                isSelected={selectedRoleId === role.id}
-                onSelect={() => handleRoleSelect(role.id)}
-                participantCount={teamBalance[role.id] || 0}
-                isRecommended={role.id === aiRecommendation}
-                theme={theme}
-              />
-            ))}
-          </div>
+        {/* Action Buttons */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex justify-center gap-4"
+        >
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="px-8 py-3 text-white border-white/30 hover:bg-white/10"
+          >
+            Back
+          </Button>
+          <Button
+            onClick={handleConfirmRole}
+            disabled={!selectedRoleId || isLoading}
+            className="px-8 py-3 text-white font-semibold"
+            style={{ 
+              backgroundColor: theme.colors.primary,
+              borderColor: theme.colors.primary
+            }}
+          >
+            {isLoading ? 'Joining...' : 'Confirm Role'}
+          </Button>
+        </motion.div>
 
-          {/* Selection Summary & Continue */}
-          <AnimatePresence>
-            {selectedRole && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="fixed bottom-0 left-0 right-0 bg-card border-t p-4 pb-safe shadow-lg"
-              >
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-full center-flex text-white font-bold"
-                        style={{ backgroundColor: selectedRole.color }}
-                      >
-                        {selectedRole.name[0]}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{selectedRole.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedRole.perks.length} special abilities
-                        </p>
-                      </div>
-                    </div>
-
-                    <Button 
-                      onClick={handleConfirmRole}
-                      disabled={isLoading}
-                      size="lg"
-                      className="touch-target"
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>Joining...</span>
-                        </div>
-                      ) : (
-                        'Confirm Role'
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Team Balance Warning */}
-                  {selectedRole && teamBalance[selectedRole.id] >= selectedRole.suggested_count && (
-                    <div className="mt-3 flex items-start gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                      <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                      <p className="text-yellow-800">
-                        This role is already full. Consider choosing a different role for better team balance.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Help Text */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="text-center mt-8"
+        >
+          <p className="text-slate-400 text-sm">
+            <AlertTriangle className="w-4 h-4 inline mr-1" />
+            Each role has unique abilities and scoring bonuses. Choose wisely!
+          </p>
+        </motion.div>
       </div>
     </div>
   )

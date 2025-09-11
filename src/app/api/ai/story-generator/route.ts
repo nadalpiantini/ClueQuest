@@ -8,6 +8,7 @@ import {
   enhanceForMysteryContext,
   enhanceForEducationalContext
 } from '@/lib/frameworks/story-frameworks'
+import { generateKBEnhancedStory, type EnhancedStoryRequest } from '@/lib/kb/story-integration'
 
 interface StoryGenerationRequest {
   theme: string
@@ -18,6 +19,10 @@ interface StoryGenerationRequest {
   framework?: string
   specificElements?: string[]
   customRequirements?: string
+  // New KB integration parameters
+  useKnowledgeBase?: boolean      // Enable KB-enhanced generation
+  organizationId?: string         // Organization for KB filtering
+  originalityLevel?: 'standard' | 'strict' | 'enterprise'  // Originality requirements
 }
 
 // Rate limiting for story generation (more expensive than titles)
@@ -72,7 +77,10 @@ export async function POST(request: NextRequest) {
       maxPlayers, 
       framework,
       specificElements = [],
-      customRequirements = ''
+      customRequirements = '',
+      useKnowledgeBase = false,
+      organizationId,
+      originalityLevel = 'standard'
     } = body
     
     // Validate required fields
@@ -97,6 +105,54 @@ export async function POST(request: NextRequest) {
     const sanitizedAudience = targetAudience.slice(0, 50).replace(/[<>]/g, '')
     const sanitizedElements = specificElements.slice(0, 10).map(e => e.slice(0, 100).replace(/[<>]/g, ''))
 
+    // NEW: Use KB-enhanced generation if requested
+    if (useKnowledgeBase) {
+      try {
+        const enhancedRequest: EnhancedStoryRequest = {
+          theme: sanitizedTheme,
+          tone: sanitizedTone,
+          targetAudience: sanitizedAudience,
+          duration,
+          maxPlayers,
+          framework,
+          specificElements: sanitizedElements,
+          customRequirements,
+          kbConfig: {
+            useKBContext: true,
+            organizationId,
+            originalityChecks: originalityLevel !== 'standard',
+            maxRegenerationAttempts: originalityLevel === 'enterprise' ? 4 : 3,
+            maxContextChunks: originalityLevel === 'enterprise' ? 8 : 6
+          }
+        }
+
+        const kbResult = await generateKBEnhancedStory(enhancedRequest, {
+          getFrameworkById,
+          selectOptimalFramework,
+          generateFrameworkPrompt,
+          validateStoryStructure
+        })
+
+        return NextResponse.json({
+          story: kbResult.story,
+          framework: kbResult.framework,
+          metadata: {
+            ...kbResult.metadata,
+            kb_enhanced: true,
+            originality_level: originalityLevel
+          },
+          // Include KB-specific information
+          context_info: kbResult.context_info,
+          originality_analysis: kbResult.originality_analysis
+        })
+
+      } catch (kbError) {
+        console.error('KB-enhanced generation failed, falling back to standard:', kbError)
+        // Continue with standard generation below
+      }
+    }
+
+    // STANDARD GENERATION (fallback or when KB not requested)
     // Select or get specified framework
     const selectedFramework = framework 
       ? getFrameworkById(framework)
@@ -274,8 +330,9 @@ function generateFallbackStory(framework: any, config: any) {
 
 export async function GET() {
   return NextResponse.json({ 
-    status: 'AI Story Generator Ready',
+    status: 'AI Story Generator Ready (KB-Enhanced)',
     model: 'DeepSeek Chat',
+    version: '2.0.0-kb',
     frameworks_available: [
       'hero_journey',
       'mystery_structure', 
@@ -287,11 +344,45 @@ export async function GET() {
       'Context-aware story generation',
       'Quality validation',
       'Multiple audience support',
-      'Fallback story templates'
+      'Fallback story templates',
+      // NEW KB features
+      'Knowledge Base integration',
+      'RAG-powered contextual inspiration',
+      'Enterprise-grade originality validation',
+      'Multi-attempt optimization',
+      'Organizational content filtering'
     ],
+    kb_capabilities: {
+      contextual_inspiration: 'Draws inspiration from organizational knowledge base',
+      originality_guarantee: 'Ensures generated content meets originality thresholds',
+      multi_tenant_filtering: 'Respects organizational content boundaries',
+      similarity_detection: 'Advanced cosine + Jaccard similarity analysis',
+      source_leakage_prevention: 'Blocks URLs, citations, and source references'
+    },
+    originality_levels: {
+      standard: 'Basic originality checks (similarity < 82%)',
+      strict: 'Enhanced originality (similarity < 75%, 3-4 attempts)',
+      enterprise: 'Maximum originality (similarity < 70%, up to 4 attempts, 8 context sources)'
+    },
     rate_limits: {
-      requests_per_2_hours: 3,
+      standard_requests_per_2_hours: 3,
+      kb_enhanced_requests_per_2_hours: 2, // More expensive due to KB processing
       max_duration_minutes: 180
+    },
+    example_kb_request: {
+      theme: 'Corporate Team Building',
+      tone: 'professional',
+      targetAudience: 'professionals',
+      duration: 60,
+      maxPlayers: 8,
+      useKnowledgeBase: true,
+      organizationId: 'your-org-id',
+      originalityLevel: 'strict'
+    },
+    response_enhancements: {
+      context_info: 'Details about KB sources consulted',
+      originality_analysis: 'Comprehensive originality scoring and recommendations',
+      attempt_tracking: 'Number of generation attempts for optimization'
     }
   })
 }

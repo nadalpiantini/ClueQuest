@@ -97,9 +97,9 @@ export default function ChallengeLocationMapper({
   const challengeTypeColors = {
     riddle: 'purple',
     photo: 'emerald', 
-    question: 'blue',
-    scan: 'amber',
-    location: 'amber',
+    question: 'gold',
+    scan: 'gold',
+    location: 'gold',
     team: 'red'
   } as const
 

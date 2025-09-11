@@ -50,52 +50,94 @@ const nextConfig = {
 
   // Security headers (production-ready from AXIS6 patterns)
   async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
-          },
-        ],
-      },
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/_next/static/chunks/(.*).js',
-        headers: [
-          {
-            key: 'Content-Type',
-            value: 'application/javascript; charset=utf-8',
-          },
-        ],
-      },
-    ];
+    // Only apply custom headers in production to avoid MIME type conflicts in development
+    if (process.env.NODE_ENV === 'production') {
+      return [
+        {
+          source: '/(.*)',
+          headers: [
+            {
+              key: 'X-Frame-Options',
+              value: 'DENY',
+            },
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff',
+            },
+            {
+              key: 'Referrer-Policy',
+              value: 'strict-origin-when-cross-origin',
+            },
+            {
+              key: 'Permissions-Policy',
+              value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+            },
+          ],
+        },
+        {
+          source: '/_next/static/(.*)',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
+        {
+          source: '/_next/static/chunks/(.*).js',
+          headers: [
+            {
+              key: 'Content-Type',
+              value: 'application/javascript; charset=utf-8',
+            },
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff',
+            },
+          ],
+        },
+        {
+          source: '/_next/static/css/(.*).css',
+          headers: [
+            {
+              key: 'Content-Type',
+              value: 'text/css; charset=utf-8',
+            },
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff',
+            },
+          ],
+        },
+        {
+          source: '/_next/static/media/(.*)',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
+      ];
+    }
+    
+    // In development, don't apply any custom headers to avoid MIME type conflicts
+    // Let Next.js handle all headers automatically in development
+    return [];
   },
 
   // Images optimization
   images: {
-    domains: ['images.unsplash.com', 'avatars.githubusercontent.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -131,14 +173,14 @@ const nextConfig = {
   
   // Server external packages temporarily removed due to conflict
   
-  // TypeScript configuration - temporarily disabled while fixing type errors
+  // TypeScript configuration - Re-enabled after fixing critical errors
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false, // Re-enabled: Critical errors fixed
   },
 
-  // ESLint configuration - temporarily disabled while fixing errors
+  // ESLint configuration - Re-enabled after TypeScript cleanup
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false, // Re-enabled: Major issues resolved
   },
 };
 

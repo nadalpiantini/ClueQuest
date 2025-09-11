@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# CLUEQUEST - Global SaaS Platform
+# CLUEQUEST - AI-Powered Interactive Adventure Platform
 
 ## Quick Start
 ```bash
@@ -11,17 +11,20 @@ npm install
 
 # Set up environment variables
 cp .env.local.example .env.local
-# Edit .env.local with your Supabase keys
+# Edit .env.local with your Supabase keys and OpenAI API key
 
-# Run development server (configured to use port 5173)
+# Run development server (uses Next.js default port 3000)
 npm run dev
 
 # Open browser
-http://localhost:5173
+http://localhost:3000
+
+# Knowledge Base Admin Interface
+http://localhost:3000/admin/kb
 ```
 
 ## Project Overview
-ClueQuest is a production-ready SaaS platform built with proven patterns from AXIS6, CINETWRK, and other successful deployments. Optimized for global markets with mobile-first design, enterprise-grade security, and performance-focused architecture.
+ClueQuest is an AI-powered interactive adventure platform that creates immersive, location-based mystery games. Players engage in collaborative storytelling experiences with QR code scanning, real-time challenges, and AI-generated content. Built with Next.js 15, React 19, and Supabase, featuring mobile-first design and production-ready architecture.
 
 ## Tech Stack
 - **Frontend**: Next.js 15.1.6 (App Router), React 19.1.0, TypeScript 5.7.2
@@ -40,108 +43,132 @@ ClueQuest is a production-ready SaaS platform built with proven patterns from AX
 ## Development Commands
 ```bash
 # Core Development
-npm run dev          # Start development server on http://localhost:5173
-npm run build        # Production build
-npm run build:production # Production build with NODE_ENV=production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint issues automatically
-npm run type-check   # TypeScript type checking
-npm run optimize:check # Type check + lint combined
+npm run dev                    # Start development server on http://localhost:3000
+npm run build                  # Production build
+npm run build:production       # Production build with NODE_ENV=production
+npm run start                  # Start production server
+npm run lint                   # Run ESLint
+npm run lint:fix              # Fix ESLint issues automatically
+npm run type-check             # TypeScript type checking
+npm run optimize:check         # Type check + lint combined
+npm run analyze                # Bundle analyzer for optimization
 
-# Database & Setup
-npm run setup:all    # Complete project setup automation
-npm run setup:dns    # Configure Cloudflare DNS records
-npm run setup:email  # Setup Resend email provider
-npm run setup:vercel # Configure Vercel deployment
-npm run setup:check  # Check all services status
+# Setup & Infrastructure
+npm run setup:all              # Complete project setup automation
+npm run setup:dns              # Configure DNS via scripts/configure-empleaido-dns.js
+npm run setup:email            # Setup Resend email provider
+npm run setup:vercel           # Configure Vercel deployment
+npm run setup:check            # Check all services status
 
 # Database Operations
-npm run db:migrate   # Run Supabase migrations
-npm run db:reset     # Reset database (development only)
-npm run db:optimize  # Deploy performance indexes (25+ optimizations)
-npm run db:monitor   # View performance monitoring queries
+npm run db:migrate             # Run Supabase migrations
+npm run db:reset               # Reset database (development only)
+npm run db:optimize            # Deploy performance indexes
+npm run db:monitor             # View performance monitoring queries
+npm run db:surgical-diagnostic # Comprehensive database analysis
+npm run db:emergency-surgery   # Fix database issues (use with caution)
+npm run db:apply-fix           # Apply SQL fixes
+
+# Knowledge Base Operations
+node scripts/ingest-knowledge-base.mjs ./docs/document.pdf "Title"  # Ingest PDF
+node scripts/ingest-knowledge-base.mjs --help                      # Help for KB ingestion
 
 # Testing - Unit/Integration (Jest)
-npm run test         # Run unit tests
-npm run test:watch   # Run tests in watch mode
-npm run test:coverage # Run tests with coverage report
+npm run test                   # Run unit tests
+npm run test:watch             # Run tests in watch mode
+npm run test:coverage          # Run tests with coverage report
 
-# Testing - Authentication & Database
-npm run test:auth    # Test authentication flow
-npm run test:performance # Test database performance
+# Testing - System Integration
+npm run test:auth              # Test authentication flow
+npm run test:performance       # Test database performance
+npm run test:avatar            # Test avatar generation pipeline
+npm run test:geocoding         # Test geocoding functionality
 
 # E2E Testing (Playwright)
-npm run test:e2e     # Run all E2E tests
-npm run test:e2e:auth # Test authentication flows
-npm run test:e2e:mobile # Mobile responsive tests
-npm run test:e2e:debug  # Debug mode with browser UI
+npm run test:e2e               # Run all E2E tests
+npm run test:e2e:auth          # Test authentication flows
+npm run test:e2e:mobile        # Mobile responsive tests
+npm run test:e2e:debug         # Debug mode with browser UI
+npm run test:e2e:debug:create  # Debug create page specifically
+npm run test:e2e:debug:slow    # Debug with slow motion
 
-# Security & Production
-npm run security:audit    # Run security audit
-npm run security:validate # Validate security configuration
-npm run production:health # Check production health
-npm run production:deploy # Build and verify for production
-npm run production:monitor # Production monitoring dashboard
+# Security & Compliance
+npm run security:audit         # Run security audit
+npm run security:validate      # Validate security configuration
+npm run security:harden        # Apply security hardening
+npm run security:monitor       # Security monitoring
+npm run security:pentest       # Penetration testing
+npm run security:full          # Complete security suite
+npm run security:compliance    # Compliance audit (SOC2, GDPR, OWASP)
 
-# Bundle Analysis
-npm run analyze      # Bundle analyzer for optimization
+# Production & Deployment
+npm run production:health      # Check production health
+npm run production:deploy      # Build and verify for production
+npm run production:monitor     # Production monitoring dashboard
+npm run deploy:empleaido       # Deploy to empleaido domain
+npm run deploy:quick           # Quick build and deploy
 ```
 
 ## IMPORTANT Development Notes
-- **Port Configuration**: Configured to ALWAYS use port 5173 for development - http://localhost:5173
+- **Port Configuration**: Uses Next.js default port 3000 for development - http://localhost:3000
 - **Mobile-First**: All components must be mobile-responsive with touch targets ≥44px
 - **Performance-Optimized**: Bundle splitting configured for Supabase, UI, and vendor chunks
 - **Security-First**: CSP headers, input validation, and secure defaults enabled
-- **Global Market Ready**: Multi-language support structure, international best practices
+- **AI Integration**: OpenAI for content generation, Runware for avatar generation
+- **Adventure Platform**: Location-based QR code adventures with real-time collaboration
 
 ## Project Structure
 ```
 cluequest/
 ├── src/
-│   ├── app/                    # Next.js App Router (mobile-optimized layouts)
-│   │   ├── (auth)/            # Protected routes group
-│   │   │   ├── dashboard/     # Main dashboard
-│   │   │   ├── settings/      # User settings
-│   │   │   └── profile/       # User profile
-│   │   ├── auth/              # Authentication pages
-│   │   │   ├── login/         # Login page
-│   │   │   ├── register/      # Registration page
-│   │   │   └── reset/         # Password reset
-│   │   ├── api/               # API routes
-│   │   │   ├── auth/          # Authentication endpoints
-│   │   │   ├── users/         # User management
-│   │   │   └── health/        # Health checks
-│   │   ├── globals.css        # Global styles with CSS variables
-│   │   ├── layout.tsx         # Root layout with mobile optimization
-│   │   └── page.tsx           # Landing page (mobile-first)
+│   ├── app/                          # Next.js App Router
+│   │   ├── (adventure)/              # Adventure flow protected routes
+│   │   │   ├── adventure-hub/        # Central hub for active adventures
+│   │   │   ├── avatar-generation/    # AI avatar creation
+│   │   │   ├── challenges/           # Interactive challenges
+│   │   │   ├── intro/               # Adventure introduction
+│   │   │   ├── login/               # Adventure-specific login
+│   │   │   ├── qr-scan/             # QR code scanning interface
+│   │   │   ├── ranking/             # Leaderboards and achievements
+│   │   │   ├── role-selection/       # Character role selection
+│   │   │   └── welcome/             # Welcome to adventure
+│   │   ├── admin/kb/                # Knowledge base admin interface
+│   │   ├── adventure-selection/      # Choose adventure type
+│   │   ├── api/                     # API routes
+│   │   │   ├── adventures/          # Adventure CRUD operations
+│   │   │   ├── ai/                  # AI service endpoints
+│   │   │   │   ├── avatar/          # Avatar generation
+│   │   │   │   ├── story-generator/ # AI story creation
+│   │   │   │   └── theme-generator/ # Theme suggestions
+│   │   │   ├── challenges/          # Challenge management
+│   │   │   ├── geocoding/           # Location services
+│   │   │   ├── kb/                  # Knowledge base operations
+│   │   │   └── qr/                  # QR code generation/scanning
+│   │   ├── auth/                    # Authentication pages
+│   │   ├── builder/                 # Adventure creation tools
+│   │   ├── create/                  # Adventure creation flow
+│   │   ├── dashboard/               # Admin dashboard
+│   │   └── page.tsx                 # Landing page
 │   ├── components/
-│   │   ├── ui/                # Base UI components (mobile-responsive)
-│   │   ├── auth/              # Authentication components
-│   │   ├── dashboard/         # Dashboard components
-│   │   ├── forms/             # Form components with validation
-│   │   └── layout/            # Layout components
+│   │   ├── adventure/               # Adventure-specific components
+│   │   ├── ai/                      # AI integration components
+│   │   ├── auth/                    # Authentication UI
+│   │   ├── builder/                 # Adventure builder tools
+│   │   ├── ui/                      # Base UI components
+│   │   └── layout/                  # Layout components
 │   ├── lib/
-│   │   ├── supabase/          # Supabase client and helpers
-│   │   ├── utils/             # Utility functions
-│   │   ├── validations/       # Zod schemas
-│   │   └── hooks/             # Custom React hooks
-│   ├── types/                 # TypeScript definitions
-│   └── hooks/                 # Global hooks
-├── scripts/                   # Automation scripts
-│   ├── setup-all.js          # Complete setup automation
-│   ├── configure-dns.js      # DNS configuration
-│   ├── configure-resend.js   # Email setup
-│   └── performance-monitor.js # Performance monitoring
-├── supabase/
-│   └── migrations/            # Database migrations
-└── tests/                     # Test files
-    ├── e2e/                  # Playwright E2E tests
-    └── unit/                 # Jest unit tests
+│   │   ├── kb/                      # Knowledge base integration
+│   │   ├── services/                # Business logic services
+│   │   ├── supabase/                # Database client
+│   │   └── utils/                   # Utility functions
+│   └── types/                       # TypeScript definitions
+├── scripts/                         # Automation and setup scripts
+├── supabase/migrations/             # Database schema migrations
+└── tests/e2e/                       # Playwright end-to-end tests
 ```
 
 ## Database Schema (Supabase)
-All tables use the prefix `cluequest_` for multi-tenant isolation and follow AXIS6 proven patterns:
+All tables use the prefix `cluequest_` for multi-tenant isolation and follow ClueQuest-specific patterns:
 
 ### Core Tables
 - `cluequest_profiles` - User profiles extending Supabase Auth (uses `id` column as user reference)
@@ -152,7 +179,7 @@ All tables use the prefix `cluequest_` for multi-tenant isolation and follow AXI
 - `cluequest_notifications` - In-app notification system
 - `cluequest_audit_logs` - Security and activity auditing
 
-### Database Performance (AXIS6 Proven Patterns)
+### Database Performance (ClueQuest Optimizations)
 - **25+ custom indexes** for optimized queries
 - **RPC Functions**: `get_dashboard_data_optimized`, `calculate_usage_metrics`, `get_analytics_summary`
 - **Partial indexes** for time-based queries (95% performance improvement)
@@ -160,17 +187,20 @@ All tables use the prefix `cluequest_` for multi-tenant isolation and follow AXI
 - All indexes deployed via `scripts/deploy-performance-indexes.js`
 
 ## Key Features
-1. **User Authentication**: Email/password with Supabase Auth + social providers
-2. **Multi-tenant Architecture**: Organization-based data isolation
-3. **API Management**: Rate-limited API endpoints with key management
-4. **Usage Analytics**: Real-time usage tracking and insights
-5. **Mobile-First Design**: Perfect responsive design with safe area support
-6. **Global Localization**: Multi-language support structure
-7. **Performance Monitoring**: Real-time performance tracking and optimization
+1. **AI-Powered Adventure Creation**: OpenAI-generated storylines, characters, and challenges
+2. **Interactive QR Code System**: Location-based adventure progression with secure QR scanning
+3. **Real-time Collaboration**: Multiple players can join adventures and progress together
+4. **Avatar Generation**: AI-powered avatar creation using Runware API
+5. **Knowledge Base Integration**: PDF ingestion for enhanced storytelling and originality checking
+6. **Geocoding Integration**: Google Maps integration for location-based features
+7. **Mobile-First Design**: Optimized for mobile gameplay with responsive UI
+8. **Adventure Builder**: Tools for creating custom adventures and challenges
+9. **Ranking System**: Leaderboards and achievement tracking
+10. **Multi-Theme Support**: Corporate, Educational, Fantasy, Mystery, and Hacker themes
 
 ## 📱 Mobile Optimization (Production-Ready)
 
-### Perfect Modal Centering (AXIS6 Proven Pattern)
+### Perfect Modal Centering (ClueQuest Pattern)
 - **Flexbox-based centering**: Works on all screen sizes (320px - 4K+)
 - **Safe Area Support**: CSS environment variables for notched devices
 - **Touch Optimization**: 44px minimum touch targets (WCAG compliant)
@@ -224,43 +254,59 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_key
 
 # App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:5173  # Development
+NEXT_PUBLIC_APP_URL=http://localhost:3000  # Development
 NODE_ENV=development
 
-# Email Service (Resend)
+# AI Services (Core functionality)
+OPENAI_API_KEY=sk-your_openai_api_key_here  # Required for story generation
+RUNWARE_API_KEY=your_runware_key            # Required for avatar generation
+
+# Email Service (Optional)
 RESEND_API_KEY=re_your_key_here
 
 # Infrastructure (Production)
 VERCEL_TOKEN=your_vercel_token
 CLOUDFLARE_API_TOKEN=your_cloudflare_token
 CLOUDFLARE_ACCOUNT_ID=your_account_id
+PRODUCTION_DOMAIN=cluequest.empleaido.com
 
-# Analytics & Monitoring
+# Analytics & Monitoring (Optional)
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your_analytics_id
 SENTRY_DSN=your_sentry_dsn
 ```
 
 ## Development Workflow
 1. Create feature branches for all changes
-2. Test locally with `npm run dev` on port 5173
+2. Test locally with `npm run dev` on port 3000
 3. Run `npm run optimize:check` before commits
-4. Deploy via push to main branch (Vercel auto-deploy)
-5. Monitor via production dashboard
+4. Test with E2E suite: `npm run test:e2e`
+5. Deploy via push to main branch (Vercel auto-deploy)
+6. Monitor via production dashboard
 
 ## API Routes Structure
 ```
 /api/
-├── auth/              # Authentication endpoints
-│   ├── login          # User login
-│   ├── register       # User registration
-│   └── refresh        # Token refresh
-├── users/             # User management
-│   ├── profile        # User profile CRUD
-│   ├── settings       # User settings
-│   └── usage          # Usage analytics
-├── organizations/     # Multi-tenant management
-├── subscriptions/     # Subscription handling
-└── health/           # Health checks and monitoring
+├── adventures/        # Adventure management
+│   ├── [id]/         # Adventure by ID operations
+│   └── route.ts      # Create/list adventures
+├── ai/               # AI service endpoints
+│   ├── avatar/       # Avatar generation (Runware)
+│   ├── story-generator/ # Story creation (OpenAI)
+│   ├── theme-generator/ # Theme suggestions
+│   └── character-generator/ # Character creation
+├── challenges/       # Interactive challenges
+│   └── submit/       # Challenge submission
+├── geocoding/        # Location services (Google Maps)
+├── kb/               # Knowledge base operations
+│   ├── search/       # Semantic search
+│   ├── generate/     # Content generation
+│   └── test/         # Testing endpoints
+├── qr/               # QR code system
+│   ├── generate/     # QR code generation
+│   └── scan/         # QR code scanning
+└── sessions/         # Adventure session management
+    └── [id]/         # Session-specific operations
 ```
 
 ## Security Considerations (Enterprise-Grade)
@@ -378,40 +424,72 @@ SENTRY_DSN=your_sentry_dsn
 ## Working With This Codebase
 
 ### Key Development Principles
-1. **Port 5173**: Always use http://localhost:5173 for development
-2. **Mobile-First**: Every component must work perfectly on mobile
-3. **Performance-Focused**: Use proven optimization patterns from AXIS6/CINETWRK
-4. **Security-First**: Never compromise on security for convenience
-5. **Global-Ready**: Design for international markets from day one
+1. **Port 3000**: Always use http://localhost:3000 for development (Next.js default)
+2. **Mobile-First**: Every component must work perfectly on mobile adventure gameplay
+3. **AI Integration**: Leverage OpenAI and Runware APIs for dynamic content generation
+4. **Adventure-Centric**: Design components with adventure gameplay in mind
+5. **Security-First**: QR codes and user data require secure handling
+6. **Real-time Ready**: Design for collaborative multiplayer experiences
 
 ### Quick Debugging Commands
 ```bash
-# Check all systems
+# Check all systems status
 npm run setup:check
 
 # Test core functionality  
-npm run test:auth
-npm run test:performance
+npm run test:auth                    # Authentication flow
+npm run test:avatar                  # Avatar generation pipeline
+npm run test:geocoding              # Location services
+npm run test:performance            # Database performance
 
-# Monitor production
-npm run production:monitor
+# Debug E2E issues
+npm run test:e2e:debug              # Debug mode with UI
+npm run test:e2e:debug:create       # Debug adventure creation
+npm run test:e2e:mobile             # Mobile-specific tests
 
-# Debug mobile issues
-npm run test:e2e:mobile --headed
+# Database debugging
+npm run db:surgical-diagnostic      # Comprehensive DB analysis
+npm run db:monitor                  # Performance monitoring
+
+# Production monitoring
+npm run production:monitor          # Production health dashboard
+npm run security:monitor           # Security monitoring
 ```
 
 ### Common Development Patterns
-- **Error Boundaries**: Multi-level error handling with graceful fallbacks
-- **Optimistic Updates**: UI updates before server confirmation
-- **Progressive Enhancement**: Core functionality works, enhancements layer on top
-- **Defensive Programming**: Always assume external dependencies can fail
+- **AI-First Development**: Use OpenAI for content, Runware for images
+- **Adventure State Management**: Track progress across adventure phases
+- **QR Code Security**: Always validate and sanitize QR code data
+- **Mobile Gesture Support**: Touch-friendly interactions for adventure gameplay
+- **Knowledge Base Integration**: Enhance content with RAG-powered suggestions
+- **Real-time Updates**: Use Supabase realtime for collaborative features
+
+## Adventure Platform Architecture
+
+### Adventure Flow
+1. **Landing Page** → **Adventure Selection** → **Login/Register**
+2. **Welcome** → **Story Introduction** → **Role Selection**
+3. **Avatar Generation** → **Adventure Hub** → **QR Scanning**
+4. **Challenges** → **Progress Tracking** → **Ranking/Completion**
+
+### AI Integration Points
+- **Story Generation**: OpenAI creates dynamic narratives based on themes
+- **Avatar Creation**: Runware generates unique character avatars
+- **Challenge Generation**: AI creates puzzles and challenges
+- **Content Enhancement**: Knowledge base provides originality checking
+
+### Key Components
+- **Adventure Builder** (`/builder`): Create custom adventures
+- **QR System** (`src/lib/services/qr-security.ts`): Secure QR code handling  
+- **AI Services** (`src/lib/services/ai-content.ts`): Content generation
+- **Knowledge Base** (`src/lib/kb/`): RAG system for enhanced content
 
 ---
 
-**PRODUCTION-READY STATUS**: ✅ Complete  
-**Mobile Optimization**: ✅ Perfect modal centering and responsive design  
-**Performance**: ✅ 70% improvement patterns implemented  
-**Security**: ✅ Enterprise-grade protection  
-**Global Market**: ✅ Internationalization ready  
+**PRODUCTION STATUS**: ✅ Live at cluequest.empleaido.com  
+**Adventure Platform**: ✅ Full interactive adventure system  
+**AI Integration**: ✅ OpenAI + Runware + Knowledge Base  
+**Mobile Optimization**: ✅ Touch-friendly adventure gameplay  
+**Security**: ✅ Secure QR codes and user data handling  
 
-*Built with proven patterns from AXIS6, CINETWRK, and production SaaS deployments*
+*Interactive Adventure Platform powered by AI*

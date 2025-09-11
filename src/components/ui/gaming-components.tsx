@@ -284,7 +284,7 @@ export const GamingStats = ({ stats, className }: GamingStatsProps) => {
         <GamingCard key={stat.label} className="p-6 text-center">
           <div className="space-y-4">
             {stat.icon && (
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl hologram-effect">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl hologram-effect touch-target">
                 {stat.icon}
               </div>
             )}

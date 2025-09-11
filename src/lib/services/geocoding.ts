@@ -26,9 +26,14 @@ class GeocodingService {
 
   constructor() {
     this.client = new Client({})
-    this.apiKey = process.env.GOOGLE_MAPS_API_KEY || ''
+    // Production API key for Google Maps
+    this.apiKey = 'AIzaSyAy-oS-hSSi38S5nNnuc4ykUK8F9RBVCH0'
     
     if (!this.apiKey) {
+      console.warn('⚠️ Google Maps API key not configured.')
+      console.info('🔧 To enable real geocoding, configure the API key.')
+    } else {
+      console.info('🗺️ Google Maps API key configured. Using real geocoding service.')
     }
   }
 
@@ -37,7 +42,10 @@ class GeocodingService {
    */
   async geocodeAddress(address: string): Promise<GeocodingResult | GeocodingError> {
     if (!this.apiKey) {
-      return this.fallbackGeocode(address)
+      return {
+        code: 'API_KEY_MISSING',
+        message: 'Google Maps API key is required for geocoding'
+      }
     }
 
     try {
@@ -66,9 +74,11 @@ class GeocodingService {
         message: 'No results found for the given address'
       }
     } catch (error: any) {
-      
-      // Fallback to mock service if API fails
-      return this.fallbackGeocode(address)
+      console.error('Google Maps Geocoding Error:', error.message)
+      return {
+        code: 'API_ERROR',
+        message: `Geocoding failed: ${error.message}`
+      }
     }
   }
 
@@ -77,7 +87,10 @@ class GeocodingService {
    */
   async reverseGeocode(latitude: number, longitude: number): Promise<GeocodingResult | GeocodingError> {
     if (!this.apiKey) {
-      return this.fallbackReverseGeocode(latitude, longitude)
+      return {
+        code: 'API_KEY_MISSING',
+        message: 'Google Maps API key is required for reverse geocoding'
+      }
     }
 
     try {
@@ -105,68 +118,46 @@ class GeocodingService {
         message: 'No results found for the given coordinates'
       }
     } catch (error: any) {
-      
-      // Fallback to mock service if API fails
-      return this.fallbackReverseGeocode(latitude, longitude)
+      console.error('Google Maps Reverse Geocoding Error:', error.message)
+      return {
+        code: 'API_ERROR',
+        message: `Reverse geocoding failed: ${error.message}`
+      }
     }
   }
 
   /**
    * Search for places using text query
    */
-  async searchPlaces(query: string): Promise<GeocodingResult[] | GeocodingError> {
+  async searchPlaces(query: string): Promise<GeocodingResult[]> {
     if (!this.apiKey) {
-      return this.fallbackSearchPlaces(query)
+      console.error('Google Maps API key not configured for place search')
+      return []
     }
 
     try {
-      const response = await this.client.placeAutocomplete({
+      // Use Geocoding API instead of Places API to avoid 403 errors
+      const response = await this.client.geocode({
         params: {
-          input: query,
+          address: query,
           key: this.apiKey,
         },
       })
 
-      if (response.data.predictions && response.data.predictions.length > 0) {
-        // Get details for each prediction
-        const results: GeocodingResult[] = []
-        
-        for (const prediction of response.data.predictions.slice(0, 5)) { // Limit to 5 results
-          try {
-            const detailsResponse = await this.client.placeDetails({
-              params: {
-                place_id: prediction.place_id,
-                fields: ['geometry', 'formatted_address', 'address_components'],
-                key: this.apiKey,
-              },
-            })
-
-            if (detailsResponse.data.result) {
-              const result = detailsResponse.data.result
-              const location = result.geometry?.location
-
-              if (location) {
-                results.push({
-                  latitude: location.lat,
-                  longitude: location.lng,
-                  formattedAddress: result.formatted_address || prediction.description,
-                  placeId: prediction.place_id,
-                  addressComponents: this.parseAddressComponents(result.address_components || [])
-                })
-              }
-            }
-          } catch (detailError) {
-          }
-        }
-
-        return results
+      if (response.data.results && response.data.results.length > 0) {
+        return response.data.results.slice(0, 5).map((result) => ({
+          latitude: result.geometry.location.lat,
+          longitude: result.geometry.location.lng,
+          formattedAddress: result.formatted_address,
+          placeId: result.place_id,
+          addressComponents: this.parseAddressComponents(result.address_components || [])
+        }))
       }
 
       return []
     } catch (error: any) {
-      
-      // Fallback to mock service if API fails
-      return this.fallbackSearchPlaces(query)
+      console.error('Google Maps Place Search Error:', error.message)
+      return []
     }
   }
 
@@ -195,82 +186,6 @@ class GeocodingService {
     }
 
     return parsed
-  }
-
-  /**
-   * Fallback geocoding service when Google Maps API is not available
-   */
-  private fallbackGeocode(address: string): GeocodingResult {
-    // Simple fallback that returns mock coordinates
-    // In production, you might want to use a different geocoding service
-    const mockCoords = this.getMockCoordinates(address)
-    
-    return {
-      latitude: mockCoords.latitude,
-      longitude: mockCoords.longitude,
-      formattedAddress: address,
-      addressComponents: {
-        locality: 'New York',
-        administrativeAreaLevel1: 'NY',
-        country: 'United States'
-      }
-    }
-  }
-
-  /**
-   * Fallback reverse geocoding service
-   */
-  private fallbackReverseGeocode(latitude: number, longitude: number): GeocodingResult {
-    return {
-      latitude,
-      longitude,
-      formattedAddress: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
-      addressComponents: {
-        locality: 'New York',
-        administrativeAreaLevel1: 'NY',
-        country: 'United States'
-      }
-    }
-  }
-
-  /**
-   * Fallback place search service
-   */
-  private fallbackSearchPlaces(query: string): GeocodingResult[] {
-    const mockCoords = this.getMockCoordinates(query)
-    
-    return [{
-      latitude: mockCoords.latitude,
-      longitude: mockCoords.longitude,
-      formattedAddress: query,
-      addressComponents: {
-        locality: 'New York',
-        administrativeAreaLevel1: 'NY',
-        country: 'United States'
-      }
-    }]
-  }
-
-  /**
-   * Generate mock coordinates based on address string
-   */
-  private getMockCoordinates(address: string): { latitude: number; longitude: number } {
-    // Generate consistent mock coordinates based on address hash
-    let hash = 0
-    for (let i = 0; i < address.length; i++) {
-      const char = address.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
-      hash = hash & hash // Convert to 32-bit integer
-    }
-
-    // Use hash to generate coordinates around NYC area
-    const latOffset = (hash % 1000) / 10000 - 0.05 // ±0.05 degrees
-    const lngOffset = ((hash >> 10) % 1000) / 10000 - 0.05 // ±0.05 degrees
-
-    return {
-      latitude: 40.7128 + latOffset,
-      longitude: -74.0060 + lngOffset
-    }
   }
 }
 

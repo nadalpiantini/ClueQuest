@@ -1,148 +1,178 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import React from 'react'
 import { 
   ArrowLeft, 
   Search, 
   Key, 
   Users,
-  Eye,
-  MapPin,
-  Clock,
-  Smartphone,
-  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Plus,
-  Settings,
-  Sparkles,
-  Wand2,
-  BookOpen,
-  CheckCircle,
-  Play
+  Shield
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import TitleAssistant from '@/components/ai/TitleAssistant'
-import StoryGenerationModal from '@/components/ai/StoryGenerationModal'
-import LocationBuilder from '@/components/builder/LocationBuilder'
-import QRGenerator from '@/components/builder/QRGenerator'
-import QRExporter from '@/components/builder/QRExporter'
+import CustomThemeModal from '@/components/create/CustomThemeModal'
 
 function CreatePageContent() {
   const searchParams = useSearchParams()
   const adventureType = searchParams.get('type') || 'corporate'
   
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [adventureData, setAdventureData] = useState({
-    title: '',
-    theme: 'mystery',
-    duration: 45,
-    maxPlayers: 20,
-    storyContent: '',
-    locations: [] as any[],
-    qrCodes: [] as any[],
-    id: crypto.randomUUID()
-  })
-  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false)
-  const [isStoryGenerationOpen, setIsStoryGenerationOpen] = useState(false)
+  const [adventureTitle, setAdventureTitle] = useState('')
+  const [selectedTheme, setSelectedTheme] = useState('')
+  const [currentThemeIndex, setCurrentThemeIndex] = useState(0)
+  const [isCustomThemeModalOpen, setIsCustomThemeModalOpen] = useState(false)
+  const [customThemes, setCustomThemes] = useState<any[]>([])
 
-  // Simulate loading time for better UX
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500) // 1.5 seconds loading time
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  const themes = [
-    { id: 'mystery', name: 'Mystery Detective', icon: Search, color: 'amber' },
-    { id: 'fantasy', name: 'Fantasy Quest', icon: Key, color: 'purple' },
-    { id: 'corporate', name: 'Corporate Challenge', icon: Users, color: 'emerald' },
-    { id: 'educational', name: 'Learning Adventure', icon: Eye, color: 'blue' }
+  const defaultThemes = [
+    { 
+      id: 'mystery', 
+      name: 'Detective Caper', 
+      icon: Search, 
+      color: 'amber',
+      description: 'Solve crimes and mysteries as a skilled sleuth.',
+      profileImage: '/images/adventure-profiles/Detective_adventure_profile.png',
+      darkOverlay: 'rgba(15, 23, 42, 0.6)',
+      palette: ['#2B1B12', '#3B2417', '#C8772A', '#5A3A22']
+    },
+    { 
+      id: 'fantasy', 
+      name: 'Enchanted Forest', 
+      icon: Key, 
+      color: 'emerald',
+      description: 'Fairies, ancient magic, and mystical creatures await.',
+      profileImage: '/images/adventure-profiles/Enchanted_adventure_profile.png',
+      darkOverlay: 'rgba(6, 95, 70, 0.6)',
+      palette: ['#0E3B2F', '#1D5C4B', '#2D8B6F', '#E0D48A']
+    },
+    { 
+      id: 'cyber', 
+      name: 'Hacker Operation', 
+      icon: Shield, 
+      color: 'blue',
+      description: 'Infiltrate and manipulate a network of servers and codes.',
+      profileImage: '/images/adventure-profiles/Hacker_adventure_profile.png',
+      darkOverlay: 'rgba(12, 29, 36, 0.6)',
+      palette: ['#0C1D24', '#0E2D33', '#1BA7A0', '#0E6F6A']
+    },
+    { 
+      id: 'corporate', 
+      name: 'Corporate Challenge', 
+      icon: Users, 
+      color: 'purple',
+      description: 'Team building through professional mysteries.',
+      profileImage: '/images/adventure-profiles/Corporate_adventure_profile.png',
+      darkOverlay: 'rgba(26, 77, 74, 0.6)',
+      palette: ['#1A4D4A', '#2C6D66', '#E4B468', '#F0D6A8']
+    }
   ]
 
-  const steps = [
-    { id: 1, title: 'Basic Setup', icon: Settings },
-    { id: 2, title: 'Theme & Story', icon: BookOpen },
-    { id: 3, title: 'Locations & QR', icon: MapPin },
-    { id: 4, title: 'Launch Adventure', icon: ArrowRight }
+  // Get all themes including custom ones and create button
+  const allThemes = [
+    ...defaultThemes,
+    ...customThemes.map(customTheme => ({
+      id: customTheme.id,
+      name: customTheme.name,
+      icon: Shield,
+      color: 'custom',
+      description: customTheme.description,
+      profileImage: customTheme.profileImage,
+      darkOverlay: 'rgba(0, 0, 0, 0.6)',
+      palette: customTheme.palette,
+      isCustom: true
+    })),
+    // Add create button as a special theme
+    {
+      id: 'create-custom',
+      name: 'Create Custom Theme',
+      icon: Plus,
+      color: 'purple',
+      description: 'Create your own unique adventure theme',
+      profileImage: null, // Will be handled specially
+      darkOverlay: 'rgba(147, 51, 234, 0.8)',
+      palette: ['#8B5CF6', '#A855F7', '#C084FC', '#DDD6FE'],
+      isCreateButton: true
+    }
   ]
 
-  const handleStoryApprove = (story: string) => {
-    setAdventureData({ ...adventureData, storyContent: story })
-    setIsStoryGenerationOpen(false)
+  const nextTheme = () => {
+    setCurrentThemeIndex((prev) => {
+      const maxIndex = Math.max(0, allThemes.length - 3)
+      const nextIndex = Math.min(prev + 1, maxIndex)
+      return nextIndex
+    })
   }
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(168,85,247,0.2),transparent_60%),radial-gradient(circle_at_70%_60%,rgba(245,158,11,0.15),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-20" />
-        </div>
-
-        {/* Loading Content */}
-        <div className="relative z-20 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            {/* Animated Logo/Icon */}
-            <div className="mb-8">
-              <div className="w-20 h-20 mx-auto mb-4 relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-purple-500 rounded-full animate-pulse"></div>
-                <div className="absolute inset-2 bg-gradient-to-r from-amber-400 to-purple-400 rounded-full animate-spin"></div>
-                <div className="absolute inset-4 bg-slate-900 rounded-full flex items-center justify-center">
-                  <Search className="h-6 w-6 text-amber-300 animate-bounce" />
-                </div>
-              </div>
-            </div>
-
-            {/* Loading Text */}
-            <div className="space-y-4">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
-                Creating Your Mystery
-              </h1>
-              <p className="text-slate-300 text-lg">
-                Loading adventure builder...
-              </p>
-            </div>
-
-            {/* Loading Animation */}
-            <div className="mt-8 flex justify-center">
-              <div className="flex space-x-2">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="w-3 h-3 bg-amber-400 rounded-full animate-bounce"
-                    style={{
-                      animationDelay: `${i * 0.1}s`,
-                      animationDuration: '0.6s'
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Progress Indicator */}
-            <div className="mt-8 w-64 mx-auto">
-              <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-amber-500 to-purple-500 rounded-full animate-pulse"></div>
-              </div>
-              <p className="text-slate-400 text-sm mt-2">Initializing components...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+  const prevTheme = () => {
+    setCurrentThemeIndex((prev) => {
+      const prevIndex = Math.max(prev - 1, 0)
+      return prevIndex
+    })
   }
+
+  const selectTheme = (themeId: string) => {
+    // Handle create button click
+    if (themeId === 'create-custom') {
+      setIsCustomThemeModalOpen(true)
+      return
+    }
+    
+    // Handle adventure start
+    setSelectedTheme(themeId)
+    
+    // Find the index of the selected theme and center it in the carousel
+    const themeIndex = allThemes.findIndex(theme => theme.id === themeId)
+    if (themeIndex !== -1) {
+      // Center the selected theme in the 3-item view
+      const maxIndex = Math.max(0, allThemes.length - 3)
+      const centeredIndex = Math.max(0, Math.min(themeIndex - 1, maxIndex))
+      setCurrentThemeIndex(centeredIndex)
+    }
+    
+    // TODO: Start the adventure with the selected theme
+  }
+
+  // Handle dot navigation
+  const goToTheme = (index: number) => {
+    // Center the selected theme in the 3-item view
+    const maxIndex = Math.max(0, allThemes.length - 3)
+    const centeredIndex = Math.max(0, Math.min(index - 1, maxIndex))
+    setCurrentThemeIndex(centeredIndex)
+    if (allThemes[index]) {
+      setSelectedTheme(allThemes[index].id)
+    }
+  }
+
+  const handleCustomThemeCreated = (newTheme: any) => {
+    // Add to custom themes list
+    setCustomThemes(prev => {
+      const updatedThemes = [...prev, newTheme]
+      // Automatically navigate to the new theme after state update
+      setTimeout(() => {
+        const newIndex = defaultThemes.length + updatedThemes.length - 1
+        setCurrentThemeIndex(newIndex)
+        setSelectedTheme(newTheme.id)
+      }, 0)
+      return updatedThemes
+    })
+
+  }
+
+  // Sync carousel index when selectedTheme changes
+  useEffect(() => {
+    if (selectedTheme) {
+      const themeIndex = allThemes.findIndex(theme => theme.id === selectedTheme)
+      if (themeIndex !== -1 && themeIndex !== currentThemeIndex) {
+        setCurrentThemeIndex(themeIndex)
+      }
+    }
+  }, [selectedTheme, allThemes, currentThemeIndex])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-x-hidden overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden" style={{ minHeight: '100vh', background: 'linear-gradient(to bottom right, #0f172a, #581c87, #0f172a)' }}>
       
       {/* Background */}
       <div className="absolute inset-0">
@@ -150,595 +180,223 @@ function CreatePageContent() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-20" />
       </div>
 
-      {/* Navigation */}
-      <nav className="relative z-20 p-4 sm:p-6">
-        <Link 
-          href="/adventure-selection"
-          className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Back to Adventure Selection
-        </Link>
-      </nav>
-      
-      <main className="relative z-20 px-4 py-4 sm:px-6 sm:py-8 pb-20">
-        <div className="mx-auto max-w-4xl">
+      {/* Main Content - Modal Style */}
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-4xl mx-auto">
           
-          {/* Header */}
+          {/* Modal Container */}
           <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            className="bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-slate-700/50 shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-amber-500/20 to-purple-500/20 px-6 py-3 text-sm font-semibold text-amber-300 ring-2 ring-amber-500/30 backdrop-blur-xl border border-amber-500/20">
-              <Search className="h-4 w-4 animate-spin" />
-              Adventure Builder
-            </div>
             
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4 bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
-              Create Your Mystery
-            </h1>
-            
-            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-              Design an unforgettable {adventureType} adventure in just a few steps
-            </p>
-          </motion.div>
-
-          {/* Progress Steps */}
-          <motion.div 
-            className="mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {steps.map((step, index) => {
-                const Icon = step.icon
-                const isActive = currentStep === step.id
-                const isCompleted = currentStep > step.id
-                
-                return (
-                  <div key={step.id} className="flex flex-col items-center">
-                    <div className={`relative mb-2 p-3 rounded-full transition-all duration-300 ${
-                      isActive 
-                        ? 'bg-amber-500 ring-4 ring-amber-500/20 scale-110' 
-                        : isCompleted 
-                        ? 'bg-emerald-500'
-                        : 'bg-slate-700'
-                    }`}>
-                      <Icon className={`h-5 w-5 ${
-                        isActive || isCompleted ? 'text-white' : 'text-slate-400'
-                      }`} />
-                    </div>
-                    <div className={`text-xs font-semibold ${
-                      isActive ? 'text-amber-300' : isCompleted ? 'text-emerald-300' : 'text-slate-500'
-                    }`}>
-                      {step.title}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </motion.div>
-
-          {/* Main Content */}
-          <motion.div 
-            className="card p-8 mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            {currentStep === 1 && (
-              <div className="space-y-8">
-                <h2 className="text-2xl font-bold text-amber-200 flex items-center gap-3">
-                  <Settings className="h-6 w-6" />
-                  Basic Adventure Setup
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  
-                  {/* Left Column */}
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-300 mb-3">
-                        Adventure Title
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="e.g., The Corporate Mystery Challenge"
-                          value={adventureData.title}
-                          onChange={(e) => setAdventureData({ ...adventureData, title: e.target.value })}
-                          className="w-full px-4 py-3 pr-12 bg-slate-900/80 border border-slate-600 rounded-lg text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                        />
-                        <button
-                          onClick={() => setIsAIAssistantOpen(true)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-purple-500/20 hover:from-amber-500/30 hover:to-purple-500/30 border border-amber-500/30 transition-all duration-200 hover:scale-105 group"
-                          title="AI Title Assistant"
-                        >
-                          <Sparkles className="h-4 w-4 text-amber-400 group-hover:text-amber-300" />
-                        </button>
-                      </div>
-                      <p className="mt-2 text-xs text-slate-500">
-                        Need inspiration? Use our 🤖 AI assistant to generate creative titles
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-300 mb-3">
-                        Duration (minutes)
-                      </label>
-                      <input
-                        type="number"
-                        min="15"
-                        max="180"
-                        value={adventureData.duration}
-                        onChange={(e) => setAdventureData({ ...adventureData, duration: parseInt(e.target.value) })}
-                        className="w-full px-4 py-3 bg-slate-900/80 border border-slate-600 rounded-lg text-slate-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-300 mb-3">
-                        Max Players
-                      </label>
-                      <input
-                        type="number"
-                        min="2"
-                        max="100"
-                        value={adventureData.maxPlayers}
-                        onChange={(e) => setAdventureData({ ...adventureData, maxPlayers: parseInt(e.target.value) })}
-                        className="w-full px-4 py-3 bg-slate-900/80 border border-slate-600 rounded-lg text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Right Column - Theme Selection */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-3">
-                      Adventure Theme
-                    </label>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      {themes.map((theme) => {
-                        const Icon = theme.icon
-                        const isSelected = adventureData.theme === theme.id
-                        
-                        return (
-                          <button
-                            key={theme.id}
-                            onClick={() => setAdventureData({ ...adventureData, theme: theme.id })}
-                            className={`p-4 rounded-lg border transition-all duration-200 ${
-                              isSelected
-                                ? `border-${theme.color}-400 bg-${theme.color}-500/20 ring-2 ring-${theme.color}-500/20`
-                                : `border-slate-600 bg-slate-800/40 hover:border-${theme.color}-500/50`
-                            }`}
-                          >
-                            <Icon className={`h-6 w-6 mx-auto mb-2 ${
-                              isSelected ? `text-${theme.color}-300` : 'text-slate-400'
-                            }`} />
-                            <div className={`text-sm font-semibold ${
-                              isSelected ? `text-${theme.color}-200` : 'text-slate-400'
-                            }`}>
-                              {theme.name}
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Theme & Story */}
-            {currentStep === 2 && (
-              <div className="space-y-8">
-                <h2 className="text-2xl font-bold text-amber-200 flex items-center gap-3">
-                  <BookOpen className="h-6 w-6" />
-                  Theme & Story Development
-                </h2>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  
-                  {/* Story Generation Panel */}
-                  <div className="space-y-6">
-                    <div className="card p-6 bg-gradient-to-br from-purple-900/20 to-slate-800/40 border-purple-500/20">
-                      <h3 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
-                        <Wand2 className="h-5 w-5 text-purple-400" />
-                        AI Story Generator
-                      </h3>
-                      
-                      <p className="text-slate-300 mb-6 text-sm">
-                        Let AI create an engaging narrative for your {adventureData.theme} adventure. 
-                        Perfect for your {adventureData.maxPlayers}-person team adventure.
-                      </p>
-                      
-                      {!adventureData.storyContent ? (
-                        <button
-                          onClick={() => setIsStoryGenerationOpen(true)}
-                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-purple-500/40 flex items-center gap-3 justify-center"
-                        >
-                          <Sparkles className="h-5 w-5" />
-                          Generate Story with AI
-                        </button>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-2 text-emerald-300 text-sm font-semibold">
-                            <Sparkles className="h-4 w-4" />
-                            AI Story Generated Successfully!
-                          </div>
-                          
-                          <div className="bg-slate-900/80 rounded-lg p-4 max-h-48 overflow-y-auto">
-                            <div className="text-slate-200 text-sm leading-relaxed whitespace-pre-line">
-                              {adventureData.storyContent}
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setIsStoryGenerationOpen(true)}
-                              className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 px-4 rounded-lg transition-colors text-sm"
-                            >
-                              <Wand2 className="h-4 w-4 mr-2 inline" />
-                              Regenerate
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Manual Story Option */}
-                    <div className="card p-6 bg-gradient-to-br from-slate-800/40 to-slate-700/30 border-slate-600/30">
-                      <h3 className="text-lg font-bold text-slate-200 mb-4">
-                        Or Write Your Own Story
-                      </h3>
-                      
-                      <textarea
-                        placeholder="Write your adventure story here..."
-                        value={adventureData.storyContent}
-                        onChange={(e) => setAdventureData({ ...adventureData, storyContent: e.target.value })}
-                        className="w-full h-32 px-4 py-3 bg-slate-900/80 border border-slate-600 rounded-lg text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 text-sm"
-                      />
-                      
-                      <p className="text-xs text-slate-500 mt-2">
-                        Describe the setting, objectives, and narrative flow of your adventure
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Adventure Preview */}
-                  <div className="space-y-6">
-                    <div className="card p-6">
-                      <h3 className="text-lg font-bold text-emerald-200 mb-4">
-                        Adventure Preview
-                      </h3>
-                      
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <div className="text-slate-500">Title</div>
-                            <div className="text-slate-200 font-semibold">
-                              {adventureData.title || 'Untitled Adventure'}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <div className="text-slate-500">Theme</div>
-                            <div className="text-slate-200 font-semibold capitalize">
-                              {adventureData.theme}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <div className="text-slate-500">Duration</div>
-                            <div className="text-slate-200 font-semibold">
-                              {adventureData.duration} min
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <div className="text-slate-500">Max Players</div>
-                            <div className="text-slate-200 font-semibold">
-                              {adventureData.maxPlayers}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="text-slate-500 text-sm mb-2">Story Status</div>
-                          <div className={`text-sm font-semibold ${
-                            adventureData.storyContent 
-                              ? 'text-emerald-300' 
-                              : 'text-amber-300'
-                          }`}>
-                            {adventureData.storyContent 
-                              ? '✅ Story Complete' 
-                              : '⏳ Story Needed'
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Story Requirements */}
-                    <div className="card p-6 bg-amber-900/10 border-amber-500/20">
-                      <h3 className="text-lg font-bold text-amber-200 mb-4">
-                        Story Requirements
-                      </h3>
-                      
-                      <div className="space-y-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            adventureData.storyContent ? 'bg-emerald-500' : 'bg-slate-600'
-                          }`}></div>
-                          <span className="text-slate-300">Engaging narrative with clear objectives</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            adventureData.storyContent && adventureData.storyContent.length > 200 
-                              ? 'bg-emerald-500' : 'bg-slate-600'
-                          }`}></div>
-                          <span className="text-slate-300">Detailed story content (200+ characters)</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            adventureData.theme && adventureData.title 
-                              ? 'bg-emerald-500' : 'bg-slate-600'
-                          }`}></div>
-                          <span className="text-slate-300">Theme alignment with adventure setup</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Locations & QR Setup */}
-            {currentStep === 3 && (
-              <div className="space-y-8">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold text-purple-200 mb-3 flex items-center justify-center gap-3">
-                    <MapPin className="h-6 w-6" />
-                    Step 3: Locations & QR Codes
-                  </h2>
-                  <p className="text-slate-400">
-                    Set up physical locations where participants will find QR codes during the adventure.
-                  </p>
-                </div>
-
-                <LocationBuilder
-                  locations={adventureData.locations}
-                  onLocationsChange={(locations) => setAdventureData({
-                    ...adventureData,
-                    locations
-                  })}
-                  maxLocations={10}
-                  enableGeofencing={true}
+            {/* Header */}
+            <div className="text-center p-8 pb-6">
+              <motion.h1 
+                className="text-4xl sm:text-5xl font-black tracking-tight mb-6 bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                Create Your Adventure
+              </motion.h1>
+              
+              {/* Title Input */}
+              <motion.div 
+                className="max-w-2xl mx-auto mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <label className="block text-amber-200 text-sm font-semibold mb-3 text-left">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter adventure title..."
+                  value={adventureTitle}
+                  onChange={(e) => setAdventureTitle(e.target.value)}
+                  className="w-full px-6 py-4 bg-slate-800/80 border border-slate-600/50 rounded-xl text-slate-200 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 text-lg font-medium transition-all duration-200"
                 />
-
-                {adventureData.locations.length > 0 && (
-                  <QRGenerator
-                    locations={adventureData.locations}
-                    adventureId={adventureData.id}
-                    onQRCodesGenerated={(qrCodes) => setAdventureData({
-                      ...adventureData,
-                      qrCodes
-                    })}
-                    existingQRCodes={adventureData.qrCodes}
-                  />
-                )}
-
-                {adventureData.qrCodes.length > 0 && (
-                  <QRExporter
-                    locations={adventureData.locations}
-                    qrCodes={adventureData.qrCodes}
-                    adventureTitle={adventureData.title || 'Untitled Adventure'}
-                    adventureId={adventureData.id}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Step 4: Launch Adventure */}
-            {currentStep === 4 && (
-              <div className="text-center py-16">
-                <div className="mb-6">
-                  <CheckCircle className="h-16 w-16 text-emerald-400 mx-auto animate-pulse" />
-                </div>
-                <h3 className="text-2xl font-bold text-emerald-200 mb-4">
-                  Adventure Ready to Launch!
-                </h3>
-                <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                  Your {adventureData.theme} adventure with {adventureData.locations.length} locations and {adventureData.qrCodes.length} QR codes is ready to deploy.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-                  <button
-                    onClick={() => setCurrentStep(currentStep - 1)}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors min-h-[44px]"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Locations
-                  </button>
-                  
-                  <Link
-                    href="/dashboard"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white font-bold tracking-wide shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 min-h-[44px]"
-                  >
-                    <Play className="h-5 w-5" />
-                    Launch Adventure
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </div>
-              </div>
-            )}
-          </motion.div>
-
-          {/* Action Buttons */}
-          {currentStep === 1 && (
-            <motion.div 
-              className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <Link 
-                href="/adventure-selection"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors min-h-[44px]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Link>
-              
-              <button
-                onClick={() => setCurrentStep(2)}
-                disabled={!adventureData.title}
-                className={`w-full sm:w-auto btn-primary px-8 py-3 min-h-[44px] ${
-                  !adventureData.title ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-amber-500/40'
-                }`}
-              >
-                <span>Continue</span>
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </motion.div>
-          )}
-
-          {/* Step 2 Action Buttons */}
-          {currentStep === 2 && (
-            <motion.div 
-              className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <button
-                onClick={() => setCurrentStep(1)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold transition-colors min-h-[44px]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </button>
-              
-              <button
-                onClick={() => setCurrentStep(3)}
-                disabled={!adventureData.storyContent}
-                className={`w-full sm:w-auto btn-primary px-8 py-3 min-h-[44px] ${
-                  !adventureData.storyContent ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-amber-500/40'
-                }`}
-              >
-                <span>Continue to Locations</span>
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </motion.div>
-          )}
-
-          {/* Preview Card */}
-          <motion.div 
-            className="mt-12 card p-6"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <h3 className="text-lg font-bold text-purple-200 mb-4">Adventure Preview</h3>
+              </motion.div>
+            </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <div className="text-slate-500">Title</div>
-                <div className="text-slate-200 font-semibold">
-                  {adventureData.title || 'Untitled Adventure'}
+            {/* Theme Carousel */}
+            <div className="px-8 pb-8">
+              <motion.div 
+                className="relative"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                
+                {/* Carousel Container */}
+                <div className="relative overflow-hidden rounded-2xl bg-slate-800/20 p-4" style={{ minHeight: '400px' }}>
+                  <motion.div 
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{ 
+                      transform: `translateX(-${currentThemeIndex * (100 / 3)}%)`,
+                      width: `${allThemes.length * (100 / 3)}%`
+                    }}
+                  >
+                    {allThemes.map((theme, index) => {
+                      const Icon = theme.icon
+                      const isSelected = selectedTheme === theme.id
+                      const isCreateButton = 'isCreateButton' in theme ? theme.isCreateButton : false
+                      
+                      return (
+                        <div 
+                          key={theme.id}
+                          className="flex-shrink-0 relative cursor-pointer group px-2"
+                          onClick={() => selectTheme(theme.id)}
+                          style={{ width: `${100 / 3}%` }}
+                        >
+                          <div 
+                            className={`relative aspect-square w-full overflow-hidden rounded-2xl transition-all duration-300 group-hover:scale-[1.05] shadow-2xl border-2 cursor-pointer ${
+                              isCreateButton 
+                                ? 'border-purple-500/50 bg-gradient-to-br from-purple-600/20 to-pink-600/20' 
+                                : 'border-slate-600/30 group-hover:border-amber-500/50'
+                            }`}
+                            style={{
+                              backgroundImage: isCreateButton ? 'none' : `url(${theme.profileImage})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              minHeight: '320px',
+                              maxHeight: '400px'
+                            }}
+                          >
+                            {/* Dark Overlay */}
+                            {!isCreateButton && (
+                              <div 
+                                className="absolute inset-0 transition-opacity duration-300"
+                                style={{ 
+                                  background: theme.darkOverlay,
+                                  opacity: isSelected ? 0.4 : 0.7
+                                }}
+                              />
+                            )}
+                            
+                            {/* Content */}
+                            <div className={`absolute inset-0 flex flex-col ${isCreateButton ? 'justify-center items-center' : 'justify-end'} p-8 text-white`}>
+                              <div className={`${isCreateButton ? 'mb-6' : 'mb-4'}`}>
+                                <Icon className={`h-12 w-12 ${isCreateButton ? 'text-purple-300' : 'text-white/90'} mb-3`} />
+                              </div>
+                              
+                              <h3 className={`text-2xl font-bold mb-2 ${isCreateButton ? 'text-purple-200' : 'text-white'}`}>
+                                {theme.name}
+                              </h3>
+                              
+                              <p className={`text-base leading-relaxed ${isCreateButton ? 'text-purple-300/90' : 'text-white/90'}`}>
+                                {theme.description}
+                              </p>
+                            </div>
+                            
+                            {/* Selection Indicator */}
+                            {isSelected && !isCreateButton && (
+                              <motion.div 
+                                className="absolute top-4 right-4 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <div className="w-3 h-3 bg-white rounded-full" />
+                              </motion.div>
+                            )}
+                            
+                            {/* Start Adventure Indicator */}
+                            {!isCreateButton && (
+                              <motion.div 
+                                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                                initial={{ opacity: 0 }}
+                                whileHover={{ opacity: 1 }}
+                              >
+                                <div className="text-center">
+                                  <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <div className="w-6 h-6 bg-white rounded-full" />
+                                  </div>
+                                  <p className="text-white font-bold text-lg">Start Adventure</p>
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </motion.div>
                 </div>
-              </div>
+                
+                {/* Navigation Arrows */}
+                <button
+                  onClick={prevTheme}
+                  disabled={currentThemeIndex === 0}
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border ${
+                    currentThemeIndex === 0 
+                      ? 'bg-slate-800/50 border-slate-600/30 cursor-not-allowed' 
+                      : 'bg-slate-800/90 hover:bg-slate-700/90 hover:scale-110 border-slate-600/50'
+                  }`}
+                  aria-label="Previous theme"
+                >
+                  <ChevronLeft className={`h-6 w-6 ${currentThemeIndex === 0 ? 'text-slate-500' : 'text-amber-300'}`} />
+                </button>
+                
+                <button
+                  onClick={nextTheme}
+                  disabled={currentThemeIndex > allThemes.length - 3}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border ${
+                    currentThemeIndex > allThemes.length - 3
+                      ? 'bg-slate-800/50 border-slate-600/30 cursor-not-allowed' 
+                      : 'bg-slate-800/90 hover:bg-slate-700/90 hover:scale-110 border-slate-600/50'
+                  }`}
+                  aria-label="Next theme"
+                >
+                  <ChevronRight className={`h-6 w-6 ${currentThemeIndex > allThemes.length - 3 ? 'text-slate-500' : 'text-amber-300'}`} />
+                </button>
+                
+                {/* Dots Indicator */}
+                <div className="flex justify-center mt-6 gap-2">
+                  {allThemes.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToTheme(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                        index === currentThemeIndex 
+                          ? 'bg-amber-400 w-6' 
+                          : 'bg-slate-600 hover:bg-slate-500'
+                      }`}
+                      aria-label={`Go to theme ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </motion.div>
               
-              <div>
-                <div className="text-slate-500">Type</div>
-                <div className="text-slate-200 font-semibold capitalize">
-                  {adventureType}
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-slate-500">Duration</div>
-                <div className="text-slate-200 font-semibold">
-                  {adventureData.duration} min
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-slate-500">Max Players</div>
-                <div className="text-slate-200 font-semibold">
-                  {adventureData.maxPlayers}
-                </div>
-              </div>
             </div>
           </motion.div>
-
-          {/* Quick Start Demo */}
+          
+          {/* Back Button */}
           <motion.div 
-            className="mt-12 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            className="mt-6 text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1 }}
           >
-            <div className="p-6 rounded-xl bg-gradient-to-br from-slate-800/40 to-slate-700/30 border border-slate-600/30 backdrop-blur-sm">
-              <h3 className="text-xl font-bold text-emerald-200 mb-4">
-                🚀 Want to see ClueQuest in action first?
-              </h3>
-              <p className="text-slate-400 mb-6">
-                Try our interactive demo to experience the full platform capabilities
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-                <Link 
-                  href="/demo"
-                  className="w-full sm:w-auto btn-primary px-8 py-4 text-lg shadow-xl hover:shadow-emerald-500/40 min-h-[44px]"
-                >
-                  <Eye className="h-5 w-5" />
-                  Watch Live Demo
-                </Link>
-                
-                <Link 
-                  href="/join"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-slate-800/80 text-purple-200 border border-purple-500/30 hover:border-purple-400/50 font-semibold transition-all duration-200 hover:scale-105 min-h-[44px]"
-                >
-                  <Users className="h-5 w-5" />
-                  Join Existing
-                </Link>
-              </div>
-            </div>
+            <Link 
+              href="/adventure-selection"
+              className="inline-flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors font-semibold"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Adventure Selection
+            </Link>
           </motion.div>
         </div>
-      </main>
+      </div>
 
-      {/* AI Title Assistant Modal */}
-      <TitleAssistant
-        isOpen={isAIAssistantOpen}
-        onClose={() => setIsAIAssistantOpen(false)}
-        onTitleSelect={(title) => setAdventureData({ ...adventureData, title })}
-        currentData={{
-          theme: adventureData.theme,
-          duration: adventureData.duration,
-          maxPlayers: adventureData.maxPlayers,
-          adventureType
-        }}
-      />
-
-      {/* AI Story Generation Modal */}
-      <StoryGenerationModal
-        isOpen={isStoryGenerationOpen}
-        onClose={() => setIsStoryGenerationOpen(false)}
-        onStoryApprove={handleStoryApprove}
-        adventureData={{
-          title: adventureData.title,
-          theme: adventureData.theme,
-          duration: adventureData.duration,
-          maxPlayers: adventureData.maxPlayers,
-          adventureType
-        }}
+      {/* Custom Theme Modal */}
+      <CustomThemeModal
+        isOpen={isCustomThemeModalOpen}
+        onClose={() => setIsCustomThemeModalOpen(false)}
+        onThemeCreated={handleCustomThemeCreated}
       />
     </div>
   )

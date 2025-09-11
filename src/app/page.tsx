@@ -16,10 +16,12 @@ import {
   PlayCircle
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { GlobalHeader } from '@/components/layout/GlobalHeader'
+import Image from 'next/image'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden" style={{ minHeight: '100vh', background: 'linear-gradient(to bottom right, #0f172a, #581c87, #0f172a)' }}>
       
       {/* Cinematic Background */}
       <div className="absolute inset-0">
@@ -44,13 +46,40 @@ export default function LandingPage() {
       
       <main className="relative z-20">
         
+        {/* Development Navigation Banner - Only visible in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-amber-500/30 p-3">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center space-x-1 text-xs">
+                <span className="text-amber-400 font-bold">🧪 DEV:</span>
+                <a href="/onboard" className="text-blue-400 hover:text-blue-300 px-2 py-1 rounded hover:bg-slate-800/50 transition-colors">
+                  🚀 Onboard
+                </a>
+                <a href="/test-auth" className="text-green-400 hover:text-green-300 px-2 py-1 rounded hover:bg-slate-800/50 transition-colors">
+                  🧪 Test Auth
+                </a>
+                <a href="/auth/confirm" className="text-purple-400 hover:text-purple-300 px-2 py-1 rounded hover:bg-slate-800/50 transition-colors">
+                  ✅ Confirm
+                </a>
+                <a href="/dashboard" className="text-amber-400 hover:text-amber-300 px-2 py-1 rounded hover:bg-slate-800/50 transition-colors">
+                  🏆 Dashboard
+                </a>
+              </div>
+              <div className="text-xs text-slate-400">
+                ClueQuest Multi-Tenant Auth System
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Hero Section */}
-        <div className="flex min-h-screen items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+        <div className={`flex min-h-screen items-center justify-center px-4 sm:px-6 lg:px-8 ${process.env.NODE_ENV === 'development' ? 'pt-20 pb-16' : 'py-16'}`}>
           <div className="w-full max-w-7xl text-center">
             
             {/* Gaming Badge */}
             <motion.div 
               className="mb-12 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-amber-500/20 to-purple-500/20 px-8 py-4 text-lg font-semibold text-amber-300 ring-2 ring-amber-500/30 backdrop-blur-xl border border-amber-500/20 shadow-2xl"
+              style={{ borderRadius: '9999px', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(139, 92, 246, 0.2))', backdropFilter: 'blur(16px)', border: '1px solid rgba(245, 158, 11, 0.3)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', color: '#fbbf24' }}
               initial={{ opacity: 0.3, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
@@ -61,6 +90,9 @@ export default function LandingPage() {
               <div className="h-3 w-3 rounded-full bg-amber-400 animate-ping"></div>
             </motion.div>
 
+            {/* Global Header with Logo */}
+            <GlobalHeader />
+
             {/* Cinematic Title */}
             <motion.div 
               className="relative mb-12"
@@ -68,8 +100,8 @@ export default function LandingPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-tight mb-6 bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent drop-shadow-2xl">
-                CLUE<span className="text-purple-400">QUEST</span>
+              <h1 className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-tight mb-6 bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent drop-shadow-2xl" style={{ fontSize: 'clamp(4rem, 12vw, 12rem)', fontWeight: 900, letterSpacing: '-0.02em', background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #a78bfa, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 40px rgba(245, 158, 11, 0.4)' }}>
+                CLUE<span className="text-purple-400" style={{ color: '#a78bfa' }}>QUEST</span>
               </h1>
               
               {/* Decorative Icons */}
@@ -117,10 +149,16 @@ export default function LandingPage() {
             >
               
               {/* QR Hunt */}
-              <div className="card group p-8 ring-1 ring-amber-500/30 border-amber-500/20 hover:scale-105 hover:shadow-amber-500/20 transition-all duration-300">
-                <div className="mb-6">
-                  <div className="rounded-2xl bg-gradient-to-br from-amber-500/30 to-orange-500/30 p-4 shadow-lg group-hover:scale-110 transition-transform">
-                    <Smartphone className="h-10 w-10 text-amber-300" />
+              <div className="card group p-8 ring-1 ring-amber-500/30 border-amber-500/20 hover:scale-105 hover:shadow-amber-500/20 transition-all duration-300" style={{ borderRadius: '1.5rem', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', backdropFilter: 'blur(8px)', border: '1px solid rgba(245, 158, 11, 0.3)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}>
+                <div className="mb-6 relative">
+                  <div className="rounded-2xl bg-gradient-to-br from-amber-500/30 to-orange-500/30 p-2 shadow-lg group-hover:scale-110 transition-transform">
+                    <Image
+                      src="/images/hero/QR_Hunt.png"
+                      alt="QR Mystery Hunt"
+                      width={300}
+                      height={200}
+                      className="w-auto h-auto object-contain rounded-xl"
+                    />
                   </div>
                   <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-400 animate-pulse"></div>
                 </div>
@@ -131,10 +169,16 @@ export default function LandingPage() {
               </div>
 
               {/* Team Play */}
-              <div className="card group p-8 ring-1 ring-purple-500/30 border-purple-500/20 hover:scale-105 hover:shadow-purple-500/20 transition-all duration-300">
-                <div className="mb-6">
-                  <div className="rounded-2xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30 p-4 shadow-lg group-hover:scale-110 transition-transform">
-                    <Users className="h-10 w-10 text-purple-300" />
+              <div className="card group p-8 ring-1 ring-purple-500/30 border-purple-500/20 hover:scale-105 hover:shadow-purple-500/20 transition-all duration-300" style={{ borderRadius: '1.5rem', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', backdropFilter: 'blur(8px)', border: '1px solid rgba(139, 92, 246, 0.3)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}>
+                <div className="mb-6 relative">
+                  <div className="rounded-2xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30 p-2 shadow-lg group-hover:scale-110 transition-transform">
+                    <Image
+                      src="/images/hero/Team_colaboration.png"
+                      alt="Team Collaboration"
+                      width={300}
+                      height={200}
+                      className="w-auto h-auto object-contain rounded-xl"
+                    />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-purple-100 mb-3">Team Collaboration</h3>
@@ -144,10 +188,16 @@ export default function LandingPage() {
               </div>
 
               {/* AI Mystery */}
-              <div className="card group p-8 ring-1 ring-emerald-500/30 border-emerald-500/20 hover:scale-105 hover:shadow-emerald-500/20 transition-all duration-300">
-                <div className="mb-6">
-                  <div className="rounded-2xl bg-gradient-to-br from-emerald-500/30 to-teal-500/30 p-4 shadow-lg group-hover:scale-110 transition-transform">
-                    <Brain className="h-10 w-10 text-emerald-300" />
+              <div className="card group p-8 ring-1 ring-emerald-500/30 border-emerald-500/20 hover:scale-105 hover:shadow-emerald-500/20 transition-all duration-300" style={{ borderRadius: '1.5rem', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', backdropFilter: 'blur(8px)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}>
+                <div className="mb-6 relative">
+                  <div className="rounded-2xl bg-gradient-to-br from-emerald-500/30 to-teal-500/30 p-2 shadow-lg group-hover:scale-110 transition-transform">
+                    <Image
+                      src="/images/hero/Ai_storytelling.png"
+                      alt="AI Storytelling"
+                      width={300}
+                      height={200}
+                      className="w-auto h-auto object-contain rounded-xl"
+                    />
                   </div>
                   <div className="absolute inset-0 rounded-2xl bg-emerald-400/10 animate-pulse"></div>
                 </div>
@@ -158,10 +208,16 @@ export default function LandingPage() {
               </div>
 
               {/* Live Competition */}
-              <div className="card group p-8 ring-1 ring-red-500/30 border-red-500/20 hover:scale-105 hover:shadow-red-500/20 transition-all duration-300">
-                <div className="mb-6">
-                  <div className="rounded-2xl bg-gradient-to-br from-red-500/30 to-pink-500/30 p-4 shadow-lg group-hover:scale-110 transition-transform">
-                    <Trophy className="h-10 w-10 text-red-300" />
+              <div className="card group p-8 ring-1 ring-red-500/30 border-red-500/20 hover:scale-105 hover:shadow-red-500/20 transition-all duration-300" style={{ borderRadius: '1.5rem', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', backdropFilter: 'blur(8px)', border: '1px solid rgba(239, 68, 68, 0.3)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}>
+                <div className="mb-6 relative">
+                  <div className="rounded-2xl bg-gradient-to-br from-red-500/30 to-pink-500/30 p-2 shadow-lg group-hover:scale-110 transition-transform">
+                    <Image
+                      src="/images/hero/Live_leaderboards.png"
+                      alt="Live Leaderboards"
+                      width={300}
+                      height={200}
+                      className="w-auto h-auto object-contain rounded-xl"
+                    />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-red-100 mb-3">Live Leaderboards</h3>

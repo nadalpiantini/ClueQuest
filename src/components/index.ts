@@ -5,6 +5,10 @@ export { DemoAuthProvider, useDemoAuth } from './auth/demo-auth-provider'
 
 // Layout Components
 export { BodyWrapper } from './layout/body-wrapper'
+export { GlobalHeader } from './layout/GlobalHeader'
+
+// Branding Components
+export { ClueQuestLogo } from './branding/ClueQuestLogo'
 
 // Dashboard Components  
 export { MainLayout, PageHeader } from './dashboard/main-layout'

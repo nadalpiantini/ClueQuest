@@ -6,6 +6,48 @@
 
 import { createClient } from '@/lib/supabase/client'
 
+// Type definitions for database tables (temporary until Supabase types are updated)
+interface AdventureRow {
+  id: string
+  title: string
+  theme: string
+  duration_minutes: number
+  max_players: number
+  description: string | null
+  adventure_type: string | null
+  story_framework: string | null
+  ai_generated: boolean | null
+  challenge_types: string[] | null
+  roles: string[] | null
+  custom_colors: any | null
+  ranking_mode: string | null
+  access_mode: string | null
+  device_limits: number | null
+  status: string | null
+  created_at: string | null
+  updated_at: string | null
+  creator_id: string | null
+  narrative: string | null
+  story_type: string | null
+}
+
+interface SceneRow {
+  id: string
+  adventure_id: string
+  title: string
+  description: string | null
+  order_index: number
+  scene_config: any | null
+  completion_criteria: string | null
+}
+
+interface QRCodeRow {
+  id: string
+  scene_id: string
+  qr_data: string
+  scan_count: number | null
+}
+
 export interface AdventureData {
   id: string
   title: string
@@ -138,24 +180,31 @@ class AdventurePersistenceService {
         return { success: false, error: adventureError.message }
       }
 
-      // Save locations
+      // Save locations - using scenes table as locations are stored as scenes
       if (adventureData.locations.length > 0) {
         const locationRecords = adventureData.locations.map(location => ({
           id: location.id,
           adventure_id: adventureData.id,
-          name: location.name,
+          title: location.name,
           description: location.description,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          address: location.address,
-          radius_meters: location.radius,
           order_index: location.order,
-          is_required: location.isRequired,
+          interaction_type: 'location',
+          completion_criteria: JSON.stringify({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            address: location.address,
+            radius: location.radius,
+            isRequired: location.isRequired
+          }),
+          points_reward: 0,
+          narrative_data: {},
+          scene_config: {},
+          is_active: true,
           created_at: new Date().toISOString()
         }))
 
         const { error: locationsError } = await this.supabase
-          .from('cluequest_adventure_locations')
+          .from('cluequest_scenes')
           .upsert(locationRecords, { 
             onConflict: 'id',
             ignoreDuplicates: false 
@@ -170,18 +219,19 @@ class AdventurePersistenceService {
       if (adventureData.qrCodes.length > 0) {
         const qrRecords = adventureData.qrCodes.map(qr => ({
           id: qr.id,
-          adventure_id: adventureData.id,
-          location_id: qr.locationId,
-          security_token: qr.securityToken,
-          hmac_signature: qr.hmacSignature,
-          expires_at: qr.expiresAt.toISOString(),
-          usage_limit: qr.usageLimit,
-          current_usage: qr.currentUsage,
+          scene_id: qr.locationId, // Using scene_id instead of location_id
+          qr_data: qr.securityToken, // Using qr_data field
+          location: JSON.stringify({
+            latitude: 0, // Will be populated from scene data
+            longitude: 0
+          }),
+          is_active: true,
+          scan_count: qr.currentUsage,
           created_at: new Date().toISOString()
         }))
 
         const { error: qrError } = await this.supabase
-          .from('cluequest_adventure_qr_codes')
+          .from('cluequest_qr_codes')
           .upsert(qrRecords, { 
             onConflict: 'id',
             ignoreDuplicates: false 
@@ -192,29 +242,27 @@ class AdventurePersistenceService {
         }
       }
 
-      // Save challenge-location mappings
+      // Save challenge-location mappings - storing as scene configuration
       if (adventureData.challengeLocationMappings.length > 0) {
-        const mappingRecords = adventureData.challengeLocationMappings.map(mapping => ({
-          id: mapping.id,
-          adventure_id: adventureData.id,
-          challenge_id: mapping.challengeId,
-          location_id: mapping.locationId,
-          unlock_conditions: mapping.unlockConditions,
-          progressive_hints: mapping.progressiveHints,
-          is_starting_point: mapping.isStartingPoint,
-          completion_rewards: mapping.completionRewards,
-          created_at: new Date().toISOString()
-        }))
+        // Store mappings in the scene_config of the corresponding scenes
+        for (const mapping of adventureData.challengeLocationMappings) {
+          const { error: updateError } = await this.supabase
+            .from('cluequest_scenes')
+            .update({
+              scene_config: {
+                challenge_id: mapping.challengeId,
+                unlock_conditions: mapping.unlockConditions,
+                progressive_hints: mapping.progressiveHints,
+                is_starting_point: mapping.isStartingPoint,
+                completion_rewards: mapping.completionRewards
+              }
+            })
+            .eq('id', mapping.locationId)
+            .eq('adventure_id', adventureData.id)
 
-        const { error: mappingsError } = await this.supabase
-          .from('cluequest_challenge_location_mappings')
-          .upsert(mappingRecords, { 
-            onConflict: 'id',
-            ignoreDuplicates: false 
-          })
-
-        if (mappingsError) {
-          return { success: false, error: `Failed to save mappings: ${mappingsError.message}` }
+          if (updateError) {
+            return { success: false, error: `Failed to save mapping for scene ${mapping.locationId}: ${updateError.message}` }
+          }
         }
       }
 
@@ -247,101 +295,113 @@ class AdventurePersistenceService {
         return { success: false, error: 'Adventure not found' }
       }
 
-      // Load locations
+      // Type the adventure data properly
+      const typedAdventure = adventure as AdventureRow
+
+      // Load locations (stored as scenes)
       const { data: locations, error: locationsError } = await this.supabase
-        .from('cluequest_adventure_locations')
+        .from('cluequest_scenes')
         .select('*')
         .eq('adventure_id', adventureId)
+        .eq('interaction_type', 'location')
         .order('order_index', { ascending: true })
 
       if (locationsError) {
+        console.warn('Failed to load locations:', locationsError.message)
       }
+
+      // Type the locations data properly
+      const typedLocations = (locations || []) as SceneRow[]
 
       // Load QR codes
       const { data: qrCodes, error: qrError } = await this.supabase
-        .from('cluequest_adventure_qr_codes')
+        .from('cluequest_qr_codes')
         .select('*')
-        .eq('adventure_id', adventureId)
+        .in('scene_id', typedLocations.map(loc => loc.id))
 
       if (qrError) {
+        console.warn('Failed to load QR codes:', qrError.message)
       }
 
-      // Load challenge-location mappings
-      const { data: mappings, error: mappingsError } = await this.supabase
-        .from('cluequest_challenge_location_mappings')
-        .select('*')
-        .eq('adventure_id', adventureId)
+      // Type the QR codes data properly
+      const typedQrCodes = (qrCodes || []) as QRCodeRow[]
 
-      if (mappingsError) {
-      }
+      // Load challenge-location mappings (stored in scene_config)
+      const mappings = typedLocations.map(scene => {
+        const config = scene.scene_config as any
+        return {
+          id: `${scene.id}-mapping`,
+          challengeId: config?.challenge_id || '',
+          locationId: scene.id,
+          unlockConditions: config?.unlock_conditions || [],
+          progressiveHints: config?.progressive_hints || [],
+          isStartingPoint: config?.is_starting_point || false,
+          completionRewards: config?.completion_rewards || 0
+        }
+      })
 
       // Transform data back to component format
       const adventureData: AdventureData = {
-        id: adventure.id,
-        title: adventure.title,
-        theme: adventure.theme,
-        duration: adventure.duration_minutes,
-        maxPlayers: adventure.max_players,
-        storyContent: adventure.description || '',
-        adventureType: adventure.adventure_type || 'linear',
-        storyFramework: adventure.story_framework || 'hero_journey',
-        aiGenerated: adventure.ai_generated || false,
-        challengeTypes: adventure.challenge_types || [],
-        roles: adventure.roles || [],
-        customColors: adventure.custom_colors || {
+        id: typedAdventure.id,
+        title: typedAdventure.title,
+        theme: typedAdventure.theme,
+        duration: typedAdventure.duration_minutes,
+        maxPlayers: typedAdventure.max_players,
+        storyContent: typedAdventure.description || '',
+        adventureType: (typedAdventure.adventure_type as 'linear' | 'parallel' | 'hub') || 'linear',
+        storyFramework: typedAdventure.story_framework || 'hero_journey',
+        aiGenerated: typedAdventure.ai_generated || false,
+        challengeTypes: typedAdventure.challenge_types || [],
+        roles: typedAdventure.roles || [],
+        customColors: typedAdventure.custom_colors || {
           primary: '#f59e0b',
           secondary: '#8b5cf6',
           accent: '#10b981'
         },
-        ranking: adventure.ranking_mode || 'public',
-        accessMode: adventure.access_mode || 'public',
-        deviceLimits: adventure.device_limits || 1,
-        status: adventure.status || 'draft',
-        createdAt: adventure.created_at,
-        updatedAt: adventure.updated_at,
-        creatorId: adventure.creator_id,
+        ranking: typedAdventure.ranking_mode || 'public',
+        accessMode: typedAdventure.access_mode || 'public',
+        deviceLimits: typedAdventure.device_limits || 1,
+        status: (typedAdventure.status as 'draft' | 'published' | 'archived') || 'draft',
+        createdAt: typedAdventure.created_at || undefined,
+        updatedAt: typedAdventure.updated_at || undefined,
+        creatorId: typedAdventure.creator_id || undefined,
         
         // Transform locations
-        locations: (locations || []).map(loc => ({
-          id: loc.id,
-          name: loc.name,
-          description: loc.description,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          address: loc.address,
-          radius: loc.radius_meters,
-          order: loc.order_index,
-          isRequired: loc.is_required,
-          qrCodeId: qrCodes?.find(qr => qr.location_id === loc.id)?.id
-        })),
+        locations: typedLocations.map(loc => {
+          const locationData = loc.completion_criteria ? JSON.parse(loc.completion_criteria) : {}
+          return {
+            id: loc.id,
+            name: loc.title,
+            description: loc.description || '',
+            latitude: locationData.latitude || 0,
+            longitude: locationData.longitude || 0,
+            address: locationData.address || '',
+            radius: locationData.radius || 50,
+            order: loc.order_index,
+            isRequired: locationData.isRequired || false,
+            qrCodeId: typedQrCodes?.find(qr => qr.scene_id === loc.id)?.id
+          }
+        }),
         
         // Transform QR codes
-        qrCodes: (qrCodes || []).map(qr => ({
+        qrCodes: typedQrCodes.map(qr => ({
           id: qr.id,
-          locationId: qr.location_id,
-          locationName: locations?.find(loc => loc.id === qr.location_id)?.name || 'Unknown',
-          adventureId: qr.adventure_id,
-          securityToken: qr.security_token,
-          hmacSignature: qr.hmac_signature,
-          expiresAt: new Date(qr.expires_at),
-          usageLimit: qr.usage_limit,
-          currentUsage: qr.current_usage
+          locationId: qr.scene_id,
+          locationName: typedLocations?.find(loc => loc.id === qr.scene_id)?.title || 'Unknown',
+          adventureId: adventureId,
+          securityToken: qr.qr_data,
+          hmacSignature: '', // Not stored in current schema
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Default 24h
+          usageLimit: 1000, // Default limit
+          currentUsage: qr.scan_count || 0
         })),
         
         // Transform mappings
-        challengeLocationMappings: (mappings || []).map(mapping => ({
-          id: mapping.id,
-          challengeId: mapping.challenge_id,
-          locationId: mapping.location_id,
-          unlockConditions: mapping.unlock_conditions || [],
-          progressiveHints: mapping.progressive_hints || [],
-          isStartingPoint: mapping.is_starting_point,
-          completionRewards: mapping.completion_rewards
-        })),
+        challengeLocationMappings: mappings,
 
         // Default values for missing fields
-        narrative: adventure.narrative || '',
-        storyType: adventure.story_type || '',
+        narrative: typedAdventure.narrative || '',
+        storyType: typedAdventure.story_type || '',
         customCharacters: [],
         customThemes: [],
         rewards: []
@@ -369,14 +429,12 @@ class AdventurePersistenceService {
         .select(`
           id,
           title,
-          theme,
+          theme_name,
           status,
-          duration_minutes,
-          max_players,
+          estimated_duration,
+          max_participants,
           created_at,
-          updated_at,
-          cluequest_adventure_locations(count),
-          cluequest_adventure_qr_codes(count)
+          updated_at
         `)
         .eq('creator_id', user.id)
         .order('updated_at', { ascending: false })
@@ -402,11 +460,12 @@ class AdventurePersistenceService {
         return { success: false, error: 'User not authenticated' }
       }
 
-      // Delete in cascade order: mappings, qr codes, locations, then adventure
+      // Delete in cascade order: qr codes, scenes, then adventure
       await Promise.all([
-        this.supabase.from('cluequest_challenge_location_mappings').delete().eq('adventure_id', adventureId),
-        this.supabase.from('cluequest_adventure_qr_codes').delete().eq('adventure_id', adventureId),
-        this.supabase.from('cluequest_adventure_locations').delete().eq('adventure_id', adventureId)
+        this.supabase.from('cluequest_qr_codes').delete().in('scene_id', 
+          (await this.supabase.from('cluequest_scenes').select('id').eq('adventure_id', adventureId)).data?.map(s => s.id) || []
+        ),
+        this.supabase.from('cluequest_scenes').delete().eq('adventure_id', adventureId)
       ])
 
       const { error } = await this.supabase

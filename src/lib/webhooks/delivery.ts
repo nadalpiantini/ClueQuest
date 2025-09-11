@@ -418,12 +418,12 @@ export class WebhookDeliveryService {
 
       // Calculate statistics
       const totalWebhooks = logs?.length || 0
-      const successfulDeliveries = logs?.reduce((sum, log) => sum + log.successful_deliveries, 0) || 0
-      const failedDeliveries = logs?.reduce((sum, log) => sum + log.failed_deliveries, 0) || 0
+      const successfulDeliveries = logs?.reduce((sum: number, log: any) => sum + log.successful_deliveries, 0) || 0
+      const failedDeliveries = logs?.reduce((sum: number, log: any) => sum + log.failed_deliveries, 0) || 0
 
       // Event breakdown
       const eventBreakdown: Record<string, number> = {}
-      logs?.forEach(log => {
+      logs?.forEach((log: any) => {
         eventBreakdown[log.event_type] = (eventBreakdown[log.event_type] || 0) + 1
       })
 
@@ -476,7 +476,7 @@ export class WebhookDeliveryService {
 
       // Group by webhook ID to avoid duplicate retries
       const webhookGroups = new Map<string, any[]>()
-      failedDeliveries?.forEach(delivery => {
+      failedDeliveries?.forEach((delivery: any) => {
         if (!webhookGroups.has(delivery.webhook_id)) {
           webhookGroups.set(delivery.webhook_id, [])
         }

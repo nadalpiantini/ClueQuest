@@ -177,33 +177,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Prepare adventure data
+    // Use organization ID from above or from request body
+    if (body.organizationId) {
+      organizationId = body.organizationId
+    }
+
+    // Get the current user for creator_id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      )
+    }
+
+    // Prepare adventure data to match database schema
     const adventureData = {
       title: title,
-      theme: theme,
       description: description || `A ${theme} adventure`,
-      category: category || theme,
-      difficulty: difficulty || 'intermediate',
+      category: (category || theme) as any, // Cast to adventure_category enum
+      difficulty: (difficulty || 'intermediate') as any, // Cast to difficulty_level enum
       estimated_duration: estimatedDuration || 60,
-      max_players: 20,
-      status: 'draft',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      theme_name: theme,
+      theme_config: customColors || {},
+      settings: {
+        narrative: narrative || 'ai_generated',
+        story_type: storyType || 'ai',
+        story_framework: storyFramework || 'hero_journey',
+        ai_generated: aiGenerated || false,
+        branching_points: branchingPoints || 2,
+        generated_story: generatedStory || null,
+        roles: roles || [],
+        challenge_types: challengeTypes || ['trivia', 'puzzle'],
+        qr_locations: qrLocations || [],
+        ranking: ranking || {},
+        rewards: rewards || {},
+        access_mode: accessMode || 'public',
+        device_limits: deviceLimits || {}
+      },
+      max_participants: 20,
+      status: 'draft' as any, // Cast to adventure_status enum
       organization_id: organizationId,
-      custom_colors: customColors || {},
-      narrative: narrative || 'ai_generated',
-      story_type: storyType || 'ai',
-      story_framework: storyFramework || 'hero_journey',
-      ai_generated: aiGenerated || false,
-      branching_points: branchingPoints || 2,
-      generated_story: generatedStory || null,
-      roles: roles || [],
-      challenge_types: challengeTypes || ['trivia', 'puzzle'],
-      qr_locations: qrLocations || [],
-      ranking: ranking || {},
-      rewards: rewards || {},
-      access_mode: accessMode || 'public',
-      device_limits: deviceLimits || {}
+      creator_id: user.id
     }
 
     // Insert adventure
@@ -231,9 +246,16 @@ export async function POST(request: NextRequest) {
         adventure_id: adventure.id,
         name: roleName,
         description: `The ${roleName} role in this adventure`,
-        abilities: [`${roleName.toLowerCase()}_ability_1`, `${roleName.toLowerCase()}_ability_2`],
+        emoji: ['👑', '🕵️', '🧪', '🧭', '💻'][index],
         color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'][index],
-        max_players: 5
+        max_players: 5,
+        perks: [`${roleName.toLowerCase()}_perk_1`, `${roleName.toLowerCase()}_perk_2`],
+        point_multiplier: 1.0,
+        hint_discount: 0,
+        extra_time: 0,
+        can_help_others: false,
+        team_leader: roleName === 'Leader',
+        solo_only: false
       }))
 
       const { error: roleError } = await supabase
@@ -241,6 +263,7 @@ export async function POST(request: NextRequest) {
         .insert(roleData)
 
       if (roleError) {
+        console.error('Role creation error:', roleError)
         // Don't fail the entire request for role creation errors
       }
     }

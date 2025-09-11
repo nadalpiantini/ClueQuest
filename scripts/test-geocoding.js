@@ -5,7 +5,8 @@
  * This script tests the geocoding API endpoints without requiring a browser
  */
 
-const fetch = require('node-fetch')
+// Node.js 18+ has built-in fetch, fallback to node-fetch for older versions
+const fetch = globalThis.fetch;
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000'
 

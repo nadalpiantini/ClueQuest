@@ -313,7 +313,7 @@ function IntroPageContent() {
                   <Button
                     variant="ghost"
                     onClick={skipToEnd}
-                    className="text-white/70 hover:text-white hover:bg-white/10 touch-target"
+                    className="text-white/70 hover:text-white hover:bg-white/10 touch-target min-h-[44px] min-w-[44px] px-4 py-3"
                   >
                     <SkipForward className="w-4 h-4 mr-2" />
                     Skip Story
@@ -335,7 +335,7 @@ function IntroPageContent() {
             >
               <Button
                 onClick={advanceToNextSegment}
-                className="bg-white/20 hover:bg-white/30 border border-white/30 hover:border-white/50 text-white backdrop-blur-sm touch-target-lg"
+                className="bg-white/20 hover:bg-white/30 border border-white/30 hover:border-white/50 text-white backdrop-blur-sm touch-target-lg min-h-[44px] min-w-[44px] px-6 py-3"
               >
                 {currentSegmentIndex === storySegments.length - 1 ? (
                   <div className="flex items-center gap-2">

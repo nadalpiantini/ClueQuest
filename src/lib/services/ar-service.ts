@@ -298,7 +298,7 @@ export class ARService {
         .select('model_url')
         .in('id', allAssetIds);
       
-      const preloadUrls = allAssets?.map(asset => asset.model_url) || [];
+      const preloadUrls = allAssets?.map((asset: any) => asset.model_url) || [];
       
       return {
         experience_id: experience.id,
@@ -785,10 +785,10 @@ export class ARService {
       .select('category')
       .order('category');
     
-    const categories = [...new Set(categoryData?.map(item => item.category) || [])];
+    const categories = [...new Set(categoryData?.map((item: any) => item.category) || [])];
     
     // Transform assets for response
-    const transformedAssets = assets?.map(asset => ({
+    const transformedAssets = assets?.map((asset: any) => ({
       id: asset.id,
       name: asset.name,
       category: asset.category,
@@ -801,7 +801,7 @@ export class ARService {
     
     return {
       assets: transformedAssets,
-      categories,
+      categories: categories as string[],
       total_count: transformedAssets.length
     };
   }

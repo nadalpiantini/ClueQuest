@@ -21,23 +21,33 @@ import {
   Play,
   ChevronRight,
   Settings,
-  Target
+  Target,
+  Search,
+  ChevronLeft,
+  Plus,
+  Zap,
+  AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { GlobalHeader } from '@/components/layout/GlobalHeader'
+import { premadeStories } from '@/data/premade-stories'
+import { extendedPremadeStories } from '@/data/premade-stories-extended'
+import { additionalPremadeStories } from '@/data/premade-stories-additional'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getAllFrameworks } from '@/lib/frameworks/story-frameworks'
 import CharacterChatDesigner from '@/components/ai/CharacterChatDesigner'
 import AIGenerating from '@/components/ui/ai-loading'
 import CustomThemeBuilder from '@/components/ai/CustomThemeBuilder'
-import LocationBuilder from '@/components/builder/LocationBuilder'
-import QRGenerator from '@/components/builder/QRGenerator'
-import ChallengeLocationMapper from '@/components/builder/ChallengeLocationMapper'
-import QRExporter from '@/components/builder/QRExporter'
+// New modular Step 4 components
+import AdventureActivitiesBuilder from '@/components/builder/AdventureActivitiesBuilder'
 import { adventurePersistence } from '@/lib/services/adventure-persistence'
+import { AdventureCelebrationModal } from '@/components/ui/adventure-celebration-modal'
+import CustomThemeModal from '@/components/create/CustomThemeModal'
+import type { Challenge } from '@/types/adventure'
 
-export default function AdventureBuilderPage() {
+function AdventureBuilderPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -51,6 +61,7 @@ export default function AdventureBuilderPage() {
   const [currentStep, setCurrentStep] = useState(getInitialStep())
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [showStoryPreview, setShowStoryPreview] = useState(false)
+  const [adventureType, setAdventureType] = useState<string | null>(null)
   const frameworks = getAllFrameworks()
 
   // Update URL when step changes
@@ -85,7 +96,16 @@ export default function AdventureBuilderPage() {
     }
   }, [])
 
-  // Load adventure data from localStorage
+  // Get adventure type from URL parameters
+  useEffect(() => {
+    const typeFromUrl = searchParams.get('adventureType')
+    if (typeFromUrl) {
+      setAdventureType(typeFromUrl)
+      console.log('🔍 Adventure Type set from URL:', typeFromUrl)
+    }
+  }, [searchParams])
+
+  // Load adventure data from localStorage with backward compatibility
   const loadAdventureData = () => {
     if (typeof window === 'undefined') return null
     
@@ -93,16 +113,117 @@ export default function AdventureBuilderPage() {
       const saved = localStorage.getItem('cluequest-builder-data')
       if (saved) {
         const parsedData = JSON.parse(saved)
-        return parsedData
+        
+        // 🔄 MIGRATION: Convert old data structure to new structure
+        const migratedData = migrateAdventureData(parsedData)
+        
+        return migratedData
       }
     } catch (error) {
+      console.warn('Failed to load adventure data from localStorage:', error)
     }
     return null
   }
 
+  // Migration function to convert old data structure to new structure
+  const migrateAdventureData = (oldData: any) => {
+    // If it already has the new structure, return as-is
+    if (oldData.challenges && !oldData.challengeTypes) {
+      return oldData
+    }
+
+    console.info('🔄 Migrating adventure data to new structure...')
+    
+    const migratedData = { ...oldData }
+
+    // Convert challengeTypes (string[]) to challenges (Challenge[])
+    if (oldData.challengeTypes && Array.isArray(oldData.challengeTypes)) {
+      migratedData.challenges = oldData.challengeTypes.map((typeId: string, index: number) => ({
+        id: crypto.randomUUID(),
+        name: `${typeId.charAt(0).toUpperCase() + typeId.slice(1)} Challenge`,
+        description: `Migrated ${typeId} challenge from previous version`,
+        type: typeId,
+        difficulty: 'medium',
+        points: 15,
+        hints: [],
+        instructions: `Complete this ${typeId} challenge`,
+        successMessage: '🎉 Challenge completed!',
+        failureMessage: '❌ Try again!',
+        typeData: {},
+        tags: [typeId, 'migrated'],
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }))
+      
+      // Remove old field
+      delete migratedData.challengeTypes
+    } else {
+      migratedData.challenges = []
+    }
+
+    // Convert qrLocations to qrStickers (this is more complex as it requires challenge mapping)
+    if (oldData.qrCodes && Array.isArray(oldData.qrCodes)) {
+      migratedData.qrStickers = oldData.qrCodes.map((qr: any, index: number) => {
+        const challenge = migratedData.challenges[index] || migratedData.challenges[0]
+        
+        return {
+          id: qr.id || crypto.randomUUID(),
+          name: `Sticker: ${qr.locationName || `Location ${index + 1}`}`,
+          challengeId: challenge?.id || crypto.randomUUID(),
+          challengeName: challenge?.name || `Challenge ${index + 1}`,
+          securityToken: qr.securityToken || crypto.randomUUID(),
+          hmacSignature: qr.hmacSignature || '',
+          expiresAt: qr.expiresAt ? new Date(qr.expiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          usageLimit: qr.usageLimit || 100,
+          currentUsage: qr.currentUsage || 0,
+          qrCodeDataURL: '',
+          stickerStyle: {
+            backgroundColor: '#FFFFFF',
+            foregroundColor: '#000000', 
+            borderColor: '#E2E8F0',
+            size: 150,
+            borderRadius: 12
+          },
+          printSettings: {
+            paperSize: 'a4',
+            stickersPerPage: 12,
+            includeText: true,
+            includeInstructions: false
+          },
+          isActive: true,
+          createdAt: new Date(),
+          scannedCount: 0
+        }
+      })
+      
+      // Remove old fields
+      delete migratedData.qrCodes
+      delete migratedData.qrLocations
+    } else {
+      migratedData.qrStickers = []
+    }
+
+    // Convert challengeLocationMappings to activityMappings
+    if (oldData.challengeLocationMappings) {
+      migratedData.activityMappings = []
+      delete migratedData.challengeLocationMappings
+    } else {
+      migratedData.activityMappings = []
+    }
+
+    // Ensure all new fields exist with defaults
+    migratedData.challenges = migratedData.challenges || []
+    migratedData.qrStickers = migratedData.qrStickers || []
+    migratedData.activityMappings = migratedData.activityMappings || []
+
+    console.info('✅ Migration completed successfully')
+    
+    return migratedData
+  }
+
   // Initialize adventure data with default values or loaded data
   const getInitialAdventureData = () => {
-    const savedData = loadAdventureData()
     const defaultData = {
       // Step 1: Theme
       title: '',
@@ -127,12 +248,11 @@ export default function AdventureBuilderPage() {
       roles: [] as string[],
       customCharacters: [] as any[],
       
-      // Step 4: Challenges & Locations
-      challengeTypes: [] as string[],
-      qrLocations: [] as string[],
+      // Step 4: New modular structure
       locations: [] as any[],
-      qrCodes: [] as any[],
-      challengeLocationMappings: [] as any[],
+      challenges: [] as Challenge[],
+      qrStickers: [] as any[],
+      activityMappings: [] as any[],
       adventureType: 'linear' as 'linear' | 'parallel' | 'hub',
       
       // Step 5: Rewards & Security
@@ -142,44 +262,232 @@ export default function AdventureBuilderPage() {
       deviceLimits: 1
     }
 
-    return savedData ? { ...defaultData, ...savedData } : defaultData
+    return defaultData
   }
 
   const [adventureData, setAdventureData] = useState(getInitialAdventureData())
+  const [isHydrated, setIsHydrated] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [isAutoSaving, setIsAutoSaving] = useState(false)
 
-  // Save adventure data to localStorage and Supabase
-  const saveAdventureData = async (data: typeof adventureData) => {
+  // Load data from localStorage after hydration
+  useEffect(() => {
+    const savedData = loadAdventureData()
+    if (savedData) {
+      setAdventureData(prevData => ({ ...prevData, ...savedData }))
+    }
+    setIsHydrated(true)
+  }, [])
+
+  // Enhanced auto-save with debouncing and visual feedback
+  const saveAdventureData = async (data: typeof adventureData, showFeedback = false) => {
     if (typeof window === 'undefined') return
     
     try {
+      setIsAutoSaving(true)
+      
       // Don't save temporary states like isGeneratingStory
       const dataToSave = {
         ...data,
-        isGeneratingStory: false
+        isGeneratingStory: false,
+        lastAutoSaved: new Date().toISOString()
       }
       
       // Save to localStorage for immediate persistence
       localStorage.setItem('cluequest-builder-data', JSON.stringify(dataToSave))
+      setLastSaved(new Date())
       
       // Auto-save to Supabase if adventure has title and locations (indicates serious progress)
-      if (data.title.trim() && data.locations.length > 0) {
+      if (data.title?.trim() && (data.locations?.length || 0) > 0) {
         try {
           const result = await adventurePersistence.saveAdventure(data as any)
           if (result.success) {
+            if (showFeedback) {
+              // Show success feedback
+              console.log('✅ Adventure auto-saved successfully')
+            }
           }
         } catch (supabaseError) {
           // Continue with localStorage only
+          console.warn('Supabase auto-save failed, using localStorage only:', supabaseError)
         }
       }
     } catch (error) {
+      console.error('Auto-save failed:', error)
+    } finally {
+      setIsAutoSaving(false)
     }
   }
 
-  // Enhanced setAdventureData that also saves to localStorage
+  // Debounced auto-save to prevent excessive saves
+  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null)
+  
+  const debouncedSave = (data: typeof adventureData) => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+    }
+    
+    const timeout = setTimeout(() => {
+      saveAdventureData(data)
+    }, 2000) // Save after 2 seconds of inactivity
+    
+    setSaveTimeout(timeout)
+  }
+
+  // Enhanced setAdventureData that also saves to localStorage with debouncing
   const updateAdventureData = (newData: typeof adventureData) => {
     setAdventureData(newData)
-    saveAdventureData(newData)
+    debouncedSave(newData)
   }
+
+  // Adventure themes with professional images
+  const themes = [
+    { 
+      id: 'mystery', 
+      name: 'Detective Caper', 
+      icon: Search, 
+      color: 'amber',
+      description: 'Solve crimes and mysteries as a skilled sleuth.',
+      profileImage: '/images/adventure-profiles/Detective_adventure_profile.png',
+      darkOverlay: 'rgba(15, 23, 42, 0.6)',
+      palette: ['#2B1B12', '#3B2417', '#C8772A', '#5A3A22'],
+      colors: { primary: '#C8772A', secondary: '#3B2417', accent: '#5A3A22' },
+      preview: '🔍 Solve crimes and mysteries as a skilled sleuth.'
+    },
+    { 
+      id: 'fantasy', 
+      name: 'Enchanted Forest', 
+      icon: Key, 
+      color: 'emerald',
+      description: 'Fairies, ancient magic, and mystical creatures await.',
+      profileImage: '/images/adventure-profiles/Enchanted_adventure_profile.png',
+      darkOverlay: 'rgba(6, 95, 70, 0.6)',
+      palette: ['#0E3B2F', '#1D5C4B', '#2D8B6F', '#E0D48A'],
+      colors: { primary: '#2D8B6F', secondary: '#1D5C4B', accent: '#E0D48A' },
+      preview: '🧚‍♀️ Fairies, ancient magic, and mystical creatures await.'
+    },
+    { 
+      id: 'hacker', 
+      name: 'Hacker Operation', 
+      icon: Shield, 
+      color: 'blue',
+      description: 'Infiltrate and manipulate a network of servers and codes.',
+      profileImage: '/images/adventure-profiles/Hacker_adventure_profile.png',
+      darkOverlay: 'rgba(12, 29, 36, 0.6)',
+      palette: ['#0C1D24', '#0E2D33', '#1BA7A0', '#0E6F6A'],
+      colors: { primary: '#1BA7A0', secondary: '#0E2D33', accent: '#0E6F6A' },
+      preview: '💻 Infiltrate and manipulate a network of servers and codes.'
+    },
+    { 
+      id: 'corporate', 
+      name: 'Corporate Challenge', 
+      icon: Users, 
+      color: 'purple',
+      description: 'Team building through professional mysteries.',
+      profileImage: '/images/adventure-profiles/Corporate_adventure_profile.png',
+      darkOverlay: 'rgba(26, 77, 74, 0.6)',
+      palette: ['#1A4D4A', '#2A5D5A', '#3A6D6A', '#4A7D7A'],
+      colors: { primary: '#3A6D6A', secondary: '#2A5D5A', accent: '#4A7D7A' },
+      preview: '🏢 Team building through professional mysteries.'
+    },
+    { 
+      id: 'sci-fi', 
+      name: 'Space Station', 
+      icon: Zap, 
+      color: 'cyan',
+      description: 'Navigate through futuristic technology and alien encounters.',
+      profileImage: '/images/adventure-profiles/Sci-fi_adventure_profile.png',
+      darkOverlay: 'rgba(6, 78, 59, 0.6)',
+      palette: ['#064E3B', '#065F46', '#059669', '#10B981'],
+      colors: { primary: '#059669', secondary: '#065F46', accent: '#10B981' },
+      preview: '🚀 Navigate through futuristic technology and alien encounters.'
+    },
+    { 
+      id: 'horror', 
+      name: 'Haunted Manor', 
+      icon: AlertTriangle, 
+      color: 'red',
+      description: 'Face supernatural forces in a spine-chilling adventure.',
+      profileImage: '/images/adventure-profiles/Horror_adventure_profile.png',
+      darkOverlay: 'rgba(127, 29, 29, 0.6)',
+      palette: ['#7F1D1D', '#991B1B', '#DC2626', '#EF4444'],
+      colors: { primary: '#DC2626', secondary: '#991B1B', accent: '#EF4444' },
+      preview: '👻 Face supernatural forces in a spine-chilling adventure.'
+    },
+    { 
+      id: 'educational', 
+      name: 'Learning Adventure', 
+      icon: BookOpen, 
+      color: 'green',
+      description: 'Educational challenges that make learning fun and interactive.',
+      profileImage: '/images/adventure-profiles/Educational_adventure_profile.png',
+      darkOverlay: 'rgba(6, 78, 59, 0.6)',
+      palette: ['#064E3B', '#065F46', '#059669', '#10B981'],
+      colors: { primary: '#059669', secondary: '#065F46', accent: '#10B981' },
+      preview: '📚 Educational challenges that make learning fun and interactive.'
+    }
+  ]
+
+  // State for custom themes
+  const [customThemes, setCustomThemes] = useState<any[]>([])
+
+  // Get all themes including custom ones and create custom theme button
+  const allThemes = [
+    ...themes, 
+    ...customThemes.map(customTheme => ({
+      ...customTheme,
+      icon: Shield,
+      color: 'custom',
+      darkOverlay: 'rgba(0, 0, 0, 0.6)',
+      isCustom: true,
+      colors: {
+        primary: customTheme.palette?.[0] || '#666',
+        secondary: customTheme.palette?.[1] || '#444', 
+        accent: customTheme.palette?.[2] || '#888'
+      }
+    })),
+    {
+      id: 'create-custom',
+      name: 'Create Custom Theme',
+      description: 'Design your own unique theme',
+      icon: Plus,
+      color: 'slate',
+      darkOverlay: 'rgba(0, 0, 0, 0.7)',
+      isCustom: false,
+      isCreateButton: true,
+      colors: {
+        primary: '#64748b',
+        secondary: '#475569',
+        accent: '#334155'
+      }
+    }
+  ]
+
+  const handleCustomThemeCreated = (newTheme: any) => {
+    setCustomThemes(prev => [...prev, newTheme])
+    
+    const themeToAdd = {
+      ...newTheme,
+      icon: Shield,
+      color: 'custom',
+      darkOverlay: 'rgba(0, 0, 0, 0.6)',
+      isCustom: true,
+      colors: {
+        primary: newTheme.colors?.primary || '#8b5cf6',
+        secondary: newTheme.colors?.secondary || '#06b6d4', 
+        accent: newTheme.colors?.accent || '#f59e0b'
+      }
+    }
+    
+    setCurrentThemeIndex(allThemes.length)
+    updateAdventureData({ 
+      ...adventureData, 
+      theme: newTheme.id,
+      customColors: themeToAdd.colors
+    })
+  }
+
+
 
   // Auto-save when adventure data changes (debounced)
   useEffect(() => {
@@ -199,10 +507,18 @@ export default function AdventureBuilderPage() {
   }
 
   const [isCreatingAdventure, setIsCreatingAdventure] = useState(false)
+  const [showCelebrationModal, setShowCelebrationModal] = useState(false)
+  const [createdAdventure, setCreatedAdventure] = useState<{
+    title: string
+    id: string
+    status: string
+  } | null>(null)
+  const [currentThemeIndex, setCurrentThemeIndex] = useState(0)
+  const [isCustomThemeModalOpen, setIsCustomThemeModalOpen] = useState(false)
 
   // Handle adventure creation
   const handleCreateAdventure = async () => {
-    if (!adventureData.title.trim() || !adventureData.theme) {
+    if (!adventureData.title?.trim() || !adventureData.theme) {
       alert('Please complete the adventure title and theme before creating the adventure.')
       return
     }
@@ -210,7 +526,7 @@ export default function AdventureBuilderPage() {
     setIsCreatingAdventure(true)
 
     try {
-      const response = await fetch('/api/adventures', {
+      const response = await fetch('/api/adventures-simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,8 +542,9 @@ export default function AdventureBuilderPage() {
           branchingPoints: adventureData.branchingPoints,
           generatedStory: adventureData.generatedStory,
           roles: adventureData.roles,
-          challengeTypes: adventureData.challengeTypes,
-          qrLocations: adventureData.qrLocations,
+          challenges: adventureData.challenges || [],
+          qrStickers: adventureData.qrStickers || [],
+          activityMappings: adventureData.activityMappings || [],
           ranking: adventureData.ranking,
           rewards: adventureData.rewards,
           accessMode: adventureData.accessMode,
@@ -246,8 +563,12 @@ export default function AdventureBuilderPage() {
       const result = await response.json()
       
       if (result.success) {
-        alert(`🎉 Adventure "${result.adventure.title}" created successfully!\n\nAdventure ID: ${result.adventure.id}\nStatus: ${result.adventure.status}\n\nYou can now view and manage your adventure from the dashboard.`)
-        window.location.href = '/dashboard'
+        setCreatedAdventure({
+          title: result.adventure.title,
+          id: result.adventure.id,
+          status: result.adventure.status
+        })
+        setShowCelebrationModal(true)
       } else {
         throw new Error(result.error || 'Failed to create adventure')
       }
@@ -259,81 +580,192 @@ export default function AdventureBuilderPage() {
     }
   }
 
-  // Wizard steps according to mindmap
+  // Wizard steps according to mindmap with completion tracking
   const wizardSteps = [
-    { id: 1, title: 'Theme', description: 'Select template or create custom theme', icon: Palette },
-    { id: 2, title: 'Story', description: 'Choose pre-made story or generate new with AI', icon: BookOpen },
-    { id: 3, title: 'Roles', description: 'Define available roles and perks', icon: Users },
-    { id: 4, title: 'Challenges', description: 'Select challenge types and generate QR codes', icon: MapPin },
-    { id: 5, title: 'Rewards & Security', description: 'Set ranking, rewards and access controls', icon: Shield }
-  ]
-
-  // Themes from mindmap (fantasy, mystery, corporate, sci-fi, educational)
-  const themes = [
-    {
-      id: 'fantasy',
-      name: 'Enchanted Forest',
-      description: 'Fairies, elves and magical creatures',
-      colors: { primary: '#8b5cf6', secondary: '#06b6d4', accent: '#10b981' },
-      preview: '🧚‍♀️ A magical adventure full of mystical creatures...'
+    { 
+      id: 1, 
+      title: 'Theme', 
+      description: 'Select template or create custom theme', 
+      icon: Palette,
+      estimatedTime: '2-3 min',
+      requiredFields: ['title', 'theme']
     },
-    {
-      id: 'mystery',
-      name: 'Hacker Operation',
-      description: 'Corporate espionage and secret codes',
-      colors: { primary: '#f59e0b', secondary: '#ef4444', accent: '#6366f1' },
-      preview: '🕵️ Infiltrate the corporation and uncover secrets...'
+    { 
+      id: 2, 
+      title: 'Story', 
+      description: 'Choose pre-made story or generate new with AI', 
+      icon: BookOpen,
+      estimatedTime: '3-5 min',
+      requiredFields: ['narrative', 'storyType']
     },
-    {
-      id: 'detective',
-      name: 'Detective Game',
-      description: 'Solve crimes and find clues',
-      colors: { primary: '#64748b', secondary: '#f59e0b', accent: '#dc2626' },
-      preview: '🔍 A crime has occurred, find the culprit...'
+    { 
+      id: 3, 
+      title: 'Roles', 
+      description: 'Define available roles and perks', 
+      icon: Users,
+      estimatedTime: '2-4 min',
+      requiredFields: ['roles']
     },
-    {
-      id: 'corporate',
-      name: 'Corporate Challenge',
-      description: 'Professional team building',
-      colors: { primary: '#0ea5e9', secondary: '#22c55e', accent: '#f59e0b' },
-      preview: '💼 Collaborate with your team to solve challenges...'
+    { 
+      id: 4, 
+      title: 'Challenges', 
+      description: 'Select challenge types and generate QR codes', 
+      icon: MapPin,
+      estimatedTime: '5-10 min',
+      requiredFields: ['locations', 'challenges']
     },
-    {
-      id: 'educational',
-      name: 'Educational Adventure',
-      description: 'Gamified learning experience',
-      colors: { primary: '#10b981', secondary: '#8b5cf6', accent: '#f59e0b' },
-      preview: '📚 Learn while solving educational mysteries...'
+    { 
+      id: 5, 
+      title: 'Rewards & Security', 
+      description: 'Set ranking, rewards and access controls', 
+      icon: Shield,
+      estimatedTime: '2-3 min',
+      requiredFields: ['ranking', 'accessMode']
     }
   ]
 
-  // Pre-made stories from mindmap
-  const preMadeStories = [
-    {
-      id: 'enchanted_forest',
-      title: 'The Enchanted Forest',
-      theme: 'fantasy',
-      description: 'Magical creatures have lost their powers. Help them recover their abilities.',
-      duration: 45,
-      scenes: 8
-    },
-    {
-      id: 'hacker_operation',
-      title: 'Hacker Operation',
-      theme: 'mystery',
-      description: 'Infiltrate the corrupt corporation and expose their secrets before it\'s too late.',
-      duration: 60,
-      scenes: 10
-    },
-    {
-      id: 'detective_game',
-      title: 'The Museum Detective',
-      theme: 'detective',
-      description: 'A valuable artwork has disappeared. Find the clues and catch the thief.',
-      duration: 50,
-      scenes: 12
+  // Calculate step completion status
+  const getStepCompletion = (step: typeof wizardSteps[0]) => {
+    const requiredFields = step.requiredFields
+    const completedFields = requiredFields.filter(field => {
+      const value = adventureData[field as keyof typeof adventureData]
+      if (Array.isArray(value)) {
+        return value.length > 0
+      }
+      return value && value.toString().trim() !== ''
+    })
+    
+    return {
+      isCompleted: completedFields.length === requiredFields.length,
+      progress: (completedFields.length / requiredFields.length) * 100,
+      completedFields: completedFields.length,
+      totalFields: requiredFields.length
     }
-  ]
+  }
+
+
+  // Combine all pre-made stories
+  const allPremadeStories = [...premadeStories, ...extendedPremadeStories, ...additionalPremadeStories]
+
+  // Map adventure types to story themes
+  const getThemesForAdventureType = (type: string | null): string[] => {
+    if (!type) return []
+    
+    switch (type) {
+      case 'corporate':
+        return ['corporate']
+      case 'educational':
+        return ['educational']
+      case 'social':
+        // For social adventures, include themes that work well for social events
+        return ['mystery', 'fantasy', 'hacker']
+      default:
+        return []
+    }
+  }
+
+  // Filter themes based on adventure type
+  const getFilteredThemes = () => {
+    // Only filter if adventureType is set (client-side)
+    if (!adventureType) {
+      console.log('🔍 No adventure type set, showing all themes')
+      return allThemes
+    }
+    
+    const allowedThemes = getThemesForAdventureType(adventureType)
+    if (allowedThemes.length === 0) {
+      console.log('🔍 No allowed themes for type:', adventureType)
+      return allThemes
+    }
+    
+    // Filter themes that match the adventure type, plus always include custom theme button
+    const filtered = allThemes.filter(theme => 
+      theme.isCreateButton || allowedThemes.includes(theme.id)
+    )
+    
+    // Debug logging
+    console.log('🔍 Theme Filtering Debug:', {
+      adventureType,
+      allowedThemes,
+      allThemesCount: allThemes.length,
+      filteredCount: filtered.length,
+      filteredThemes: filtered.map(t => ({ id: t.id, name: t.name, isCreateButton: t.isCreateButton }))
+    })
+    
+    return filtered
+  }
+
+  const filteredThemes = useMemo(() => getFilteredThemes(), [adventureType, allThemes])
+
+  // Sync carousel index with selected theme when adventure data loads
+  useEffect(() => {
+    if (adventureData.theme && filteredThemes.length > 0) {
+      const themeIndex = filteredThemes.findIndex(theme => theme.id === adventureData.theme)
+      if (themeIndex !== -1) {
+        const maxIndex = Math.max(0, filteredThemes.length - 3)
+        let centeredIndex = themeIndex - 1
+        
+        if (centeredIndex < 0) {
+          centeredIndex = 0
+        }
+        
+        if (centeredIndex > maxIndex) {
+          centeredIndex = maxIndex
+        }
+        
+        setCurrentThemeIndex(centeredIndex)
+      }
+    }
+  }, [adventureData.theme, filteredThemes.length])
+
+  // Carousel navigation functions
+  const nextTheme = () => {
+    setCurrentThemeIndex((prev) => {
+      const maxIndex = Math.max(0, filteredThemes.length - 3)
+      const nextIndex = Math.min(prev + 1, maxIndex)
+      return nextIndex
+    })
+  }
+
+  const prevTheme = () => {
+    setCurrentThemeIndex((prev) => {
+      const prevIndex = Math.max(prev - 1, 0)
+      return prevIndex
+    })
+  }
+
+  const selectTheme = (themeId: string) => {
+    if (themeId === 'create-custom') {
+      setIsCustomThemeModalOpen(true)
+      return
+    }
+    const theme = allThemes.find(t => t.id === themeId)
+    updateAdventureData({ 
+      ...adventureData, 
+      theme: themeId,
+      customColors: theme?.colors
+    })
+    const themeIndex = filteredThemes.findIndex(theme => theme.id === themeId)
+    if (themeIndex !== -1) {
+      // Center the selected theme in the carousel (showing 3 items at a time)
+      const maxIndex = Math.max(0, filteredThemes.length - 3)
+      // Calculate the index to center the selected theme
+      // For a 3-item carousel, we want the selected item to be in the middle (position 1)
+      let centeredIndex = themeIndex - 1
+      
+      // Ensure we don't go below 0
+      if (centeredIndex < 0) {
+        centeredIndex = 0
+      }
+      
+      // Ensure we don't exceed the maximum index
+      if (centeredIndex > maxIndex) {
+        centeredIndex = maxIndex
+      }
+      
+      setCurrentThemeIndex(centeredIndex)
+    }
+  }
 
   // Adventure roles with perks (expanded collection)
   const adventureRoles = [
@@ -761,32 +1193,45 @@ export default function AdventureBuilderPage() {
   ]
 
   // Combine predefined and custom themes
-  const allThemes = [...themes, ...adventureData.customThemes]
+  // (Themes are now combined in allThemes definition above)
 
-  // Handle AI-generated themes
-  const handleCustomThemeCreated = (theme: any) => {
-    const newTheme = {
-      ...theme,
-      isCustom: true
-    }
-    updateAdventureData({
-      ...adventureData,
-      customThemes: [...adventureData.customThemes, newTheme],
-      theme: newTheme.id, // Auto-select the new custom theme
-      customColors: newTheme.colors
-    })
+  // Genre to role category mapping (same as role-selection page)
+  const GENRE_TO_ROLE_CATEGORY_MAP: Record<string, string[]> = {
+    'fantasy': ['Fantasy', 'Mystical', 'Historical'],
+    'mystery': ['Mystery', 'Academic'],
+    'detective': ['Mystery', 'Academic'],
+    'sci-fi': ['Tech', 'Academic'],
+    'horror': ['Mystical', 'Mystery'],
+    'adventure': ['Adventure', 'Combat'],
+    'treasure-hunt': ['Adventure', 'Mystery'],
+    'escape-room': ['Academic', 'Tech'],
+    'puzzle': ['Academic', 'Creative'],
+    'corporate': ['Corporate'],
+    'educational': ['Academic', 'Modern'],
+    'team-building': ['Corporate', 'Support'],
+    'social': ['Creative', 'Support'],
+    'entertainment': ['Creative', 'Fantasy', 'Adventure']
   }
 
-  // Get unique categories for filtering
-  const categories = ['All', ...Array.from(new Set(adventureRoles.map(role => role.category)))]
+  // Get unique categories for filtering based on selected genre
+  const availableCategories = adventureData.theme && GENRE_TO_ROLE_CATEGORY_MAP[adventureData.theme]
+    ? GENRE_TO_ROLE_CATEGORY_MAP[adventureData.theme]
+    : Array.from(new Set(adventureRoles.map(role => role.category)))
+  
+  const categories = ['All', ...availableCategories]
 
   // Combine predefined and custom characters
-  const allCharacters = [...adventureRoles, ...adventureData.customCharacters]
+  const allCharacters = [...adventureRoles, ...(adventureData.customCharacters || [])]
+
+  // Filter characters by adventure genre first, then by selected category
+  const genreFilteredCharacters = adventureData.theme && GENRE_TO_ROLE_CATEGORY_MAP[adventureData.theme]
+    ? allCharacters.filter(char => GENRE_TO_ROLE_CATEGORY_MAP[adventureData.theme].includes(char.category))
+    : allCharacters
 
   // Filter characters by selected category
   const filteredCharacters = selectedCategory === 'All' 
-    ? allCharacters 
-    : allCharacters.filter(char => char.category === selectedCategory)
+    ? genreFilteredCharacters 
+    : genreFilteredCharacters.filter(char => char.category === selectedCategory)
 
   // Handle AI-generated characters
   const handleCustomCharacterCreated = (character: any) => {
@@ -797,7 +1242,7 @@ export default function AdventureBuilderPage() {
     }
     updateAdventureData({
       ...adventureData,
-      customCharacters: [...adventureData.customCharacters, newCharacter]
+      customCharacters: [...(adventureData.customCharacters || []), newCharacter]
     })
   }
 
@@ -907,27 +1352,53 @@ export default function AdventureBuilderPage() {
             Back to Dashboard
           </Link>
 
+          {/* Auto-save Status */}
+          <div className="flex items-center gap-2 text-sm">
+            {isAutoSaving ? (
+              <div className="flex items-center gap-2 text-amber-400">
+                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                <span>Saving...</span>
+              </div>
+            ) : lastSaved ? (
+              <div className="flex items-center gap-2 text-emerald-400">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                <span>Saved {lastSaved.toLocaleTimeString()}</span>
+              </div>
+            ) : null}
+          </div>
+
           {/* Navigable Breadcrumbs */}
           <div className="hidden md:flex items-center gap-2 text-sm">
             <span className="text-slate-500">Quick Jump:</span>
             {wizardSteps.map((step, index) => {
               const isActive = currentStep === step.id
               const isCompleted = currentStep > step.id
+              const completion = getStepCompletion(step)
               
               return (
                 <div key={step.id} className="flex items-center">
                   <button
                     onClick={() => navigateToStep(step.id)}
-                    className={`px-3 py-1 rounded-lg transition-all duration-200 ${
+                    className={`px-3 py-1 rounded-lg transition-all duration-200 relative ${
                       isActive 
                         ? 'bg-amber-500 text-white font-semibold'
                         : isCompleted 
                         ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                        : completion.progress > 0
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                         : 'bg-slate-700/50 text-slate-400 hover:bg-slate-600/50'
                     }`}
-                    title={`${step.title}: ${step.description}`}
+                    title={`${step.title}: ${step.description} (${step.estimatedTime}) - ${completion.completedFields}/${completion.totalFields} completed`}
                   >
                     {step.id}. {step.title}
+                    {completion.progress > 0 && completion.progress < 100 && (
+                      <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-400/50 rounded-full">
+                        <div 
+                          className="h-full bg-blue-400 rounded-full transition-all duration-300"
+                          style={{ width: `${completion.progress}%` }}
+                        />
+                      </div>
+                    )}
                   </button>
                   
                   {index < wizardSteps.length - 1 && (
@@ -955,6 +1426,8 @@ export default function AdventureBuilderPage() {
               Adventure Builder Wizard
             </div>
             
+            <GlobalHeader />
+            
             <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4 bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
               Create Your Adventure
             </h1>
@@ -967,7 +1440,7 @@ export default function AdventureBuilderPage() {
             {process.env.NODE_ENV === 'development' && (
               <div className="mt-4 space-y-2">
                 <div className="px-3 py-1 bg-slate-800/50 rounded text-xs text-slate-400">
-                  🔧 DEBUG: Step {currentStep}/5 | URL: {typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/builder?step=' + currentStep}
+                  🔧 DEBUG: Step {currentStep}/5 | URL: {isHydrated && typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/builder?step=' + currentStep}
                 </div>
                 
                 <div className="flex items-center gap-2 justify-center flex-wrap">
@@ -977,8 +1450,10 @@ export default function AdventureBuilderPage() {
                       key={step}
                       onClick={() => {
                         const url = `/builder?step=${step}`
-                        navigator.clipboard.writeText(window.location.origin + url)
-                        alert(`URL copied: ${window.location.origin + url}`)
+                        if (typeof window !== 'undefined') {
+                          navigator.clipboard.writeText(window.location.origin + url)
+                          alert(`URL copied: ${window.location.origin + url}`)
+                        }
                       }}
                       className={`px-2 py-1 rounded text-xs transition-colors ${
                         step === currentStep 
@@ -995,7 +1470,7 @@ export default function AdventureBuilderPage() {
                 <div className="flex items-center gap-2 justify-center">
                   <span className="text-xs text-slate-500">Data:</span>
                   <div className="flex items-center gap-1 text-xs text-emerald-400">
-                    💾 Auto-saved ({adventureData.title || 'Untitled'})
+                    💾 Auto-saved ({isHydrated ? (adventureData.title || 'Untitled') : 'Loading...'})
                   </div>
                   <button
                     onClick={clearSavedData}
@@ -1017,11 +1492,12 @@ export default function AdventureBuilderPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <div className="flex items-center justify-between max-w-3xl mx-auto">
-              {wizardSteps.map((step, index) => {
-                const Icon = step.icon
-                const isActive = currentStep === step.id
-                const isCompleted = currentStep > step.id
-                const isConnected = index < wizardSteps.length - 1
+            {wizardSteps.map((step, index) => {
+              const Icon = step.icon
+              const isActive = currentStep === step.id
+              const isCompleted = currentStep > step.id
+              const isConnected = index < wizardSteps.length - 1
+              const completion = getStepCompletion(step)
                 
                 return (
                   <div key={step.id} className="flex items-center">
@@ -1060,6 +1536,14 @@ export default function AdventureBuilderPage() {
                         </div>
                         <div className="text-xs text-slate-500 leading-tight">
                           {step.description}
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className="text-xs text-slate-600">⏱️ {step.estimatedTime}</span>
+                            {completion.progress > 0 && (
+                              <span className={`text-xs ${completion.isCompleted ? 'text-emerald-400' : 'text-blue-400'}`}>
+                                {completion.completedFields}/{completion.totalFields} ✓
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1115,15 +1599,227 @@ export default function AdventureBuilderPage() {
                       onChange={(e) => updateAdventureData({ ...adventureData, title: e.target.value })}
                       className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                     />
-                    {adventureData.title && (
+                    {isHydrated && adventureData.title && (
                       <p className="text-emerald-400 text-sm mt-2">
                         ✨ Great title! This will be displayed prominently to participants
                       </p>
                     )}
                   </div>
 
+                  {/* Selected Theme Preview */}
+                  {adventureData.theme && (() => {
+                    const selectedTheme = allThemes.find(theme => theme.id === adventureData.theme)
+                    if (!selectedTheme) return null
+                    
+                    return (
+                      <div className="p-6 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                        <h4 className="text-lg font-bold text-amber-200 mb-3 flex items-center gap-2">
+                          <Palette className="h-5 w-5" />
+                          Selected Theme
+                        </h4>
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="w-20 h-20 rounded-xl overflow-hidden border-2 border-amber-500/30"
+                            style={{
+                              backgroundImage: selectedTheme.profileImage ? `url(${selectedTheme.profileImage})` : 'none',
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              background: selectedTheme.profileImage ? 'none' : `linear-gradient(135deg, ${selectedTheme.palette?.[0] || '#666'}, ${selectedTheme.palette?.[1] || '#444'})`
+                            }}
+                          >
+                            {!selectedTheme.profileImage && (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <div className="text-2xl">🎨</div>
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <h5 className="text-white font-semibold text-lg">{selectedTheme.name}</h5>
+                            <p className="text-slate-400 text-sm">{selectedTheme.description}</p>
+                            {adventureType && (
+                              <p className="text-amber-400 text-xs mt-1">
+                                Perfect for {adventureType} adventures
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* Theme Carousel */}
+                  <div>
+                    <h3 className="text-xl font-semibold text-slate-300 mb-6">
+                      Adventure Themes
+                      <span className="text-sm text-slate-500 font-normal ml-2">
+                        ({filteredThemes.length} total)
+                        {adventureType && (
+                          <span className="text-amber-400 ml-2">
+                            • Filtered for {adventureType} adventures
+                          </span>
+                        )}
+                      </span>
+                    </h3>
+                    
+                    {/* Carousel Container */}
+                    <div className="relative overflow-hidden rounded-2xl bg-slate-800/20 p-4" style={{ minHeight: '400px' }}>
+                      <motion.div 
+                        className="flex transition-transform duration-500 ease-out"
+                        style={{ 
+                          transform: `translateX(-${currentThemeIndex * (100 / 3)}%)`,
+                          width: `${Math.max(filteredThemes.length, 3) * (100 / 3)}%`
+                        }}
+                      >
+                          {filteredThemes.map((theme, index) => {
+                            const Icon = theme.icon || Shield
+                            const isSelected = adventureData.theme === theme.id
+                            
+                            return (
+                              <div 
+                                key={theme.id}
+                                className="flex-shrink-0 relative cursor-pointer group px-2"
+                                onClick={() => selectTheme(theme.id)}
+                                style={{ width: `${100 / 3}%` }}
+                              >
+                                <div 
+                                  className={`relative aspect-square w-full overflow-hidden rounded-2xl transition-all duration-300 group-hover:scale-[1.05] shadow-2xl border-2 cursor-pointer ${
+                                    theme.isCreateButton
+                                      ? 'border-purple-500/50 bg-gradient-to-br from-purple-600/20 to-pink-600/20'
+                                      : 'border-slate-600/30 group-hover:border-amber-500/50'
+                                  }`}
+                                  style={{
+                                    backgroundImage: theme.isCreateButton ? 'none' : (theme.profileImage ? `url(${theme.profileImage})` : 'none'),
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    minHeight: '320px',
+                                    maxHeight: '400px',
+                                    background: theme.isCreateButton ? 'none' : (theme.profileImage ? 'none' : `linear-gradient(135deg, ${theme.palette?.[0] || '#666'}, ${theme.palette?.[1] || '#444'})`)
+                                  }}
+                                >
+                                  {/* Dark Overlay */}
+                                  {!theme.isCreateButton && (
+                                    <div 
+                                      className="absolute inset-0 transition-opacity duration-300"
+                                      style={{ 
+                                        background: theme.darkOverlay,
+                                        opacity: isSelected ? 0.4 : 0.7
+                                      }}
+                                    />
+                                  )}
+                                  
+                                  {/* Content */}
+                                  <div className={`absolute inset-0 flex flex-col ${theme.isCreateButton ? 'justify-center items-center' : 'justify-end'} p-8 text-white`}>
+                                    <div className={`${theme.isCreateButton ? 'mb-6' : 'mb-4'}`}>
+                                      <Icon className={`h-12 w-12 ${theme.isCreateButton ? 'text-purple-300' : 'text-white/90'} mb-3`} />
+                                    </div>
+                                    
+                                    <h3 className={`text-2xl font-bold mb-2 ${theme.isCreateButton ? 'text-purple-200' : 'text-white'}`}>
+                                      {theme.name}
+                                    </h3>
+                                    
+                                    <p className={`text-base leading-relaxed ${theme.isCreateButton ? 'text-purple-300/90' : 'text-white/90'}`}>
+                                      {theme.description}
+                                    </p>
+                                  </div>
+                                  
+                                  {/* Selection Indicator */}
+                                  {isSelected && !theme.isCreateButton && (
+                                    <motion.div 
+                                      className="absolute top-4 right-4 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center"
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      transition={{ duration: 0.3 }}
+                                    >
+                                      <div className="w-3 h-3 bg-white rounded-full" />
+                                    </motion.div>
+                                  )}
+                                  
+                                  {/* Custom Theme Badge */}
+                                  {theme.isCustom && (
+                                    <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                                      AI
+                                    </div>
+                                  )}
+                                  
+                                  {/* Start Adventure Indicator */}
+                                  {!theme.isCreateButton && (
+                                    <motion.div
+                                      className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+                                      initial={{ opacity: 0 }}
+                                      whileHover={{ opacity: 1 }}
+                                    >
+                                      <div className="text-center">
+                                        <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                          <div className="w-6 h-6 bg-white rounded-full" />
+                                        </div>
+                                        <p className="text-white font-bold text-lg">Start Adventure</p>
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </motion.div>
+                      
+                      {/* Navigation Arrows */}
+                      <button
+                        onClick={prevTheme}
+                        disabled={currentThemeIndex === 0}
+                        className={`absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border ${
+                          currentThemeIndex === 0 
+                            ? 'bg-slate-800/50 border-slate-600/30 cursor-not-allowed' 
+                            : 'bg-slate-800/90 hover:bg-slate-700/90 hover:scale-110 border-slate-600/50'
+                        }`}
+                        aria-label="Previous theme"
+                      >
+                        <ChevronLeft className={`h-6 w-6 ${currentThemeIndex === 0 ? 'text-slate-500' : 'text-amber-300'}`} />
+                      </button>
+                      
+                      <button
+                        onClick={nextTheme}
+                        disabled={currentThemeIndex > filteredThemes.length - 3}
+                        className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-200 border ${
+                          currentThemeIndex > filteredThemes.length - 3
+                            ? 'bg-slate-800/50 border-slate-600/30 cursor-not-allowed' 
+                            : 'bg-slate-800/90 hover:bg-slate-700/90 hover:scale-110 border-slate-600/50'
+                        }`}
+                        aria-label="Next theme"
+                      >
+                        <ChevronRight className={`h-6 w-6 ${currentThemeIndex > filteredThemes.length - 3 ? 'text-slate-500' : 'text-amber-300'}`} />
+                      </button>
+                      
+                      {/* Dots Indicator */}
+                      <div className="flex justify-center mt-6 gap-2">
+                        {Array.from({ length: Math.max(1, filteredThemes.length - 2) }, (_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              const maxIndex = Math.max(0, filteredThemes.length - 3)
+                              const centeredIndex = Math.max(0, Math.min(index, maxIndex))
+                              setCurrentThemeIndex(centeredIndex)
+                              if (filteredThemes[index + 1]) {
+                                updateAdventureData({ 
+                                  ...adventureData, 
+                                  theme: filteredThemes[index + 1].id,
+                                  customColors: filteredThemes[index + 1]?.colors
+                                })
+                              }
+                            }}
+                            className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              index === currentThemeIndex 
+                                ? 'bg-amber-400 w-6' 
+                                : 'bg-slate-600 hover:bg-slate-500'
+                            }`}
+                            aria-label={`Go to theme ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
                   {/* AI Theme Builder */}
-                  <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-8">
+                  <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mt-8">
                     <h4 className="text-lg font-bold text-purple-200 mb-3 flex items-center gap-2">
                       <Sparkles className="h-5 w-5" />
                       AI Theme Generator
@@ -1136,79 +1832,6 @@ export default function AdventureBuilderPage() {
                       onThemeGenerated={handleCustomThemeCreated}
                       selectedTheme={adventureData.theme}
                     />
-                  </div>
-
-                  {/* Theme Templates */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-300 mb-6">
-                      Available Themes
-                      <span className="text-sm text-slate-500 font-normal ml-2">
-                        ({allThemes.length} total)
-                      </span>
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {allThemes.map((theme) => (
-                        <motion.button
-                          key={theme.id}
-                          onClick={() => setAdventureData({ 
-                            ...adventureData, 
-                            theme: theme.id,
-                            customColors: theme.colors 
-                          })}
-                          className={`p-5 rounded-xl border transition-all duration-200 text-left relative ${
-                            adventureData.theme === theme.id
-                              ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-500/20'
-                              : 'border-slate-600 bg-slate-800/40 hover:border-amber-500/50'
-                          }`}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          layout
-                        >
-                          {/* Custom Theme Badge */}
-                          {theme.isCustom && (
-                            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                              IA
-                            </div>
-                          )}
-                          
-                          <h4 className="text-lg font-bold text-slate-200 mb-2">{theme.name}</h4>
-                          <p className="text-slate-400 text-sm mb-3">{theme.description}</p>
-                          
-                          {!theme.isCustom && theme.preview && (
-                            <div className="text-xs text-slate-500 italic mb-3">
-                              {theme.preview}
-                            </div>
-                          )}
-                          
-                          {theme.isCustom && theme.category && (
-                            <div className="text-xs text-purple-400 font-medium mb-3">
-                              Category: {theme.category}
-                            </div>
-                          )}
-                          
-                          {/* Color Preview */}
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-4 h-4 rounded-full border border-slate-500"
-                              style={{ backgroundColor: theme.colors.primary }}
-                            ></div>
-                            <div 
-                              className="w-4 h-4 rounded-full border border-slate-500"
-                              style={{ backgroundColor: theme.colors.secondary }}
-                            ></div>
-                            <div 
-                              className="w-4 h-4 rounded-full border border-slate-500"
-                              style={{ backgroundColor: theme.colors.accent }}
-                            ></div>
-                            {theme.isCustom && (
-                              <span className="ml-2 text-xs text-purple-400">
-                                🤖 AI Generated
-                              </span>
-                            )}
-                          </div>
-                        </motion.button>
-                      ))}
-                    </div>
                   </div>
                 </div>
               )}
@@ -1226,6 +1849,48 @@ export default function AdventureBuilderPage() {
                     </p>
                   </div>
 
+                  {/* Selected Theme Display */}
+                  {adventureData.theme && (() => {
+                    const selectedTheme = allThemes.find(theme => theme.id === adventureData.theme)
+                    if (!selectedTheme) return null
+                    
+                    return (
+                      <div className="mb-8">
+                        <h3 className="text-xl font-semibold text-slate-300 mb-4 text-center">
+                          Selected Adventure Theme
+                        </h3>
+                        <div className="flex justify-center">
+                          <div className="relative w-64 h-40 rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-500/30">
+                            {selectedTheme.profileImage ? (
+                              <img
+                                src={selectedTheme.profileImage}
+                                alt={selectedTheme.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div 
+                                className="w-full h-full flex items-center justify-center"
+                                style={{
+                                  background: `linear-gradient(135deg, ${selectedTheme.palette?.[0] || '#666'}, ${selectedTheme.palette?.[1] || '#444'})`
+                                }}
+                              >
+                                <div className="text-center text-white">
+                                  <div className="text-4xl mb-2">🎨</div>
+                                  <div className="text-sm font-semibold">{selectedTheme.name}</div>
+                                </div>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                            <div className="absolute bottom-4 left-4 right-4">
+                              <h4 className="text-white font-bold text-lg">{selectedTheme.name}</h4>
+                              <p className="text-white/80 text-sm">{selectedTheme.description}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   {/* Story Options */}
                   <div className="grid grid-cols-1 gap-6">
                     
@@ -1233,17 +1898,25 @@ export default function AdventureBuilderPage() {
                     <div>
                       <h3 className="text-xl font-semibold text-slate-300 mb-4">Pre-made Stories</h3>
                       <div className="space-y-4">
-                        {preMadeStories
-                          .filter(story => !adventureData.theme || story.theme === adventureData.theme)
+                        {allPremadeStories
+                          .filter(story => {
+                            // Filter by adventure type if specified
+                            if (adventureType) {
+                              const allowedThemes = getThemesForAdventureType(adventureType)
+                              if (allowedThemes.length > 0 && !allowedThemes.includes(story.theme)) {
+                                return false
+                              }
+                            }
+                            // Filter by selected theme - only show stories that match the selected theme
+                            if (adventureData.theme && story.theme !== adventureData.theme) {
+                              return false
+                            }
+                            return true
+                          })
                           .map((story) => (
-                          <motion.button
+                          <motion.div
                             key={story.id}
-                            onClick={() => setAdventureData({ 
-                              ...adventureData, 
-                              narrative: story.id,
-                              storyType: 'premade' 
-                            })}
-                            className={`w-full p-6 rounded-xl border transition-all duration-200 text-left ${
+                            className={`w-full p-6 rounded-xl border transition-all duration-200 ${
                               adventureData.narrative === story.id
                                 ? 'border-purple-400 bg-purple-500/10 ring-2 ring-purple-500/20'
                                 : 'border-slate-600 bg-slate-800/40 hover:border-purple-500/50'
@@ -1251,8 +1924,18 @@ export default function AdventureBuilderPage() {
                             whileHover={{ scale: 1.01 }}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="p-3 rounded-lg bg-purple-500/20">
-                                <BookOpen className="h-6 w-6 text-purple-300" />
+                              <div className="relative w-40 h-32 rounded-lg overflow-hidden bg-slate-700/50 flex-shrink-0">
+                                {story.image ? (
+                                  <img
+                                    src={story.image}
+                                    alt={story.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <BookOpen className="h-6 w-6 text-purple-300" />
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-1">
                                 <h4 className="text-lg font-bold text-slate-200 mb-2">{story.title}</h4>
@@ -1262,9 +1945,31 @@ export default function AdventureBuilderPage() {
                                   <span>📍 {story.scenes} scenes</span>
                                   <span className="capitalize">🎭 {story.theme}</span>
                                 </div>
+                                <div className="flex gap-2 mt-4">
+                                  <button
+                                    onClick={() => setAdventureData({ 
+                                      ...adventureData, 
+                                      narrative: story.id,
+                                      storyType: 'premade' 
+                                    })}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                      adventureData.narrative === story.id
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                    }`}
+                                  >
+                                    {adventureData.narrative === story.id ? 'Selected' : 'Select'}
+                                  </button>
+                                  <button
+                                    onClick={() => window.open(`/story/${story.id}`, '_blank')}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-all duration-200 border border-blue-500/30"
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </motion.button>
+                          </motion.div>
                         ))}
                       </div>
                     </div>
@@ -1318,7 +2023,12 @@ export default function AdventureBuilderPage() {
                       </div>
                       
                       <button 
-                        onClick={generateAIStory}
+                        onClick={() => {
+                          generateAIStory().catch(error => {
+                            console.error('Error generating AI story:', error)
+                            alert('Story generation failed. Please try again.')
+                          })
+                        }}
                         disabled={adventureData.isGeneratingStory || !adventureData.theme}
                         className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
                           adventureData.isGeneratingStory
@@ -1413,7 +2123,7 @@ export default function AdventureBuilderPage() {
                     <CharacterChatDesigner 
                       onCharacterGenerated={handleCustomCharacterCreated}
                       selectedTheme={adventureData.theme}
-                      existingRoles={adventureData.roles}
+                      existingRoles={adventureData.roles || []}
                     />
                   </div>
 
@@ -1455,14 +2165,15 @@ export default function AdventureBuilderPage() {
                         <motion.div
                           key={role.id}
                           className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer relative ${
-                            (adventureData.roles as string[]).includes(role.id)
+                            (adventureData.roles as string[] || []).includes(role.id)
                               ? `border-${role.color}-400 bg-${role.color}-500/10 ring-2 ring-${role.color}-500/20`
                               : `border-slate-600 bg-slate-800/40 hover:border-${role.color}-500/50`
                           }`}
                           onClick={() => {
-                            const roles = (adventureData.roles as string[]).includes(role.id)
-                              ? (adventureData.roles as string[]).filter(r => r !== role.id)
-                              : [...(adventureData.roles as string[]), role.id]
+                            const currentRoles = adventureData.roles as string[] || []
+                            const roles = currentRoles.includes(role.id)
+                              ? currentRoles.filter(r => r !== role.id)
+                              : [...currentRoles, role.id]
                             setAdventureData({ ...adventureData, roles })
                           }}
                           whileHover={{ scale: 1.02 }}
@@ -1511,14 +2222,14 @@ export default function AdventureBuilderPage() {
                   </div>
 
                   {/* Selected Roles Summary */}
-                  {adventureData.roles.length > 0 && (
+                  {(adventureData.roles?.length || 0) > 0 && (
                     <motion.div 
                       className="p-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                     >
                       <div className="text-emerald-200 font-semibold mb-2">
-                        ✅ {adventureData.roles.length} roles selected
+                        ✅ {adventureData.roles?.length || 0} roles selected
                       </div>
                       <div className="text-emerald-300 text-sm mb-3">
                         Players will be able to choose from these roles when joining the adventure
@@ -1526,7 +2237,7 @@ export default function AdventureBuilderPage() {
                       
                       {/* Selected Roles List */}
                       <div className="flex flex-wrap gap-2">
-                        {adventureData.roles.map(roleId => {
+                        {(adventureData.roles || []).map(roleId => {
                           const role = allCharacters.find(r => r.id === roleId)
                           if (!role) return null
                           
@@ -1547,183 +2258,12 @@ export default function AdventureBuilderPage() {
                 </div>
               )}
 
-              {/* STEP 4: LOCATIONS & QR CODES */}
+              {/* STEP 4: ADVENTURE ACTIVITIES (NEW MODULAR DESIGN) */}
               {currentStep === 4 && (
-                <div className="space-y-8">
-                  <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-red-200 mb-3 flex items-center justify-center gap-3">
-                      <MapPin className="h-8 w-8" />
-                      Step 4: Locations & QR Codes
-                    </h2>
-                    <p className="text-slate-400">
-                      Set up physical locations and generate secure QR codes for your adventure
-                    </p>
-                  </div>
-
-                  {/* Adventure Flow Type Selection */}
-                  <div className="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-8">
-                    <h4 className="text-lg font-bold text-purple-200 mb-4 flex items-center gap-2">
-                      <Settings className="h-5 w-5" />
-                      Adventure Flow Type
-                    </h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {[
-                        {
-                          id: 'linear',
-                          name: 'Linear Adventure',
-                          description: 'Challenges unlock in sequence, one after another',
-                          icon: ArrowRight,
-                          color: 'amber'
-                        },
-                        {
-                          id: 'parallel',
-                          name: 'Parallel Adventure',
-                          description: 'Multiple challenges available simultaneously',
-                          icon: Users,
-                          color: 'emerald'
-                        },
-                        {
-                          id: 'hub',
-                          name: 'Hub Adventure',
-                          description: 'Central location with branching paths',
-                          icon: Target,
-                          color: 'purple'
-                        }
-                      ].map((type) => {
-                        const Icon = type.icon
-                        const isSelected = adventureData.adventureType === type.id
-                        
-                        return (
-                          <button
-                            key={type.id}
-                            onClick={() => updateAdventureData({
-                              ...adventureData,
-                              adventureType: type.id as 'linear' | 'parallel' | 'hub'
-                            })}
-                            className={`p-4 rounded-lg border transition-all duration-200 text-left ${
-                              isSelected
-                                ? `border-${type.color}-400 bg-${type.color}-500/20 ring-2 ring-${type.color}-500/20`
-                                : 'border-slate-600 bg-slate-800/40 hover:border-slate-500'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 mb-2">
-                              <Icon className={`h-5 w-5 ${
-                                isSelected ? `text-${type.color}-300` : 'text-slate-400'
-                              }`} />
-                              <span className={`font-semibold ${
-                                isSelected ? `text-${type.color}-200` : 'text-slate-200'
-                              }`}>
-                                {type.name}
-                              </span>
-                            </div>
-                            <p className="text-slate-400 text-sm">{type.description}</p>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Location Builder */}
-                  <LocationBuilder
-                    locations={adventureData.locations}
-                    onLocationsChange={(locations) => updateAdventureData({
-                      ...adventureData,
-                      locations
-                    })}
-                    maxLocations={20}
-                    enableGeofencing={true}
-                  />
-
-                  {/* QR Generator */}
-                  {adventureData.locations.length > 0 && (
-                    <QRGenerator
-                      locations={adventureData.locations}
-                      adventureId={adventureData.id || crypto.randomUUID()}
-                      onQRCodesGenerated={(qrCodes) => updateAdventureData({
-                        ...adventureData,
-                        qrCodes,
-                        id: adventureData.id || crypto.randomUUID()
-                      })}
-                      existingQRCodes={adventureData.qrCodes}
-                    />
-                  )}
-
-                  {/* Challenge Types Selection */}
-                  {adventureData.locations.length > 0 && (
-                    <div className="p-6 rounded-xl border border-blue-500/30 bg-blue-500/5">
-                      <h4 className="text-lg font-bold text-blue-200 mb-4 flex items-center gap-2">
-                        <Target className="h-5 w-5" />
-                        Challenge Types
-                      </h4>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {challengeTypes.map((challenge) => {
-                          const Icon = challenge.icon
-                          
-                          return (
-                            <motion.button
-                              key={challenge.id}
-                              onClick={() => {
-                                const challenges = adventureData.challengeTypes.includes(challenge.id)
-                                  ? adventureData.challengeTypes.filter(c => c !== challenge.id)
-                                  : [...adventureData.challengeTypes, challenge.id]
-                                updateAdventureData({ ...adventureData, challengeTypes: challenges })
-                              }}
-                              className={`p-4 rounded-lg border transition-all duration-200 text-left ${
-                                adventureData.challengeTypes.includes(challenge.id)
-                                  ? `border-${challenge.color}-400 bg-${challenge.color}-500/10`
-                                  : 'border-slate-600 bg-slate-800/40 hover:border-slate-500'
-                              }`}
-                              whileHover={{ scale: 1.02 }}
-                            >
-                              <div className="flex items-center gap-3 mb-2">
-                                <Icon className={`h-5 w-5 text-${challenge.color}-400`} />
-                                <span className="font-semibold text-slate-200">{challenge.name}</span>
-                              </div>
-                              <p className="text-slate-400 text-sm">{challenge.description}</p>
-                            </motion.button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Challenge-Location Mapper */}
-                  {adventureData.challengeTypes.length > 0 && adventureData.locations.length > 0 && (
-                    <ChallengeLocationMapper
-                      challenges={adventureData.challengeTypes.map(typeId => {
-                        const challengeType = challengeTypes.find(ct => ct.id === typeId)
-                        return {
-                          id: crypto.randomUUID(),
-                          type: typeId as any,
-                          title: challengeType?.name || typeId,
-                          description: challengeType?.description || '',
-                          difficulty: 'medium' as const,
-                          points: 10,
-                          isOptional: false
-                        }
-                      })}
-                      locations={adventureData.locations}
-                      mappings={adventureData.challengeLocationMappings}
-                      onMappingsChange={(mappings) => updateAdventureData({
-                        ...adventureData,
-                        challengeLocationMappings: mappings
-                      })}
-                      adventureType={adventureData.adventureType}
-                    />
-                  )}
-
-                  {/* QR Export Package */}
-                  {adventureData.qrCodes.length > 0 && (
-                    <QRExporter
-                      locations={adventureData.locations}
-                      qrCodes={adventureData.qrCodes}
-                      adventureTitle={adventureData.title}
-                      adventureId={adventureData.id}
-                    />
-                  )}
-                </div>
+                <AdventureActivitiesBuilder 
+                  adventureData={adventureData}
+                  updateAdventureData={updateAdventureData}
+                />
               )}
 
               {/* STEP 5: PREMIOS Y SEGURIDAD */}
@@ -1874,10 +2414,15 @@ export default function AdventureBuilderPage() {
             
             {currentStep === 5 ? (
               <button 
-                onClick={handleCreateAdventure}
-                disabled={!adventureData.title.trim() || !adventureData.theme || isCreatingAdventure}
+                onClick={() => {
+                  handleCreateAdventure().catch(error => {
+                    console.error('Error creating adventure:', error)
+                    alert('Adventure creation failed. Please try again.')
+                  })
+                }}
+                disabled={!adventureData.title?.trim() || !adventureData.theme || isCreatingAdventure}
                 className={`w-full sm:w-auto px-8 py-3 text-lg font-bold shadow-xl transition-all min-h-[44px] ${
-                  !adventureData.title.trim() || !adventureData.theme || isCreatingAdventure
+                  !adventureData.title?.trim() || !adventureData.theme || isCreatingAdventure
                     ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                     : 'btn-primary hover:shadow-emerald-500/40'
                 }`}
@@ -1897,9 +2442,9 @@ export default function AdventureBuilderPage() {
             ) : (
               <button
                 onClick={nextStep}
-                disabled={currentStep === 1 && !adventureData.title.trim()}
+                disabled={currentStep === 1 && !adventureData.title?.trim()}
                 className={`w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all min-h-[44px] ${
-                  currentStep === 1 && !adventureData.title.trim()
+                  currentStep === 1 && !adventureData.title?.trim()
                     ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                     : 'btn-primary'
                 }`}
@@ -1925,7 +2470,7 @@ export default function AdventureBuilderPage() {
               </h3>
               
               {/* Title Preview */}
-              {adventureData.title && (
+              {isHydrated && adventureData.title && (
                 <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20">
                   <div className="text-slate-400 text-sm mb-2">Adventure Title</div>
                   <div className="text-2xl font-bold text-amber-300">{adventureData.title}</div>
@@ -1950,14 +2495,14 @@ export default function AdventureBuilderPage() {
                 <div>
                   <div className="text-slate-500">Roles</div>
                   <div className="text-slate-200 font-semibold">
-                    {adventureData.roles.length} available
+                    {adventureData.roles?.length || 0} available
                   </div>
                 </div>
                 
                 <div>
                   <div className="text-slate-500">Challenges</div>
                   <div className="text-slate-200 font-semibold">
-                    {adventureData.challengeTypes.length} types
+                    {(adventureData.challenges?.length || 0)} challenges
                   </div>
                 </div>
                 
@@ -2008,11 +2553,11 @@ export default function AdventureBuilderPage() {
                     </div>
 
                     {/* Custom Themes */}
-                    {adventureData.customThemes.length > 0 && (
+                    {(adventureData.customThemes?.length || 0) > 0 && (
                       <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
                         <div className="text-xs text-purple-400 mb-2">Custom AI Themes Generated</div>
                         <div className="space-y-2">
-                          {adventureData.customThemes.map((theme, index) => (
+                          {(adventureData.customThemes || []).map((theme, index) => (
                             <div key={index} className="flex items-center gap-2 text-sm">
                               <span className="text-purple-300">🤖</span>
                               <span className="text-slate-300">{theme.name}</span>
@@ -2044,6 +2589,30 @@ export default function AdventureBuilderPage() {
                           Framework: <span className="text-slate-300">{adventureData.storyFramework}</span>
                         </div>
                       )}
+
+                      {/* Selected Premade Story Image */}
+                      {adventureData.narrative && adventureData.storyType === 'premade' && (() => {
+                        const selectedStory = allPremadeStories.find(story => story.id === adventureData.narrative)
+                        if (selectedStory && selectedStory.image) {
+                          return (
+                            <div className="mt-3">
+                              <div className="text-xs text-slate-400 mb-2">Story Preview</div>
+                              <div className="relative w-full h-24 rounded-lg overflow-hidden">
+                                <img
+                                  src={selectedStory.image}
+                                  alt={selectedStory.title}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                <div className="absolute bottom-2 left-2 right-2">
+                                  <div className="text-white text-xs font-medium truncate">{selectedStory.title}</div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        }
+                        return null
+                      })()}
                     </div>
 
                     {/* AI Generated Story Details */}
@@ -2067,14 +2636,14 @@ export default function AdventureBuilderPage() {
                 )}
 
                 {/* Roles Details */}
-                {adventureData.roles.length > 0 && (
+                {(adventureData.roles?.length || 0) > 0 && (
                   <div className="space-y-4">
                     <h4 className="text-md font-semibold text-slate-300 border-b border-slate-700 pb-2">Characters & Roles</h4>
                     
                     <div className="p-4 bg-slate-800/40 rounded-lg">
-                      <div className="text-xs text-slate-400 mb-3">Selected Roles ({adventureData.roles.length})</div>
+                      <div className="text-xs text-slate-400 mb-3">Selected Roles ({adventureData.roles?.length || 0})</div>
                       <div className="flex flex-wrap gap-2">
-                        {adventureData.roles.map(roleId => {
+                        {(adventureData.roles || []).map(roleId => {
                           const role = allCharacters.find(r => r.id === roleId)
                           if (!role) return null
                           
@@ -2093,11 +2662,11 @@ export default function AdventureBuilderPage() {
                     </div>
 
                     {/* Custom Characters */}
-                    {adventureData.customCharacters.length > 0 && (
+                    {(adventureData.customCharacters?.length || 0) > 0 && (
                       <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
                         <div className="text-xs text-purple-400 mb-2">Custom AI Characters Created</div>
                         <div className="space-y-2">
-                          {adventureData.customCharacters.map((char, index) => (
+                          {(adventureData.customCharacters || []).map((char, index) => (
                             <div key={index} className="flex items-center gap-2 text-sm">
                               <span className="text-2xl">{char.emoji}</span>
                               <div>
@@ -2113,23 +2682,22 @@ export default function AdventureBuilderPage() {
                 )}
 
                 {/* Challenges Details */}
-                {adventureData.challengeTypes.length > 0 && (
+                {(adventureData.challenges?.length || 0) > 0 && (
                   <div className="space-y-4">
                     <h4 className="text-md font-semibold text-slate-300 border-b border-slate-700 pb-2">Challenges & Activities</h4>
                     
                     <div className="p-4 bg-slate-800/40 rounded-lg">
                       <div className="text-xs text-slate-400 mb-3">Selected Challenge Types</div>
                       <div className="space-y-2">
-                        {adventureData.challengeTypes.map(challengeId => {
-                          const challenge = challengeTypes.find(c => c.id === challengeId)
+                        {(adventureData.challenges || []).map((challenge: any, index: number) => {
                           if (!challenge) return null
                           
                           return (
-                            <div key={challengeId} className="flex items-center gap-3">
-                              <challenge.icon className={`h-4 w-4 text-${challenge.color}-400`} />
+                            <div key={challenge.id || index} className="flex items-center gap-3">
+                              <div className="w-4 h-4 bg-purple-500 rounded-sm"></div>
                               <div>
-                                <div className="text-slate-300 text-sm font-medium">{challenge.name}</div>
-                                <div className="text-xs text-slate-500">{challenge.description}</div>
+                                <div className="text-slate-300 text-sm font-medium">{challenge.name || `Challenge ${index + 1}`}</div>
+                                <div className="text-xs text-slate-500">{challenge.type || 'Unknown'} • {challenge.difficulty || 'medium'} • {challenge.points || 0} pts</div>
                               </div>
                             </div>
                           )
@@ -2369,6 +2937,25 @@ export default function AdventureBuilderPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Adventure Creation Celebration Modal */}
+      {createdAdventure && (
+        <AdventureCelebrationModal
+          isOpen={showCelebrationModal}
+          onClose={() => setShowCelebrationModal(false)}
+          adventureTitle={createdAdventure.title}
+          adventureId={createdAdventure.id}
+          status={createdAdventure.status}
+          onViewDashboard={() => {
+            setShowCelebrationModal(false)
+            window.location.href = '/dashboard'
+          }}
+        />
+      )}
     </div>
   )
+}
+
+export default function AdventureBuilderPage() {
+  return <AdventureBuilderPageContent />
 }

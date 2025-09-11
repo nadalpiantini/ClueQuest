@@ -214,7 +214,7 @@ test.describe('Authentication Flows - Comprehensive Testing', () => {
         await helpers.verifyTouchTarget(socialButton);
         
         // Test hover effect (desktop only)
-        if (!page.context().options.isMobile) {
+        if (!page.viewportSize() || page.viewportSize()!.width > 768) {
           await socialButton.hover();
           await page.waitForTimeout(300);
         }
@@ -377,7 +377,7 @@ test.describe('Authentication Flows - Comprehensive Testing', () => {
 
   test.describe('Mobile Authentication UX', () => {
     test('should be optimized for mobile keyboards', async ({ page }) => {
-      if (page.context().options.isMobile) {
+      if (page.viewportSize() && page.viewportSize()!.width <= 768) {
         await helpers.navigateAndVerify('/login');
         
         const emailField = page.locator('input[type="email"]');
@@ -410,7 +410,7 @@ test.describe('Authentication Flows - Comprehensive Testing', () => {
     });
 
     test('should have proper touch targets for mobile', async ({ page }) => {
-      if (page.context().options.isMobile) {
+      if (page.viewportSize() && page.viewportSize()!.width <= 768) {
         await helpers.navigateAndVerify('/login');
         
         // Test all interactive authentication elements
@@ -429,7 +429,7 @@ test.describe('Authentication Flows - Comprehensive Testing', () => {
     });
 
     test('should handle mobile keyboard covering inputs', async ({ page }) => {
-      if (page.context().options.isMobile) {
+      if (page.viewportSize() && page.viewportSize()!.width <= 768) {
         await helpers.navigateAndVerify('/login');
         
         const passwordField = page.locator('input[type="password"]');

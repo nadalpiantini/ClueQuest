@@ -10,7 +10,7 @@ The error "Error creating adventure: Database connection failed" occurs because 
 
 1. Go to [https://supabase.com](https://supabase.com)
 2. Sign in with your account
-3. Select your project: `josxxqkdnvqodxvtjgov`
+3. Select your ClueQuest project
 4. Navigate to **SQL Editor** in the left sidebar
 
 ### **Step 2: Run Migration 1 - Initial Schema**

@@ -49,6 +49,15 @@ const DEV_ROUTES: DevRoute[] = [
     color: 'amber'
   },
   {
+    id: 'kb-admin',
+    label: '🧠 Knowledge Base',
+    path: '/admin/kb',
+    icon: BarChart3,
+    description: 'Manage KB sources and test RAG system',
+    category: 'tool',
+    color: 'purple'
+  },
+  {
     id: 'guest-game',
     label: '🕵️ Guest Game Panel',
     path: '/join?dev=guest&code=DEMO01&name=DevGuest',
@@ -195,6 +204,7 @@ export default function DevNavigationPanel() {
     setIsMounted(true)
   }, [])
 
+  // Don't render anything until mounted
   if (!isMounted) {
     return null
   }

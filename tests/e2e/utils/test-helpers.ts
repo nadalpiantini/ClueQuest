@@ -183,7 +183,7 @@ export class TestHelpers {
       const lcp = paintEntries.find(entry => entry.name === 'largest-contentful-paint')?.startTime || 0;
       
       return {
-        loadTime: navigation.loadEventEnd - navigation.navigationStart,
+        loadTime: navigation.loadEventEnd - navigation.fetchStart,
         firstContentfulPaint: fcp,
         largestContentfulPaint: lcp,
       };

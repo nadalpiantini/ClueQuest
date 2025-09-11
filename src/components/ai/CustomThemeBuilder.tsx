@@ -409,7 +409,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
 
                       <div>
                         <label className="block text-sm font-semibold text-slate-300 mb-3">
-                          Audiencia objetivo
+                          Target Audience
                         </label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {audienceOptions.map((audience) => (
@@ -559,7 +559,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                       ) : (
                         <div className="text-center py-12">
                           <AIGenerating 
-                            message="Generando tu tema personalizado..."
+                            message="Generating your custom theme..."
                             size="md"
                             className="text-purple-300"
                           />
@@ -577,7 +577,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                   disabled={isGenerating}
                   className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-slate-200 rounded-lg font-medium transition-colors"
                 >
-                  {step === 1 ? 'Cancelar' : 'Anterior'}
+                  {step === 1 ? 'Cancel' : 'Previous'}
                 </button>
 
                 <div className="flex items-center gap-3">
@@ -593,16 +593,16 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                       {step === 2 && isGenerating ? (
                         <>
                           <Sparkles className="h-4 w-4 animate-spin" />
-                          Generando...
+                          Generating...
                         </>
                       ) : step === 2 ? (
                         <>
                           <Wand2 className="h-4 w-4" />
-                          Generar Tema
+                          Generate Theme
                         </>
                       ) : (
                         <>
-                          Siguiente
+                          Next
                           <Zap className="h-4 w-4" />
                         </>
                       )}
@@ -614,7 +614,7 @@ export default function CustomThemeBuilder({ onThemeGenerated, selectedTheme }: 
                         className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg font-semibold transition-all"
                       >
                         <Download className="h-4 w-4" />
-                        Usar Este Tema
+                        Use This Theme
                       </button>
                     )
                   )}

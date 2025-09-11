@@ -1,0 +1,88 @@
+/* Touch Target Compliance - WCAG 2.1 AA */
+/* Mínimo 44x44px para elementos interactivos */
+
+/* Botones base */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+/* Botones gaming específicos */
+.gaming-button {
+  min-height: 48px; /* Más grande para gaming */
+  min-width: 48px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+/* Botones de navegación */
+.nav-button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+}
+
+/* Botones de acción crítica */
+.cta-button {
+  min-height: 52px; /* Más grande para CTAs */
+  min-width: 52px;
+  padding: 14px 24px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+/* Elementos de formulario */
+.form-control {
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 16px; /* Previene zoom en iOS */
+}
+
+/* Links y elementos clickeables */
+.clickable {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+/* Iconos interactivos */
+.interactive-icon {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gaming-button {
+    min-height: 52px;
+    min-width: 52px;
+    padding: 14px 22px;
+    font-size: 18px;
+  }
+  
+  .cta-button {
+    min-height: 56px;
+    min-width: 56px;
+    padding: 16px 26px;
+    font-size: 20px;
+  }
+}

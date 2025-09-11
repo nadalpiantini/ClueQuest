@@ -8,7 +8,7 @@ interface PerformanceMetric {
   name: string
   value: number
   timestamp: number
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 }
 
 interface WebVital {

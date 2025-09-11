@@ -48,7 +48,7 @@ npm run dev
 - **Perfect Responsive**: 320px → 4K+ screen support
 - **44px Touch Targets**: WCAG 2.1 AA compliance
 - **Safe Area Support**: Notched device optimization
-- **Modal Centering**: Flexbox-based solution (AXIS6 proven)
+- **Modal Centering**: Flexbox-based solution (ClueQuest proven)
 - **Touch Animations**: Hardware-accelerated feedback
 
 ### ⚡ Performance (70% Improvement)
@@ -262,7 +262,7 @@ npm run test:e2e          # Full functionality validation
 
 ### Development Guidelines
 1. **Mobile-First**: Design for mobile, enhance for desktop
-2. **Performance**: Use proven optimization patterns from AXIS6
+2. **Performance**: Use proven optimization patterns from ClueQuest
 3. **Security**: Never compromise security for convenience  
 4. **Testing**: All new features must include E2E tests
 5. **Documentation**: Update relevant docs with changes

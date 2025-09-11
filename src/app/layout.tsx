@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import '../styles/touch-targets.css'
 import { BodyWrapper } from '@/components/layout/body-wrapper'
 import { DemoAuthProvider } from '@/components/auth/demo-auth-provider'
-import DevNavigationPanel from '@/components/dev/dev-navigation-panel'
+// Dev navigation temporarily disabled to test auth system
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -93,15 +94,17 @@ export default function RootLayout({
     <html lang="en" className={inter.variable} data-scroll-behavior="smooth">
       <head>
         {/* Permissions Policy for Geolocation */}
-        <meta httpEquiv="Permissions-Policy" content="geolocation=*" />
+        <meta httpEquiv="Permissions-Policy" content="geolocation=(self)" />
         
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
         {/* Favicons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        {/* Note: Icon files are not yet created - will be added in production */}
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="16x16" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
+        <link rel="shortcut icon" href="/favicon.png" />
         
         {/* Performance hints */}
         <link rel="dns-prefetch" href="https://vercel.live" />
@@ -139,14 +142,16 @@ export default function RootLayout({
           </DemoAuthProvider>
         </div>
         
-        {/* Dev Navigation Panel - Only in development */}
-        <DevNavigationPanel />
+        {/* Dev Navigation Panel - Temporarily disabled to test auth system */}
+        {/* {process.env.NODE_ENV === 'development' && (
+          <DevNavigationWrapper />
+        )} */}
         
         {/* Analytics - Add your tracking code here */}
         {process.env.NODE_ENV === 'production' && process.env.VERCEL && (
           <>
             {/* Vercel Analytics - Only load if on Vercel */}
-            <script async src="https://cdn.vercel-insights.com/v1/script.js" />
+            <script async src="https://va.vercel-scripts.com/v1/script.debug.js" />
             
             {/* Google Analytics - Replace with your GA4 ID */}
             {process.env.NEXT_PUBLIC_GA_ID && (

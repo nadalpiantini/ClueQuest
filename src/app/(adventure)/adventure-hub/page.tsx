@@ -185,7 +185,7 @@ function AdventureHubContent() {
             lng: position.coords.longitude
           })
         },
-        { enableHighAccuracy: true, maximumAge: 30000 }
+        { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
       )
 
       // Cleanup on unmount

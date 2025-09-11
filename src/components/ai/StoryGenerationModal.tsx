@@ -62,13 +62,20 @@ interface StoryGenerationModalProps {
   onClose: () => void
   onStoryApprove: (story: string) => void
   adventureData: AdventureData
+  // New KB integration props
+  inspirationTags?: string[]
+  knowledgeBaseEnabled?: boolean
+  organizationId?: string
 }
 
 export default function StoryGenerationModal({
   isOpen,
   onClose,
   onStoryApprove,
-  adventureData
+  adventureData,
+  inspirationTags = [],
+  knowledgeBaseEnabled = false,
+  organizationId
 }: StoryGenerationModalProps) {
   const [currentGeneration, setCurrentGeneration] = useState<StoryGeneration | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -112,7 +119,12 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
           story_tone: storyTone,
           target_audience: targetAudience,
           quality_level: qualityLevel,
-          component_type: 'full_story'
+          component_type: 'full_story',
+          // New KB integration
+          useKnowledgeBase: knowledgeBaseEnabled,
+          organizationId: organizationId,
+          specificElements: inspirationTags,
+          originalityLevel: 'strict'
         }),
       })
 
@@ -242,14 +254,17 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 border-amber-500/20">
+      <DialogContent 
+        size="full" 
+        className="max-h-[95vh] overflow-hidden flex flex-col bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 border-amber-500/20 w-[95vw] max-w-6xl mx-auto"
+      >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-amber-200 flex items-center gap-3">
-            <Sparkles className="h-6 w-6 text-amber-400" />
-            AI Story Generator
+          <DialogTitle className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 flex items-center gap-3">
+            <Sparkles className="h-8 w-8 text-purple-400 animate-pulse" />
+            🎭 AI Story Generator
           </DialogTitle>
-          <DialogDescription className="text-slate-300">
-            Generate an engaging narrative for your adventure using AI
+          <DialogDescription className="text-slate-300 text-lg">
+            ✨ Create a captivating narrative for your adventure using artificial intelligence
           </DialogDescription>
         </DialogHeader>
 
@@ -302,51 +317,54 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
                   {/* Generation Prompt */}
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Story Prompt
+                      🎯 What type of story do you want to create?
                     </label>
                     <Textarea
                       value={generationPrompt}
                       onChange={(e) => setGenerationPrompt(e.target.value)}
-                      placeholder="Describe the kind of story you want to generate..."
-                      className="min-h-[100px] bg-slate-900/80 border-slate-600 text-slate-200 placeholder:text-slate-500 focus:border-amber-500"
+                      placeholder="Describe your vision: What type of adventure do you want? What challenges should it include? What atmosphere or mood do you prefer? Any specific elements that should appear?"
+                      className="min-h-[120px] bg-slate-900/80 border-slate-600 text-slate-200 placeholder:text-slate-500 focus:border-amber-500 text-sm leading-relaxed"
                     />
+                    <div className="mt-2 text-xs text-slate-500">
+                      💡 <strong>Examples:</strong> "A detective adventure in a museum with hidden clues" or "A treasure hunt on a mysterious island with math puzzles"
+                    </div>
                   </div>
 
                   {/* Story Settings */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Story Tone
+                        🎭 Story Tone
                       </label>
                       <Select value={storyTone} onValueChange={setStoryTone}>
                         <SelectTrigger className="bg-slate-900/80 border-slate-600 text-slate-200">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="adventurous">Adventurous</SelectItem>
-                          <SelectItem value="mysterious">Mysterious</SelectItem>
-                          <SelectItem value="educational">Educational</SelectItem>
-                          <SelectItem value="corporate">Corporate</SelectItem>
-                          <SelectItem value="fun">Fun & Light</SelectItem>
-                          <SelectItem value="dramatic">Dramatic</SelectItem>
+                          <SelectItem value="adventurous">🚀 Aventurero - Emocionante y dinámico</SelectItem>
+                          <SelectItem value="mysterious">🔍 Mysterious - Intriguing and enigmatic</SelectItem>
+                          <SelectItem value="educational">📚 Educational - Informative and didactic</SelectItem>
+                          <SelectItem value="corporate">💼 Corporate - Professional and structured</SelectItem>
+                          <SelectItem value="fun">😄 Fun - Light and entertaining</SelectItem>
+                          <SelectItem value="dramatic">🎭 Dramatic - Intense and emotional</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-slate-300 mb-2">
-                        Target Audience
+                        👥 Target Audience
                       </label>
                       <Select value={targetAudience} onValueChange={setTargetAudience}>
                         <SelectTrigger className="bg-slate-900/80 border-slate-600 text-slate-200">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="children">Children (8-12)</SelectItem>
-                          <SelectItem value="teens">Teenagers (13-17)</SelectItem>
-                          <SelectItem value="adults">Adults (18+)</SelectItem>
-                          <SelectItem value="professionals">Professionals</SelectItem>
-                          <SelectItem value="families">Mixed Families</SelectItem>
+                          <SelectItem value="children">🧒 Children (8-12 years)</SelectItem>
+                          <SelectItem value="teens">👦 Teens (13-17 years)</SelectItem>
+                          <SelectItem value="adults">👨 Adults (18+ years)</SelectItem>
+                          <SelectItem value="professionals">💼 Professionals</SelectItem>
+                          <SelectItem value="families">👨‍👩‍👧‍👦 Mixed families</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -354,18 +372,21 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
 
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Quality Level
+                      ⭐ Quality Level
                     </label>
                     <Select value={qualityLevel} onValueChange={setQualityLevel}>
                       <SelectTrigger className="bg-slate-900/80 border-slate-600 text-slate-200">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="draft">Draft (Fast & Basic)</SelectItem>
-                        <SelectItem value="standard">Standard (Balanced)</SelectItem>
-                        <SelectItem value="premium">Premium (High Quality)</SelectItem>
+                        <SelectItem value="draft">⚡ Draft - Quick and basic (15-30 sec)</SelectItem>
+                        <SelectItem value="standard">⭐ Standard - Balanced (30-45 sec)</SelectItem>
+                        <SelectItem value="premium">💎 Premium - High quality (45-60 sec)</SelectItem>
                       </SelectContent>
                     </Select>
+                    <div className="mt-2 text-xs text-slate-500">
+                      💡 <strong>Recommended:</strong> Standard for most cases
+                    </div>
                   </div>
 
                 </CardContent>
@@ -375,20 +396,25 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
               <Button
                 onClick={handleGenerateStory}
                 disabled={isGenerating || !generationPrompt.trim()}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 h-auto"
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-700 hover:via-pink-700 hover:to-amber-600 text-white font-bold py-4 h-auto text-lg shadow-2xl hover:shadow-purple-500/40 transition-all duration-300 hover:scale-105"
               >
                 {isGenerating ? (
                   <>
-                    <Wand2 className="h-5 w-5 mr-2 animate-spin" />
-                    Generating Story...
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3"></div>
+                    🎭 Generating your Story...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Generate Story
+                    <Sparkles className="h-6 w-6 mr-3" />
+                    ✨ Create Story with AI!
                   </>
                 )}
               </Button>
+              {!generationPrompt.trim() && (
+                <div className="text-center text-amber-400/80 text-sm mt-2">
+                  💡 Write your story idea above to begin
+                </div>
+              )}
             </div>
 
             {/* Right Panel - Generated Story Results */}
@@ -431,17 +457,32 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
 
                     {/* Generated Content */}
                     {currentGeneration.status === 'generating' && (
-                      <Card className="bg-slate-800/50 border-slate-600/30">
-                        <CardContent className="py-8">
-                          <div className="text-center">
-                            <AIGenerating 
-                              message="Crafting your adventure story..."
-                              size="lg"
-                              className="mb-4"
-                            />
-                            <p className="text-slate-500 text-sm mt-2">
-                              This usually takes 15-45 seconds
-                            </p>
+                      <Card className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 border-purple-500/30 shadow-2xl">
+                        <CardContent className="py-12">
+                          <div className="text-center space-y-6">
+                            <div className="relative">
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-20 h-20 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+                              </div>
+                              <Sparkles className="h-12 w-12 text-purple-400 mx-auto animate-pulse" />
+                            </div>
+                            <div className="space-y-2">
+                              <h3 className="text-xl font-bold text-purple-200">
+                                🎭 Generating your Story
+                              </h3>
+                              <p className="text-purple-300/80 text-lg">
+                                Our AI is creating a unique adventure for you...
+                              </p>
+                              <div className="flex items-center justify-center gap-2 text-purple-400/60 text-sm">
+                                <Clock className="h-4 w-4" />
+                                <span>This usually takes 15-45 seconds</span>
+                              </div>
+                            </div>
+                            <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/20">
+                              <p className="text-purple-200 text-sm">
+                                💡 <strong>Tip:</strong> While you wait, you can adjust the story parameters in the left panel
+                              </p>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -625,12 +666,29 @@ Make it suitable for ${adventureData.adventureType} settings with exciting chall
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-center py-12"
+                    className="text-center py-16"
                   >
-                    <Sparkles className="h-12 w-12 text-amber-400/50 mx-auto mb-4" />
-                    <p className="text-slate-400 text-lg">
-                      Configure your story settings and click "Generate Story" to begin
-                    </p>
+                    <div className="space-y-6">
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-24 h-24 border-4 border-purple-500/20 border-t-purple-500/40 rounded-full animate-pulse"></div>
+                        </div>
+                        <Sparkles className="h-16 w-16 text-purple-400 mx-auto animate-bounce" />
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="text-2xl font-bold text-purple-200">
+                          🎯 Ready to Create!
+                        </h3>
+                        <p className="text-purple-300/80 text-lg max-w-md mx-auto">
+                          Configure your story parameters in the left panel and click "Create Story with AI!" to begin
+                        </p>
+                        <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/20 max-w-lg mx-auto">
+                          <p className="text-purple-200 text-sm">
+                            💡 <strong>Tip:</strong> Be specific in your description to get better results
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

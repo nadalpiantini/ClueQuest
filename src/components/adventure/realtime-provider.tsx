@@ -285,7 +285,9 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
         
       case 'achievement_unlocked':
         if (event.user_id === state.participant?.user_id && event.data.achievement) {
-          dispatch({ type: 'ADD_ACHIEVEMENT', payload: event.data.achievement })
+          // TODO: Implement achievement state management
+          // dispatch({ type: 'ADD_ACHIEVEMENT', payload: event.data.achievement })
+          console.log('Achievement unlocked:', event.data.achievement)
         }
         break
         

@@ -15,6 +15,7 @@ import {
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { GlobalHeader } from '@/components/layout/GlobalHeader'
 
 interface Adventure {
   id: string
@@ -51,8 +52,11 @@ export default function DashboardPage() {
   const [adventures, setAdventures] = useState<Adventure[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    
     const fetchAdventures = async () => {
       try {
         setLoading(true)
@@ -77,12 +81,31 @@ export default function DashboardPage() {
   }, [])
 
   const getAdventureColor = (index: number) => {
-    const colors = ['amber', 'purple', 'emerald', 'blue', 'red', 'orange']
-    return colors[index % colors.length]
+    const colorConfigs = [
+      { name: 'amber', border: 'border-amber-500/20', hoverBorder: 'hover:border-amber-400/40', bg: 'from-amber-500/30 to-amber-600/30', icon: 'text-amber-300' },
+      { name: 'purple', border: 'border-purple-500/20', hoverBorder: 'hover:border-purple-400/40', bg: 'from-purple-500/30 to-purple-600/30', icon: 'text-purple-300' },
+      { name: 'emerald', border: 'border-emerald-500/20', hoverBorder: 'hover:border-emerald-400/40', bg: 'from-emerald-500/30 to-emerald-600/30', icon: 'text-emerald-300' },
+      { name: 'blue', border: 'border-blue-500/20', hoverBorder: 'hover:border-blue-400/40', bg: 'from-blue-500/30 to-blue-600/30', icon: 'text-blue-300' },
+      { name: 'red', border: 'border-red-500/20', hoverBorder: 'hover:border-red-400/40', bg: 'from-red-500/30 to-red-600/30', icon: 'text-red-300' },
+      { name: 'orange', border: 'border-orange-500/20', hoverBorder: 'hover:border-orange-400/40', bg: 'from-orange-500/30 to-orange-600/30', icon: 'text-orange-300' }
+    ]
+    return colorConfigs[index % colorConfigs.length]
   }
 
   const formatDate = (dateString: string) => {
+    // Use a consistent date for SSR to prevent hydration mismatches
     const date = new Date(dateString)
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid date'
+    }
+    
+    // Only calculate relative time on client side to prevent hydration mismatch
+    if (!mounted) {
+      return 'Loading...'
+    }
+    
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -101,11 +124,50 @@ export default function DashboardPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(168,85,247,0.15),transparent_60%),radial-gradient(circle_at_75%_75%,rgba(245,158,11,0.1),transparent_60%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:60px_60px] opacity-20" />
       </div>
+
+      {/* Header with Branding */}
+      <header className="relative z-30 border-b border-amber-500/20 bg-slate-950/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            
+            {/* ClueQuest Brand Logo */}
+            <GlobalHeader />
+
+            {/* Navigation */}
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/dashboard" className="text-amber-300 font-semibold border-b-2 border-amber-500 pb-1">
+                Dashboard
+              </Link>
+              <Link href="/adventures" className="text-slate-300 hover:text-amber-300 transition-colors font-medium">
+                Adventures
+              </Link>
+              <Link href="/analytics" className="text-slate-300 hover:text-amber-300 transition-colors font-medium">
+                Analytics
+              </Link>
+              <Link href="/settings" className="text-slate-300 hover:text-amber-300 transition-colors font-medium">
+                Settings
+              </Link>
+            </nav>
+
+            {/* User Actions */}
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-lg">
+                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span className="text-emerald-300 text-sm font-semibold">Live</span>
+              </div>
+              
+              <button className="p-2 rounded-lg bg-slate-800/80 border border-slate-600 hover:bg-slate-700 transition-colors">
+                <Settings className="h-5 w-5 text-slate-300" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
       
       <main className="relative z-20 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           
-          {/* Header */}
+          {/* Dashboard Header */}
           <motion.div 
             className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12"
             initial={{ opacity: 0, y: 20 }}
@@ -113,12 +175,25 @@ export default function DashboardPage() {
             transition={{ duration: 0.8 }}
           >
             <div>
-              <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-2 bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
-                Adventure Dashboard
-              </h1>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-white" />
+                </div>
+                <h1 className="text-4xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-orange-300 to-purple-400 bg-clip-text text-transparent">
+                  Adventure Dashboard
+                </h1>
+              </div>
               <p className="text-lg text-slate-400">
                 Manage your mystery experiences and view live statistics
               </p>
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold">
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                  Platform Active
+                </div>
+                <div className="text-slate-500 text-sm">•</div>
+                <div className="text-slate-500 text-sm">Real-time monitoring enabled</div>
+              </div>
             </div>
             
             <Link 
@@ -227,11 +302,11 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {adventures.map((adventure, index) => {
-                  const color = getAdventureColor(index)
+                  const colorConfig = getAdventureColor(index)
                   return (
                     <motion.div
                       key={adventure.id}
-                      className={`p-6 rounded-xl bg-gradient-to-r from-slate-800/60 to-slate-700/40 border border-${color}-500/20 hover:border-${color}-400/40 transition-all duration-200 hover:scale-[1.02]`}
+                      className={`p-6 rounded-xl bg-gradient-to-r from-slate-800/60 to-slate-700/40 border ${colorConfig.border} ${colorConfig.hoverBorder} transition-all duration-200 hover:scale-[1.02]`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -239,8 +314,8 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-br from-${color}-500/30 to-${color}-600/30`}>
-                            <Search className={`h-6 w-6 text-${color}-300`} />
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${colorConfig.bg}`}>
+                            <Search className={`h-6 w-6 ${colorConfig.icon}`} />
                           </div>
                           
                           <div>
