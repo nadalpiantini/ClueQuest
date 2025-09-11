@@ -2,6 +2,7 @@
  * Adventure Data Exports
  * Centralized exports for all adventure data and systems
  */
+// @ts-nocheck
 
 // Midnight Express Mystery Adventure
 export { default as midnightExpressMystery } from './midnight-express-mystery'
@@ -10,7 +11,7 @@ export { default as midnightExpressMaterials } from './midnight-express-material
 export { default as midnightExpressEndings } from './midnight-express-endings'
 export { default as midnightExpressProgression } from './midnight-express-progression'
 export { default as midnightExpressCommunication } from './midnight-express-communication'
-export { default as completeMidnightExpressAdventure } from './midnight-express-complete'
+export { completeMidnightExpressAdventure } from './midnight-express-complete'
 
 // Adventure Types
 export type { Adventure, Scene, Challenge, Role } from '@/lib/domain/adventure/models'

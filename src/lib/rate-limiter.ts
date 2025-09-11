@@ -14,28 +14,11 @@ let redisClient: Redis | null = null
  */
 function getRedisClient(): Redis {
   if (!redisClient) {
-    redisClient = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      password: process.env.REDIS_PASSWORD,
-      db: parseInt(process.env.REDIS_DB || '0'),
-      
-      // Connection settings
+    const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || '6379'}`
+    redisClient = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
-      retryDelayOnFailover: 100,
       enableReadyCheck: false,
-      maxLoadingTimeout: 1000,
-      
-      // Connection pool settings
-      family: 4,
-      keepAlive: true,
-      lazyConnect: true,
-      
-      // Error handling
-      retryStrategy: (times: number) => {
-        const delay = Math.min(times * 50, 2000)
-        return delay
-      }
+      lazyConnect: true
     })
 
     // Handle Redis connection errors

@@ -135,7 +135,7 @@ export function AccessibleAdventureControls({
           <GamingButton
             onClick={() => setIsOpen(!isOpen)}
             variant="ghost"
-            size="touch"
+            size="lg"
             className="rounded-full shadow-lg bg-slate-800/90 backdrop-blur-sm"
             aria-label="Open accessibility controls (Alt + A)"
             aria-expanded={isOpen}

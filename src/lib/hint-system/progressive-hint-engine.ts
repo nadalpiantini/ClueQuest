@@ -428,7 +428,7 @@ export class ProgressiveHintEngine {
     session.hintsUsed++
     session.availableResources -= cost
     session.hintHistory.push({
-      hintId: hint.hintId,
+      hintId: (hint as any).hintId,
       level: hint.level,
       cost: cost,
       timestamp: new Date(),

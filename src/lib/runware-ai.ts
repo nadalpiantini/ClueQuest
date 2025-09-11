@@ -106,7 +106,7 @@ export class RunwareAIClient {
         model: 'runware:101@1', // FLUX.1 [pro] model
         model_id: modelConfig.model_id,
         mode: 'img2img',
-        positivePrompt: modelConfig.prompt,
+        positivePrompt: modelConfig.prompt_template,
         negativePrompt: modelConfig.negative_prompt,
         width: 1024,
         height: 1024,

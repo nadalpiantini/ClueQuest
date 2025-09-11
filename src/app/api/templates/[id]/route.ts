@@ -64,7 +64,7 @@ export async function GET(
         time_pressure_config,
         is_active
       `)
-      .eq('adventure_id', template.id)
+      .eq('adventure_id', (template as any).id)
       .order('order_index')
 
     // Get template roles
@@ -85,7 +85,7 @@ export async function GET(
         team_leader,
         solo_only
       `)
-      .eq('adventure_id', template.id)
+      .eq('adventure_id', (template as any).id)
 
     // Get template analytics
     const { data: analytics, error: analyticsError } = await supabase
@@ -137,21 +137,22 @@ export async function GET(
 
     // Get performance metrics using the function
     const { data: performanceMetrics, error: performanceError } = await supabase
-      .rpc('get_template_performance', { p_template_id: templateId })
+      .rpc('get_template_performance', { p_template_id: templateId } as any)
 
     // Parse template metadata for better structure
     let parsedMetadata = {}
     try {
-      parsedMetadata = typeof template.template_metadata === 'string' 
-        ? JSON.parse(template.template_metadata)
-        : template.template_metadata || {}
+      const templateData = template as any
+      parsedMetadata = typeof templateData.template_metadata === 'string' 
+        ? JSON.parse(templateData.template_metadata)
+        : templateData.template_metadata || {}
     } catch (e) {
       console.warn('Could not parse template metadata:', e)
     }
 
     // Structure the response
     const templateDetails = {
-      ...template,
+      ...(template as any),
       template_metadata: parsedMetadata,
       scenes: scenes || [],
       roles: roles || [],
@@ -159,7 +160,7 @@ export async function GET(
       analytics: analytics || {
         instantiation_count: 0,
         completion_rate: 0,
-        average_duration_minutes: template.estimated_duration,
+        average_duration_minutes: (template as any).estimated_duration,
         average_rating: 0,
         player_satisfaction_score: 0,
         difficulty_effectiveness: 0,
@@ -173,7 +174,7 @@ export async function GET(
         instantiation_count: 0,
         avg_completion_rate: 0,
         avg_rating: 0,
-        avg_duration_minutes: template.estimated_duration,
+        avg_duration_minutes: (template as any).estimated_duration,
         total_participants: 0
       }
     }
@@ -249,9 +250,10 @@ async function handleTemplateReview(supabase: any, templateId: string, userId: s
     recommended_for = [],
     difficulty_rating,
     engagement_score,
-    replay_value,
-    organization_id
+    replay_value
   } = body
+  
+  let { organization_id } = body
 
   if (!rating || rating < 1 || rating > 5) {
     return NextResponse.json(

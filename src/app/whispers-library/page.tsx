@@ -1,26 +1,21 @@
 'use client';
 
-import { } from 'react';
 import WhispersLibraryAdventure from '@/components/adventures/whispers-library/WhispersLibraryAdventure';
 
 export default function WhispersLibraryPage() {
   const handleAdventureComplete = (score: number, time: number) => {
-    console.log(`Adventure completed! Score: ${score}, Time: ${time} seconds`);
-    // Here you would typically save the results to a database
-    // or show a completion screen
+    console.log('Adventure completed!', { score, time });
+    alert(`¡Aventura completada!\nPuntuación: ${score}\nTiempo: ${Math.floor(time / 60)} minutos y ${time % 60} segundos`);
   };
 
   const handleSceneComplete = (sceneNumber: number, score: number) => {
-    console.log(`Scene ${sceneNumber} completed with score: ${score}`);
-    // Here you would typically update progress tracking
+    console.log('Scene completed!', { sceneNumber, score });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-amber-100">
-      <WhispersLibraryAdventure
-        onAdventureComplete={handleAdventureComplete}
-        onSceneComplete={handleSceneComplete}
-      />
-    </div>
+    <WhispersLibraryAdventure
+      onAdventureComplete={handleAdventureComplete}
+      onSceneComplete={handleSceneComplete}
+    />
   );
 }

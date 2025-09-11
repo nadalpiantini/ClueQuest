@@ -73,27 +73,27 @@ export async function GET(request: NextRequest) {
         .select('template_id')
         .in('tag_name', tags)
 
-      const templateIdsWithTags = new Set(templateTags?.map(t => t.template_id) || [])
+      const templateIdsWithTags = new Set(templateTags?.map((t: any) => t.template_id) || [])
       filteredTemplates = filteredTemplates.filter(template => 
-        templateIdsWithTags.has(template.template_id)
+        templateIdsWithTags.has((template as any).template_id)
       )
     }
 
     // Get template analytics for each template
-    const templateIds = filteredTemplates.map(t => t.template_id)
+    const templateIds = filteredTemplates.map((t: any) => t.template_id)
     const { data: analytics } = await supabase
       .from('cluequest_template_analytics')
       .select('template_id, instantiation_count, average_rating, completion_rate')
       .in('template_id', templateIds)
 
     const analyticsMap = new Map(
-      analytics?.map(a => [a.template_id, a]) || []
+      analytics?.map((a: any) => [a.template_id, a]) || []
     )
 
     // Enrich templates with analytics data
     const enrichedTemplates = filteredTemplates.map(template => ({
-      ...template,
-      analytics: analyticsMap.get(template.template_id) || {
+      ...(template as any),
+      analytics: analyticsMap.get((template as any).template_id) || {
         instantiation_count: 0,
         average_rating: 0,
         completion_rate: 0
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
       .select('tag_name, tag_type')
       .in('template_id', templateIds)
 
-    const tagsByType = availableTags?.reduce((acc, tag) => {
+    const tagsByType = availableTags?.reduce((acc: any, tag: any) => {
       if (!acc[tag.tag_type]) acc[tag.tag_type] = []
       if (!acc[tag.tag_type].includes(tag.tag_name)) {
         acc[tag.tag_type].push(tag.tag_name)
@@ -210,7 +210,7 @@ async function handleTemplateInstantiation(request: NextRequest, body: any) {
         .eq('id', user.id)
         .single()
       
-      finalOrgId = profile?.organization_id
+      finalOrgId = (profile as any)?.organization_id
     }
 
     if (!finalOrgId) {
@@ -228,7 +228,7 @@ async function handleTemplateInstantiation(request: NextRequest, body: any) {
         p_creator_id: user.id,
         p_customizations: customizations,
         p_title: title || null
-      })
+      } as any)
 
     if (instantiateError) {
       console.error('Template instantiation error:', instantiateError)
@@ -284,15 +284,15 @@ async function handleTemplateInstantiation(request: NextRequest, body: any) {
 
     // Update template analytics
     const today = new Date().toISOString().split('T')[0]
-    await supabase
+    await (supabase
       .from('cluequest_template_analytics')
       .upsert({
         template_id: template_id,
         analytics_date: today,
         instantiation_count: 1
-      }, {
+      } as any, {
         onConflict: 'template_id,analytics_date'
-      })
+      }))
 
     return NextResponse.json({
       success: true,

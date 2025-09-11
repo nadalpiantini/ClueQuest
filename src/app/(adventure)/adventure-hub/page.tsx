@@ -185,6 +185,10 @@ function AdventureHubContent() {
             lng: position.coords.longitude
           })
         },
+        (error) => {
+          console.error('Geolocation error:', error)
+          setLocationAccess('denied')
+        },
         { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
       )
 

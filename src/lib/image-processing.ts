@@ -124,7 +124,7 @@ async function analyzeImageQuality(imageBuffer: Buffer) {
   
   // Calculate brightness and contrast metrics
   const brightness = stats.channels.reduce((sum, channel) => sum + channel.mean, 0) / stats.channels.length
-  const contrast = stats.channels.reduce((sum, channel) => sum + channel.std, 0) / stats.channels.length
+  const contrast = stats.channels.reduce((sum, channel) => sum + (channel as any).std, 0) / stats.channels.length
   
   // Quality scoring (0-100)
   const brightnessScore = Math.max(0, Math.min(100, (brightness / 255) * 100))

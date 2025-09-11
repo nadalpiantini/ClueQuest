@@ -148,7 +148,7 @@ export const processTeamDecision = (decisionId: string, choiceId: string, teamVo
   if (!choice) return { error: 'Choice not found' }
   
   // Check if decision requires consensus
-  if (decision.coordinationType === 'consensus') {
+  if ((decision as any).coordinationType === 'consensus') {
     const unanimous = teamVotes.every(vote => vote.choiceId === choiceId)
     if (!unanimous) {
       return { 

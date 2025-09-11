@@ -341,12 +341,11 @@ export default function AdventureSelectionPage() {
                       // Navigate to adventure introduction with selected template
                       window.location.href = `/adventure/intro?template=${template.template_id}`;
                     }}
-                    onInstantiateTemplate={(template) => {
+                    onInstantiateTemplate={(templateId) => {
                       // Navigate to builder with pre-loaded template
-                      window.location.href = `/builder?template=${template.template_id}`;
+                      window.location.href = `/builder?template=${templateId}`;
                     }}
                     className="max-h-96 overflow-y-auto"
-                    filterTheme={selectedTheme}
                   />
                 </div>
                 

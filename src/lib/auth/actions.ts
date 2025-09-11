@@ -53,7 +53,7 @@ export async function ensureMembershipOwner(): Promise<string> {
   const { error } = await supabase.rpc('ensure_membership_for_current_user', { 
     p_org: DEFAULT_ORG, 
     p_role: 'owner' 
-  })
+  } as any)
   
   if (error) {
     console.error('Membership bootstrap error:', error)
@@ -75,7 +75,7 @@ export async function ensureMembershipAdmin(): Promise<string> {
   const { error } = await supabase.rpc('ensure_membership_for_current_user', { 
     p_org: DEFAULT_ORG, 
     p_role: 'admin' 
-  })
+  } as any)
   
   if (error) {
     console.error('Membership bootstrap error:', error)
@@ -112,8 +112,8 @@ export async function getUserMembership(): Promise<{
 
   return {
     isMember: true,
-    role: data.role as 'owner' | 'admin' | 'member',
-    organizationId: data.organization_id
+    role: (data as any).role as 'owner' | 'admin' | 'member',
+    organizationId: (data as any).organization_id
   }
 }
 

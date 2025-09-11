@@ -110,6 +110,28 @@ export interface AIPersonality {
   limitations: string[]
 }
 
+export interface ProgressTracking {
+  milestones: string[]
+  checkpoints: string[]
+  completionCriteria: string[]
+  analytics: {
+    timeSpent: number
+    attempts: number
+    hintsUsed: number
+    successRate: number
+  }
+}
+
+export interface ErrorHandling {
+  errorTypes: string[]
+  recoveryStrategies: string[]
+  fallbackOptions: string[]
+  userFeedback: {
+    message: string
+    suggestions: string[]
+  }
+}
+
 export interface ValidationSystem {
   inputValidation: InputValidation[]
   solutionValidation: SolutionValidation
@@ -288,8 +310,8 @@ export class AdvancedPuzzleEngine {
     session.attempts++
     
     if (result.success) {
-      session.progress = Math.min(100, session.progress + result.progressIncrement)
-      session.score += result.scoreIncrement
+      session.progress = Math.min(100, session.progress + (result.progressIncrement || 0))
+      session.score += (result.scoreIncrement || 0)
     }
 
     // Track analytics

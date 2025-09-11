@@ -324,8 +324,8 @@ export function LongPress({
 }: LongPressProps) {
   const [isPressed, setIsPressed] = useState(false)
   const [progress, setProgress] = useState(0)
-  const timeoutRef = useRef<NodeJS.Timeout>()
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const startPress = useCallback(() => {
     setIsPressed(true)

@@ -234,14 +234,39 @@ function QRScanPageContent() {
         return
       }
 
-      if (result.success) {
+      if (result.valid) {
         setScanState('success')
         setScanResult({
           valid: true,
-          qr_code: { id: 'qr-1' },
-          scene: { id: 'scene-1', story: 'Adventure continues...' },
-          next_action: 'proceed_to_challenges',
-          location_verified: true,
+          qr_code: {
+            id: 'qr-1',
+            scene_id: 'scene-1',
+            code: 'QR123456',
+            secure_hash: 'hash123',
+            location_description: 'Test location',
+            geofence_radius_meters: 100,
+            scan_limit: 10,
+            scan_count: 1,
+            is_active: true,
+            expires_at: null,
+            created_at: new Date().toISOString()
+          },
+          scene: {
+            id: 'scene-1',
+            adventure_id: 'adventure-1',
+            title: 'Test Scene',
+            description: 'Adventure continues...',
+            location_lat: null,
+            location_lng: null,
+            location_name: null,
+            qr_codes: [],
+            ar_assets: [],
+            challenges: [],
+            narrative_conditions: [],
+            unlock_conditions: [],
+            order_index: 1,
+            estimated_duration_minutes: 15
+          },
           fraud_detected: false
         })
         

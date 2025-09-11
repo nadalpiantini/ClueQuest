@@ -200,7 +200,7 @@ export class LeonardoAIClient {
         'adult': 'mature adult', 
         'senior': 'wise elder'
       }
-      prompt += `, ${ageMap[customizations.age_range] || 'adult'} appearance`
+      prompt += `, ${ageMap[customizations.age_range as keyof typeof ageMap] || 'adult'} appearance`
     }
 
     // Add quality and style modifiers

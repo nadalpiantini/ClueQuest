@@ -40,7 +40,7 @@ export interface FinalLetter {
 }
 
 // Scene 1: Library Card Sorting Puzzle
-export const libraryCards: LibraryCard[] = [
+const libraryCards: LibraryCard[] = [
   {
     letter: 'A',
     author: 'Borges, J. L.',
@@ -93,14 +93,14 @@ export const libraryCards: LibraryCard[] = [
 ];
 
 // Scene 2: Vigenère Cipher Data
-export const cipherData: CipherData = {
+const cipherData: CipherData = {
   encryptedMessage: 'R ACZ CKG EEHC LX STZK LMXRCK OCLK LXU IXKVC',
   key: 'ROSAS',
   decryptedMessage: 'A LAS CINCO EN PUNTO NOS VEMOS JUNTO AL RELICARIO'
 };
 
 // Scene 3: Morse Code and Poem Data
-export const morseData: MorseData = {
+const morseData: MorseData = {
   morseCode: '· – · · ·   – – – –   · – – ·   · · · –',
   decodedNumbers: [5, 8, 3, 4],
   poemVerses: [
@@ -114,7 +114,7 @@ export const morseData: MorseData = {
   ]
 };
 
-export const letterGrid = [
+const letterGrid = [
   ['L', 'I', 'B', 'R'],
   ['A', 'N', 'O', 'C'],
   ['T', 'E', 'S', 'A'],
@@ -122,7 +122,7 @@ export const letterGrid = [
 ];
 
 // Scene 4: Riddle Data
-export const riddleData = {
+const riddleData = {
   riddle: `En nuestro templo del saber residimos ocho centinelas silenciosos,
 Cuatro miran al oriente y cuatro al occidente.
 Somos hermanos de papel y guardamos verdades innumerables.
@@ -141,7 +141,7 @@ Si sumas nuestras iniciales, obtendrás el código que abre la puerta.`,
 };
 
 // Scene 5: UV Light and Anagram Data
-export const uvLetters: UVLetter[] = [
+const uvLetters: UVLetter[] = [
   { bookNumber: 1, letter: 'E', position: 1 },
   { bookNumber: 2, letter: 'L', position: 2 },
   { bookNumber: 3, letter: 'S', position: 3 },
@@ -156,11 +156,11 @@ export const uvLetters: UVLetter[] = [
   { bookNumber: 12, letter: 'E', position: 12 }
 ];
 
-export const whisperedPoem = 'Un espejo refleja la verdad, un espejo revela el mal';
-export const anagramSolution = 'EL SEÑOR CIPRÉS';
+const whisperedPoem = 'Un espejo refleja la verdad, un espejo revela el mal';
+const anagramSolution = 'EL SEÑOR CIPRÉS';
 
 // Scene 6: Logic Deduction Puzzle
-export const logicClues: LogicClue[] = [
+const logicClues: LogicClue[] = [
   {
     suspect: 'Sloane',
     statement: 'Estaba en la colección general a las 5 p.m. o en el depósito de periódicos',
@@ -188,7 +188,7 @@ export const logicClues: LogicClue[] = [
   }
 ];
 
-export const logicSolution = {
+const logicSolution = {
   'Reyes': { time: '4 p.m.', location: 'Microfilms', activity: 'Pergamino' },
   'Sloane': { time: '5 p.m.', location: 'Colección general', activity: 'Diario secreto' },
   'Black': { time: '6 p.m.', location: 'Sección de mapas', activity: 'Pergamino' },
@@ -197,7 +197,7 @@ export const logicSolution = {
 };
 
 // Scene 7: Microfilm and Acrostic Data
-export const microfilmData = {
+const microfilmData = {
   poem: `No soy quien piensas, busco el saber;
 Si descifras mi nombre, la verdad verás.
 Mis letras están ocultas en cada línea;
@@ -214,7 +214,7 @@ Usa la pluma del árbol para escribir mi alias.`,
 };
 
 // Scene 8: Final Letter Assembly
-export const finalLetters: FinalLetter[] = [
+const finalLetters: FinalLetter[] = [
   { scene: 1, letter: 'M', source: 'Manuscrito' },
   { scene: 2, letter: 'A', source: 'Ala' },
   { scene: 3, letter: 'P', source: 'Pergamino' },
@@ -225,10 +225,10 @@ export const finalLetters: FinalLetter[] = [
   { scene: 8, letter: 'O', source: 'Nota' }
 ];
 
-export const finalWordSolution = 'BIBLIOMA';
+const finalWordSolution = 'BIBLIOMA';
 
 // Character Information
-export const characters = {
+const characters = {
   sloane: {
     name: 'Sr. Sloane',
     role: 'Bibliotecario jefe',
@@ -262,7 +262,7 @@ export const characters = {
 };
 
 // Materials and Equipment
-export const requiredMaterials = [
+const requiredMaterials = [
   'Libros antiguos con compartimentos secretos',
   'Tarjetas de catálogo de biblioteca',
   'Rueda cifradora (César/Vigenère)',
@@ -274,7 +274,7 @@ export const requiredMaterials = [
 ];
 
 // Puzzle Solutions Summary
-export const puzzleSolutions = {
+const puzzleSolutions = {
   scene1: {
     sortedCards: libraryCards.sort((a, b) => a.author.localeCompare(b.author)),
     secondDigits: [6, 2, 2, 5, 0, 1, 2, 6],
@@ -317,6 +317,26 @@ export const puzzleSolutions = {
     finalWord: 'BIBLIOMA',
     killer: 'Henry'
   }
+};
+
+// Export individual items for easier importing
+export {
+  libraryCards,
+  cipherData,
+  morseData,
+  letterGrid,
+  riddleData,
+  uvLetters,
+  whisperedPoem,
+  anagramSolution,
+  logicClues,
+  logicSolution,
+  microfilmData,
+  finalLetters,
+  finalWordSolution,
+  characters,
+  requiredMaterials,
+  puzzleSolutions
 };
 
 export default {

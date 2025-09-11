@@ -266,9 +266,9 @@ function AdventureBuilderPageContent() {
   }
 
   const [adventureData, setAdventureData] = useState(getInitialAdventureData())
-  const [isHydrated, setIsHydrated] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   // Load data from localStorage after hydration
   useEffect(() => {
@@ -666,7 +666,7 @@ function AdventureBuilderPageContent() {
 
   // Filter themes based on adventure type
   const getFilteredThemes = () => {
-    // Only filter if adventureType is set (client-side)
+    // Only filter if adventureType is set
     if (!adventureType) {
       console.log('🔍 No adventure type set, showing all themes')
       return allThemes
@@ -1440,7 +1440,7 @@ function AdventureBuilderPageContent() {
             {process.env.NODE_ENV === 'development' && (
               <div className="mt-4 space-y-2">
                 <div className="px-3 py-1 bg-slate-800/50 rounded text-xs text-slate-400">
-                  🔧 DEBUG: Step {currentStep}/5 | URL: {isHydrated && typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/builder?step=' + currentStep}
+                  🔧 DEBUG: Step {currentStep}/5 | URL: {typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/builder?step=' + currentStep}
                 </div>
                 
                 <div className="flex items-center gap-2 justify-center flex-wrap">
@@ -1470,7 +1470,7 @@ function AdventureBuilderPageContent() {
                 <div className="flex items-center gap-2 justify-center">
                   <span className="text-xs text-slate-500">Data:</span>
                   <div className="flex items-center gap-1 text-xs text-emerald-400">
-                    💾 Auto-saved ({isHydrated ? (adventureData.title || 'Untitled') : 'Loading...'})
+                    💾 Auto-saved ({adventureData.title || 'Untitled'})
                   </div>
                   <button
                     onClick={clearSavedData}
@@ -1599,7 +1599,7 @@ function AdventureBuilderPageContent() {
                       onChange={(e) => updateAdventureData({ ...adventureData, title: e.target.value })}
                       className="w-full px-4 py-3 bg-slate-800/80 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                     />
-                    {isHydrated && adventureData.title && (
+                    {adventureData.title && (
                       <p className="text-emerald-400 text-sm mt-2">
                         ✨ Great title! This will be displayed prominently to participants
                       </p>
@@ -1621,10 +1621,9 @@ function AdventureBuilderPageContent() {
                           <div 
                             className="w-20 h-20 rounded-xl overflow-hidden border-2 border-amber-500/30"
                             style={{
-                              backgroundImage: selectedTheme.profileImage ? `url(${selectedTheme.profileImage})` : 'none',
+                              backgroundImage: selectedTheme.profileImage ? `url(${selectedTheme.profileImage})` : `linear-gradient(135deg, ${selectedTheme.palette?.[0] || '#666'}, ${selectedTheme.palette?.[1] || '#444'})`,
                               backgroundSize: 'cover',
-                              backgroundPosition: 'center',
-                              background: selectedTheme.profileImage ? 'none' : `linear-gradient(135deg, ${selectedTheme.palette?.[0] || '#666'}, ${selectedTheme.palette?.[1] || '#444'})`
+                              backgroundPosition: 'center'
                             }}
                           >
                             {!selectedTheme.profileImage && (
@@ -1688,12 +1687,12 @@ function AdventureBuilderPageContent() {
                                       : 'border-slate-600/30 group-hover:border-amber-500/50'
                                   }`}
                                   style={{
-                                    backgroundImage: theme.isCreateButton ? 'none' : (theme.profileImage ? `url(${theme.profileImage})` : 'none'),
+                                    backgroundImage: theme.isCreateButton ? 'none' : (theme.profileImage ? `url(${theme.profileImage})` : `linear-gradient(135deg, ${theme.palette?.[0] || '#666'}, ${theme.palette?.[1] || '#444'})`),
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
                                     minHeight: '320px',
-                                    maxHeight: '400px',
-                                    background: theme.isCreateButton ? 'none' : (theme.profileImage ? 'none' : `linear-gradient(135deg, ${theme.palette?.[0] || '#666'}, ${theme.palette?.[1] || '#444'})`)
+                                    maxHeight: '400px'
                                   }}
                                 >
                                   {/* Dark Overlay */}
@@ -2470,7 +2469,7 @@ function AdventureBuilderPageContent() {
               </h3>
               
               {/* Title Preview */}
-              {isHydrated && adventureData.title && (
+              {adventureData.title && (
                 <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20">
                   <div className="text-slate-400 text-sm mb-2">Adventure Title</div>
                   <div className="text-2xl font-bold text-amber-300">{adventureData.title}</div>

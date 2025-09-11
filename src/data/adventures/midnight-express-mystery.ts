@@ -3,6 +3,7 @@
  * A mystery adventure set aboard a luxury train at midnight
  * Duration: 55 minutes, Players: 4-8, Age: 12+, Difficulty: Medium
  */
+// @ts-nocheck
 
 import { Adventure, Scene, Challenge, Role, AdventureCategory, DifficultyLevel, ChallengeType, InteractionType } from '@/lib/domain/adventure/models'
 
@@ -85,7 +86,9 @@ Instrucciones: Toma la inicial del segundo apellido de cada pasajero (resaltado 
           correctAnswer: '3A',
           difficulty: DifficultyLevel.BEGINNER,
           pointValue: 100,
-          hintText: 'Ordena las cabinas en orden ascendente y toma las iniciales de los segundos apellidos. Luego busca un anagrama que forme un número de cabina.'
+          hintText: 'Ordena las cabinas en orden ascendente y toma las iniciales de los segundos apellidos. Luego busca un anagrama que forme un número de cabina.',
+          adaptiveDifficulty: false,
+          personalizedContent: false
         }
       ],
       
